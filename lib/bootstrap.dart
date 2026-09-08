@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:ecosafra/app/app_module.dart';
 import 'package:ecosafra/app/observers/app_bloc_observer.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -49,10 +50,11 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
         ),
       );
 
-      // TODO(firebase): descomentar depois de rodar `flutterfire configure`.
-      // await Firebase.initializeApp(
-      //   options: DefaultFirebaseOptions.currentPlatform,
-      // );
+      // Sem `options:` de propósito: sem `firebase_options.dart` (isso só
+      // existe depois de rodar `flutterfire configure`), o Firebase lê a
+      // config direto do `google-services.json` nativo — funciona no
+      // Android, mas ainda não cobre iOS/web/desktop.
+      await Firebase.initializeApp();
 
       // Monta o grafo de rotas + binds do AppModule (e, em cascata, dos
       // módulos de feature). Substitui o antigo `configureDependencies()`:

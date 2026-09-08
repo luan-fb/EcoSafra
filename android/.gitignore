@@ -12,3 +12,10 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Exceção deliberada: keystore de DEBUG do time (senha "android", a mesma
+# de qualquer keystore de debug do Android) — versionado de propósito para
+# todo clone assinar com a mesma SHA-1 e o Login com Google funcionar sem
+# cada integrante ter que cadastrar a própria. Nunca faça isso com um
+# keystore de release.
+!/keystore/shared_debug.jks

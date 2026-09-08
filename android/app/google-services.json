@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "854414130975",
+    "project_id": "ecosafra-f9224",
+    "storage_bucket": "ecosafra-f9224.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:854414130975:android:3f7c2e08e9ce13d8937a2a",
+        "android_client_info": {
+          "package_name": "br.com.ecosafra.ecosafra"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "854414130975-n0hkrf0hkt9ebea2se75f9ucpq4hjlce.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.ecosafra.ecosafra",
+            "certificate_hash": "eed9a058d6fe569dcb3328f47e68741b016531b7"
+          }
+        },
+        {
+          "client_id": "854414130975-htqv5r5phmbe53gb9un8lg2n2nu5mijn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzib7DqRx-a-3OCnPagUc2ZoQRm9Q0AlI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "854414130975-htqv5r5phmbe53gb9un8lg2n2nu5mijn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

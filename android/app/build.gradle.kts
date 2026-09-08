@@ -2,6 +2,9 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Lê android/app/google-services.json e injeta a config do Firebase como
+    // recursos nativos no build.
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -26,6 +29,25 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // Keystore de debug do time, versionado em android/keystore/ —
+            // não o `~/.android/debug.keystore` padrão, que é único por
+            // máquina. Se cada integrante do grupo assinasse com o seu
+            // próprio, o Login com Google falharia pra todo mundo menos
+            // quem tivesse cadastrado a própria SHA-1 no Firebase: com um
+            // keystore compartilhado, todo clone gera o mesmo APK
+            // (mesma assinatura), e só uma SHA-1 precisa estar cadastrada.
+            //
+            // Senha e alias são os defaults do keystore de debug do Android
+            // (não é segredo — debug nunca assina o que vai pra Play Store).
+            storeFile = file("../keystore/shared_debug.jks")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildTypes {
