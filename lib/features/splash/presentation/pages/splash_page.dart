@@ -5,6 +5,8 @@ import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
+import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router_modular/go_router_modular.dart';
 
@@ -84,9 +86,23 @@ class _SplashPageState extends State<SplashPage>
   }
 
   Future<void> _goNext() async {
-    // TODO(auth): checar o AuthCubit e decidir entre signIn e dashboard.
+    final authCubit = Modular.get<AuthCubit>();
+
+    // O primeiro evento do Firebase (logado ou não) costuma chegar quase
+    // instantâneo, mas não é síncrono — se ainda não chegou, esperamos aqui
+    // em vez de arriscar mandar quem já está logado pro login por um
+    // instante. Depois desta espera, `AppModule` já garante uma resposta.
+    if (authCubit.state.status == AuthStatus.initial) {
+      await authCubit.stream.firstWhere(
+        (state) => state.status != AuthStatus.initial,
+      );
+    }
+
     if (!mounted) return;
-    context.goNamed(AppRoute.signIn.name);
+    final destination = authCubit.state.status == AuthStatus.authenticated
+        ? AppRoute.dashboard.name
+        : AppRoute.signIn.name;
+    context.goNamed(destination);
   }
 
   @override
@@ -125,7 +141,7 @@ class _SplashPageState extends State<SplashPage>
                 child: SlideTransition(
                   position: _titleSlide,
                   child: Text(
-                    'EcoSafra',
+                    context.l10n.appTitle,
                     style: context.texts.displaySmall?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
@@ -143,7 +159,7 @@ class _SplashPageState extends State<SplashPage>
                     horizontal: AppSpacing.xxl,
                   ),
                   child: Text(
-                    'Adube na hora certa. Proteja o rio.',
+                    context.l10n.splashTagline,
                     textAlign: TextAlign.center,
                     style: context.texts.bodyLarge?.copyWith(
                       color: Colors.white.withValues(alpha: 0.85),
@@ -160,9 +176,9 @@ class _SplashPageState extends State<SplashPage>
                   padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
                   child: TextButton(
                     onPressed: () => unawaited(_goNext()),
-                    child: const Text(
-                      'Começar',
-                      style: TextStyle(color: Colors.white),
+                    child: Text(
+                      context.l10n.splashStartButton,
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ),

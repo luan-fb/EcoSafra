@@ -1,5 +1,6 @@
 import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/app/router/page_transitions.dart';
+import 'package:ecosafra/features/auth/presentation/guards/auth_guards.dart';
 import 'package:ecosafra/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:go_router_modular/go_router_modular.dart';
 
@@ -15,6 +16,7 @@ class DashboardModule extends Module {
           '/',
           name: AppRoute.dashboard.name,
           transition: AppTransitions.fadeThrough,
+          guards: const [RequireAuthGuard()],
           child: (context, state) => const DashboardPage(),
         ),
       ];

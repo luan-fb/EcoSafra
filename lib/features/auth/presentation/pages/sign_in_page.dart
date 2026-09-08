@@ -1,15 +1,16 @@
-import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
+import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router_modular/go_router_modular.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// Tela de login (esqueleto).
+/// Tela de login.
 ///
-/// Ainda sem Cubit: a feature `auth` será construída na próxima etapa
-/// (domain → data → presentation). O que já existe aqui é o padrão de
-/// entrada escalonada dos elementos, usando [FadeSlideIn].
+/// Não navega sozinha: ao logar com sucesso, é o `BlocListener` global em
+/// `EcoSafraApp` (que assiste o mesmo `AuthCubit`) quem manda para o painel.
+/// Esta tela só dispara a ação e reage ao estado (carregando/erro).
 class SignInPage extends StatelessWidget {
   const SignInPage({super.key});
 
@@ -35,7 +36,7 @@ class SignInPage extends StatelessWidget {
               FadeSlideIn.staggered(
                 index: 1,
                 child: Text(
-                  'Bem-vindo ao EcoSafra',
+                  context.l10n.signInWelcomeTitle,
                   textAlign: TextAlign.center,
                   style: context.texts.headlineMedium,
                 ),
@@ -44,8 +45,7 @@ class SignInPage extends StatelessWidget {
               FadeSlideIn.staggered(
                 index: 2,
                 child: Text(
-                  'Entre para acompanhar a previsão de chuva da sua área '
-                  'e saber a melhor janela para adubar.',
+                  context.l10n.signInWelcomeSubtitle,
                   textAlign: TextAlign.center,
                   style: context.texts.bodyMedium?.copyWith(
                     color: context.colors.onSurfaceVariant,
@@ -55,19 +55,36 @@ class SignInPage extends StatelessWidget {
               const Spacer(),
               FadeSlideIn.staggered(
                 index: 3,
-                child: FilledButton.icon(
-                  // TODO(auth): disparar AuthCubit.signInWithGoogle().
-                  onPressed: () => context.goNamed(AppRoute.dashboard.name),
-                  icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-                  label: const Text('Entrar com Google'),
+                child: BlocConsumer<AuthCubit, AuthState>(
+                  listenWhen: (previous, current) =>
+                      previous.failure != current.failure &&
+                      current.failure != null,
+                  listener: (context, state) =>
+                      context.showSnack(state.failure!.message, isError: true),
+                  builder: (context, state) => FilledButton.icon(
+                    onPressed: state.isSigningIn
+                        ? null
+                        : () => context.read<AuthCubit>().signInWithGoogle(),
+                    icon: state.isSigningIn
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.g_mobiledata_rounded, size: 28),
+                    label: Text(
+                      state.isSigningIn
+                          ? context.l10n.signInGoogleButtonLoading
+                          : context.l10n.signInGoogleButton,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
               FadeSlideIn.staggered(
                 index: 4,
                 child: Text(
-                  'Usamos sua localização apenas para buscar a previsão '
-                  'do tempo do seu talhão.',
+                  context.l10n.signInLocationDisclaimer,
                   textAlign: TextAlign.center,
                   style: context.texts.bodySmall?.copyWith(
                     color: context.colors.onSurfaceVariant,

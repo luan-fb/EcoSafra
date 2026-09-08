@@ -44,6 +44,11 @@ linter:
     # Nossos TODOs viram doc comment (///) com contexto de várias linhas;
     # o formato exigido por esta regra é o `//` de uma linha só.
     flutter_style_todos: false
+    # Constrói o nome público do parâmetro (ex.: `firebaseAuth`) diferente do
+    # campo privado que ele preenche (`_firebaseAuth`) de propósito — um
+    # initializing formal exigiria que os dois tivessem o mesmo nome, e um
+    # parâmetro nomeado privado não pode ser chamado de fora do arquivo.
+    prefer_initializing_formals: false
 
     # --- Ligados a mais ---
     always_use_package_imports: true
