@@ -1,0 +1,12 @@
+targets:
+  $default:
+    builders:
+      # A API Open-Meteo devolve chaves em snake_case (ex.: precipitation_sum).
+      # Configurar aqui evita repetir @JsonKey(name: ...) em todo model.
+      json_serializable:
+        options:
+          field_rename: snake
+          create_factory: true
+          create_to_json: true
+          include_if_null: false
+          explicit_to_json: true

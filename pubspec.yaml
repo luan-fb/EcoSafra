@@ -1,0 +1,76 @@
+name: ecosafra
+description: "EcoSafra - alerta de chuva para aplicação consciente de fertilizantes."
+publish_to: 'none'
+
+# versionName+versionCode (Android) / CFBundleShortVersionString+CFBundleVersion (iOS)
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # --- Estado (MVVM com Cubit) ---
+  bloc: ^9.2.1
+  flutter_bloc: ^9.1.1
+
+  # --- Navegação + injeção de dependência ---
+  # Rotas e DI vivem juntas: cada feature declara um Module com seus binds e
+  # suas rotas. Traz go_router e go_transitions por baixo (não precisam ser
+  # dependência direta, mas importamos suas classes, então declaramos os dois).
+  go_router_modular: ^5.5.2
+  go_transitions: ^0.8.4
+
+  # --- Rede ---
+  dio: ^5.11.1
+  pretty_dio_logger: ^1.4.0
+
+  # --- Programação funcional (Either para tratamento de erro) ---
+  fpdart: ^1.2.0
+
+  # --- Modelos imutáveis + serialização (code generation) ---
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+  equatable: ^2.1.0
+
+  # --- Firebase / autenticação ---
+  firebase_core: ^4.14.0
+  firebase_auth: ^6.6.1
+  google_sign_in: ^7.2.0
+
+  # --- Dispositivo ---
+  geolocator: ^14.0.3
+  permission_handler: ^13.0.2
+  shared_preferences: ^2.5.5
+
+  # --- UI ---
+  cupertino_icons: ^1.0.8
+  google_fonts: ^8.2.1
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # --- Lints rigorosos (substitui flutter_lints) ---
+  very_good_analysis: ^10.3.0
+
+  # --- Code generation ---
+  build_runner: ^2.15.1
+  freezed: ^3.2.5
+  json_serializable: ^6.14.1
+
+  # --- Testes ---
+  bloc_test: ^10.0.0
+  mocktail: ^1.0.5
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
