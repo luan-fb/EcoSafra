@@ -1,0 +1,11 @@
+# Configuração do gerador de localização do Flutter.
+# Referência: https://docs.flutter.dev/ui/accessibility-and-localization/internationalization
+
+# .arb "fonte da verdade": toda chave nova nasce aqui primeiro.
+arb-dir: lib/l10n
+template-arb-file: app_pt.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+output-dir: lib/l10n/generated
+
+nullable-getter: false

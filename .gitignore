@@ -26,6 +26,10 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
+# Gerado por `flutter gen-l10n` a partir de lib/l10n/*.arb — nunca editar
+# à mão, então nunca versionar.
+/lib/l10n/generated/
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id

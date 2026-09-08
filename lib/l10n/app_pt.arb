@@ -1,0 +1,73 @@
+{
+  "@@locale": "pt",
+
+  "appTitle": "EcoSafra",
+  "@appTitle": {
+    "description": "Nome do app, usado no título da janela e na splash"
+  },
+
+  "splashTagline": "Adube na hora certa. Proteja o rio.",
+  "@splashTagline": {
+    "description": "Frase de efeito na tela de abertura"
+  },
+
+  "splashStartButton": "Começar",
+  "@splashStartButton": {
+    "description": "Botão que encerra a splash e decide login vs. painel"
+  },
+
+  "signInWelcomeTitle": "Bem-vindo ao EcoSafra",
+  "@signInWelcomeTitle": {
+    "description": "Título da tela de login"
+  },
+
+  "signInWelcomeSubtitle": "Entre para acompanhar a previsão de chuva da sua área e saber a melhor janela para adubar.",
+  "@signInWelcomeSubtitle": {
+    "description": "Subtítulo explicando o propósito do login"
+  },
+
+  "signInGoogleButton": "Entrar com Google",
+  "@signInGoogleButton": {
+    "description": "Rótulo do botão de login quando ocioso"
+  },
+
+  "signInGoogleButtonLoading": "Entrando...",
+  "@signInGoogleButtonLoading": {
+    "description": "Rótulo do botão de login enquanto aguarda o Google"
+  },
+
+  "signInLocationDisclaimer": "Usamos sua localização apenas para buscar a previsão do tempo do seu talhão.",
+  "@signInLocationDisclaimer": {
+    "description": "Aviso de privacidade abaixo do botão de login"
+  },
+
+  "dashboardTitle": "Painel",
+  "@dashboardTitle": {
+    "description": "Título da AppBar do painel principal"
+  },
+
+  "dashboardSignOutTooltip": "Sair",
+  "@dashboardSignOutTooltip": {
+    "description": "Tooltip do botão de logout no painel"
+  },
+
+  "dashboardDefaultUserName": "Produtor",
+  "@dashboardDefaultUserName": {
+    "description": "Nome exibido quando a conta Google não tem displayName"
+  },
+
+  "dashboardPlaceholderBlockTitle": "Bloco {number}",
+  "@dashboardPlaceholderBlockTitle": {
+    "description": "Título de um card de espaço reservado no painel",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+
+  "dashboardPlaceholderBlockSubtitle": "Espaço reservado para os dados da Open-Meteo.",
+  "@dashboardPlaceholderBlockSubtitle": {
+    "description": "Subtítulo de um card de espaço reservado no painel"
+  }
+}

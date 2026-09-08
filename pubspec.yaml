@@ -37,7 +37,7 @@ dependencies:
   json_annotation: ^4.12.0
   equatable: ^2.1.0
 
-  # --- Firebase / autenticação ---
+  # --- Firebase ---
   firebase_core: ^4.14.0
   firebase_auth: ^6.6.1
   google_sign_in: ^7.2.0
@@ -70,6 +70,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Gera lib/l10n/generated/app_localizations.dart a partir dos .arb — o
+  # equivalente Flutter do strings.xml do Android (com o mesmo ganho: texto
+  # centralizado e pronto pra outro idioma no dia em que precisar).
+  generate: true
 
   assets:
     - assets/images/

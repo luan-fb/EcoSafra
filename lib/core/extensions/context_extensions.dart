@@ -1,3 +1,4 @@
+import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Atalhos para o que se lê de `context` o tempo todo.
@@ -8,6 +9,12 @@ extension BuildContextX on BuildContext {
   ThemeData get theme => Theme.of(this);
   ColorScheme get colors => Theme.of(this).colorScheme;
   TextTheme get texts => Theme.of(this).textTheme;
+
+  /// `context.l10n.signInGoogleButton` no lugar de
+  /// `AppLocalizations.of(context)`. Não é nullable porque `l10n.yaml` tem
+  /// `nullable-getter: false` — o delegate sempre está registrado (ver
+  /// `EcoSafraApp`), então não há motivo para o tipo carregar um `?`.
+  AppLocalizations get l10n => AppLocalizations.of(this);
 
   MediaQueryData get media => MediaQuery.of(this);
   Size get screenSize => MediaQuery.sizeOf(this);
