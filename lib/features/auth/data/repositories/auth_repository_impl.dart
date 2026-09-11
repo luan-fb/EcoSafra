@@ -1,3 +1,4 @@
+import 'package:ecosafra/core/error/exception_mapper.dart';
 import 'package:ecosafra/core/error/exceptions.dart';
 import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -29,7 +30,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final user = await _remoteDataSource.signInWithGoogle();
       return Right(_toAppUser(user));
     } on AppException catch (e) {
-      return Left(_toFailure(e));
+      return Left(e.toFailure());
     }
   }
 
@@ -39,7 +40,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _remoteDataSource.signOut();
       return const Right(null);
     } on AppException catch (e) {
-      return Left(_toFailure(e));
+      return Left(e.toFailure());
     }
   }
 
@@ -51,13 +52,4 @@ class AuthRepositoryImpl implements AuthRepository {
           email: user.email,
           photoUrl: user.photoURL,
         );
-
-  Failure _toFailure(AppException exception) => switch (exception) {
-        AuthException(:final message) => AuthFailure(message),
-        NetworkException(:final message) => NetworkFailure(message),
-        ServerException(:final message) => ServerFailure(message),
-        CacheException(:final message) => CacheFailure(message),
-        LocationException(:final message, :final isPermanentlyDenied) =>
-          LocationFailure(message, isPermanentlyDenied: isPermanentlyDenied),
-      };
 }
