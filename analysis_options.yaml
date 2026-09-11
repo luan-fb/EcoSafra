@@ -49,6 +49,10 @@ linter:
     # initializing formal exigiria que os dois tivessem o mesmo nome, e um
     # parâmetro nomeado privado não pode ser chamado de fora do arquivo.
     prefer_initializing_formals: false
+    # O padrão oficial do freezed pra adicionar métodos a uma classe exige
+    # `const ClassName._();` como o PRIMEIRO construtor, antes do `factory`
+    # unnamed — exatamente o oposto do que esta regra pede.
+    sort_unnamed_constructors_first: false
 
     # --- Ligados a mais ---
     always_use_package_imports: true

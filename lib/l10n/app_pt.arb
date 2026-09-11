@@ -56,18 +56,85 @@
     "description": "Nome exibido quando a conta Google não tem displayName"
   },
 
-  "dashboardPlaceholderBlockTitle": "Bloco {number}",
-  "@dashboardPlaceholderBlockTitle": {
-    "description": "Título de um card de espaço reservado no painel",
+  "dashboardOfflineBanner": "Sem internet. Mostrando a última previsão salva, de {time}.",
+  "@dashboardOfflineBanner": {
+    "description": "Aviso quando a previsão exibida veio do cache local",
     "placeholders": {
-      "number": {
-        "type": "int"
+      "time": {
+        "type": "String",
+        "example": "14:32"
       }
     }
   },
 
-  "dashboardPlaceholderBlockSubtitle": "Espaço reservado para os dados da Open-Meteo.",
-  "@dashboardPlaceholderBlockSubtitle": {
-    "description": "Subtítulo de um card de espaço reservado no painel"
+  "dashboardErrorTitle": "Não foi possível carregar a previsão.",
+  "@dashboardErrorTitle": {
+    "description": "Título exibido quando busca de localização ou clima falha"
+  },
+
+  "dashboardRetryButton": "Tentar de novo",
+  "@dashboardRetryButton": {
+    "description": "Botão para tentar buscar a previsão novamente"
+  },
+
+  "dashboardNowCardTitle": "Agora",
+  "@dashboardNowCardTitle": {
+    "description": "Título do card com as condições atuais"
+  },
+
+  "dashboardHumidityLabel": "Umidade",
+  "@dashboardHumidityLabel": {
+    "description": "Rótulo do valor de umidade relativa"
+  },
+
+  "dashboardWindLabel": "Vento",
+  "@dashboardWindLabel": {
+    "description": "Rótulo do valor de velocidade do vento"
+  },
+
+  "dashboardNext48hRainLabel": "Chuva prevista (48h)",
+  "@dashboardNext48hRainLabel": {
+    "description": "Rótulo do total de chuva acumulada nas próximas 48 horas"
+  },
+
+  "dashboardDailyForecastTitle": "Próximos dias",
+  "@dashboardDailyForecastTitle": {
+    "description": "Título da lista de previsão diária"
+  },
+
+  "decisionCardSafeHeadline": "Pode aplicar",
+  "@decisionCardSafeHeadline": {
+    "description": "Título do card de decisão quando é seguro adubar"
+  },
+
+  "decisionCardCautionHeadline": "Aplique com cautela",
+  "@decisionCardCautionHeadline": {
+    "description": "Título do card de decisão quando há chuva moderada prevista"
+  },
+
+  "decisionCardDangerHeadline": "Não aplique fertilizante",
+  "@decisionCardDangerHeadline": {
+    "description": "Título do card de decisão quando há chuva forte prevista"
+  },
+
+  "decisionCardRainNext24h": "{mm} mm previstos nas próximas 24h",
+  "@decisionCardRainNext24h": {
+    "description": "Subtítulo do card de decisão com o volume de chuva esperado",
+    "placeholders": {
+      "mm": {
+        "type": "String",
+        "example": "12.4"
+      }
+    }
+  },
+
+  "decisionCardEstimatedLoss": "Risco de perda de insumo estimado em {percent}%",
+  "@decisionCardEstimatedLoss": {
+    "description": "Aviso de risco financeiro exibido quando o nível é perigo",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -1,7 +1,10 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
+import 'package:ecosafra/core/database/app_database.dart';
 import 'package:ecosafra/core/network/api_constants.dart';
 import 'package:ecosafra/core/network/interceptors/error_interceptor.dart';
+import 'package:ecosafra/core/network/network_info.dart';
 import 'package:ecosafra/features/auth/auth_module.dart';
 import 'package:ecosafra/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:ecosafra/features/auth/data/datasources/google_firebase_auth_data_source.dart';
@@ -36,8 +39,14 @@ class AppModule extends Module {
 
     i
       ..addSingleton<SharedPreferences>((i) => sharedPreferences)
+      // Uma conexão só com o SQLite local pro app inteiro — é o mesmo
+      // motivo do Room recomendar um único `RoomDatabase` por processo.
+      ..addSingleton<AppDatabase>((i) => AppDatabase())
       ..addSingleton<FirebaseAuth>((i) => FirebaseAuth.instance)
       ..addSingleton<GoogleSignIn>((i) => GoogleSignIn.instance)
+      ..addSingleton<NetworkInfo>(
+        (i) => ConnectivityNetworkInfo(Connectivity()),
+      )
       ..addSingleton<Dio>(
         (i) => Dio(
           BaseOptions(

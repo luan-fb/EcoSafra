@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router_modular/go_router_modular.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 /// Tudo que precisa acontecer **antes** do primeiro frame.
 ///
@@ -37,6 +38,10 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   await runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      // Carrega os nomes de mês/dia da semana em português — sem isto,
+      // `DateFormat.MMMEd('pt_BR')` (usado no painel) lança em runtime.
+      await initializeDateFormatting('pt_BR');
 
       await SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
