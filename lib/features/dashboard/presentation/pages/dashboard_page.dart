@@ -5,9 +5,12 @@ import 'package:ecosafra/core/widgets/fade_slide_in.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_state.dart';
+import 'package:ecosafra/features/dashboard/presentation/widgets/app_drawer.dart';
+import 'package:ecosafra/features/dashboard/presentation/widgets/dashboard_header.dart';
 import 'package:ecosafra/features/dashboard/presentation/widgets/decision_card.dart';
 import 'package:ecosafra/features/weather/domain/entities/fertilizer_advice.dart';
 import 'package:ecosafra/features/weather/domain/entities/weather_forecast.dart';
+import 'package:ecosafra/features/weather/presentation/weather_condition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // `hide BindContextExtension`: o go_router_modular também define um
@@ -44,71 +47,53 @@ class _DashboardView extends StatelessWidget {
     final user = context.read<AuthCubit>().state.user;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.dashboardTitle),
-        actions: [
-          IconButton(
-            tooltip: context.l10n.dashboardSignOutTooltip,
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () => context.read<AuthCubit>().signOut(),
-          ),
-        ],
-      ),
+      // Sem `appBar:` de propósito — o cabeçalho de marca (`DashboardHeader`)
+      // faz esse papel, incluindo o botão que abre este `drawer:`.
+      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: context.read<DashboardCubit>().loadForecast,
-        child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          children: [
-            FadeSlideIn(
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundImage: user?.photoUrl != null
-                        ? NetworkImage(user!.photoUrl!)
-                        : null,
-                    child: user?.photoUrl == null
-                        ? const Icon(Icons.person_rounded)
-                        : null,
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user?.displayName ??
-                              context.l10n.dashboardDefaultUserName,
-                          style: context.texts.titleMedium,
-                        ),
-                        if (user?.email != null)
-                          Text(
-                            user!.email!,
-                            style: context.texts.bodySmall?.copyWith(
-                              color: context.colors.onSurfaceVariant,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              // `Builder` dá um `context` que já fica ABAIXO do Scaffold na
+              // árvore — é o que permite `Scaffold.of(context).openDrawer()`
+              // funcionar. O `context` do método `build` acima ainda não
+              // serve: ele existe num ponto anterior à criação do Scaffold.
+              child: Builder(
+                builder: (context) {
+                  // `?.split(' ').first` só cai no fallback se o nome for
+                  // `null` — uma string vazia (não-nula) passaria direto e
+                  // a saudação ficaria "Boa tarde, " sem nome nenhum.
+                  final firstName = user?.displayName?.trim().split(' ').first;
+                  return DashboardHeader(
+                    userName: (firstName == null || firstName.isEmpty)
+                        ? context.l10n.dashboardDefaultUserName
+                        : firstName,
+                    userPhotoUrl: user?.photoUrl,
+                    onMenuTap: () => Scaffold.of(context).openDrawer(),
+                  );
+                },
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            BlocBuilder<DashboardCubit, DashboardState>(
-              builder: (context, state) => switch (state.status) {
-                DashboardStatus.initial ||
-                DashboardStatus.loading =>
-                  const _LoadingSection(),
-                DashboardStatus.error => _ErrorSection(
-                    message: state.failure?.message ??
-                        context.l10n.dashboardErrorTitle,
-                  ),
-                DashboardStatus.loaded => _ForecastSection(
-                    forecast: state.forecast!,
-                    advice: state.advice!,
-                  ),
-              },
+            SliverPadding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              sliver: SliverToBoxAdapter(
+                child: BlocBuilder<DashboardCubit, DashboardState>(
+                  builder: (context, state) => switch (state.status) {
+                    DashboardStatus.initial ||
+                    DashboardStatus.loading =>
+                      const _LoadingSection(),
+                    DashboardStatus.error => _ErrorSection(
+                        message: state.failure?.message ??
+                            context.l10n.dashboardErrorTitle,
+                      ),
+                    DashboardStatus.loaded => _ForecastSection(
+                        forecast: state.forecast!,
+                        advice: state.advice!,
+                      ),
+                  },
+                ),
+              ),
             ),
           ],
         ),
@@ -171,6 +156,7 @@ class _ForecastSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = forecast.hourly.first;
+    final today = forecast.daily.first;
 
     // Soma a chuva das próximas ~48h (a API devolve uma entrada por hora).
     final next48h = forecast.hourly.take(48);
@@ -214,38 +200,56 @@ class _ForecastSection extends StatelessWidget {
           index: 1,
           child: Card(
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     context.l10n.dashboardNowCardTitle,
-                    style: context.texts.titleMedium,
+                    style: context.texts.labelLarge?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
+                  Icon(
+                    WeatherCondition.iconFor(today.weatherCode),
+                    size: 56,
+                    color: context.colors.primary,
+                  ),
                   Text(
-                    '${now.temperature.round()}°C',
-                    style: context.texts.displaySmall,
+                    '${now.temperature.round()}°',
+                    style: context.texts.displayLarge,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Wrap(
-                    spacing: AppSpacing.lg,
-                    runSpacing: AppSpacing.xs,
+                  Text(
+                    WeatherCondition.labelFor(context, today.weatherCode),
+                    style: context.texts.bodyMedium?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
                     children: [
-                      _InfoChip(
-                        icon: Icons.water_drop_outlined,
-                        label: context.l10n.dashboardHumidityLabel,
-                        value: '${now.relativeHumidity}%',
+                      Expanded(
+                        child: _StatPill(
+                          icon: Icons.water_drop_outlined,
+                          value: '${now.relativeHumidity}%',
+                          label: context.l10n.dashboardHumidityLabel,
+                        ),
                       ),
-                      _InfoChip(
-                        icon: Icons.air_rounded,
-                        label: context.l10n.dashboardWindLabel,
-                        value: '${now.windSpeed.round()} km/h',
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: _StatPill(
+                          icon: Icons.air_rounded,
+                          value: '${now.windSpeed.round()} km/h',
+                          label: context.l10n.dashboardWindLabel,
+                        ),
                       ),
-                      _InfoChip(
-                        icon: Icons.umbrella_outlined,
-                        label: context.l10n.dashboardNext48hRainLabel,
-                        value: '${rainNext48h.toStringAsFixed(1)} mm',
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: _StatPill(
+                          icon: Icons.umbrella_outlined,
+                          value: '${rainNext48h.toStringAsFixed(1)} mm',
+                          label: context.l10n.dashboardNext48hRainLabel,
+                        ),
                       ),
                     ],
                   ),
@@ -254,7 +258,7 @@ class _ForecastSection extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.xl),
         Text(
           context.l10n.dashboardDailyForecastTitle,
           style: context.texts.titleMedium,
@@ -267,6 +271,15 @@ class _ForecastSection extends StatelessWidget {
               index: i + 2,
               child: Card(
                 child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.xs,
+                  ),
+                  leading: Icon(
+                    WeatherCondition.iconFor(day.weatherCode),
+                    color: context.colors.primary,
+                    size: 28,
+                  ),
                   title: Text(DateFormat.MMMEd('pt_BR').format(day.date)),
                   subtitle: Text(
                     '${day.precipitationSum.toStringAsFixed(1)} mm · '
@@ -285,29 +298,51 @@ class _ForecastSection extends StatelessWidget {
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({
+/// Pílula de estatística — usada nos três indicadores abaixo do card
+/// "Agora" (umidade, vento, chuva). `surfaceContainerHigh` é um tom que o
+/// Material 3 já deriva pro modo claro e escuro a partir da cor semente,
+/// então o fundo da pílula nunca precisa de um "if isDarkMode" manual.
+class _StatPill extends StatelessWidget {
+  const _StatPill({
     required this.icon,
-    required this.label,
     required this.value,
+    required this.label,
   });
 
   final IconData icon;
-  final String label;
   final String value;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 18, color: context.colors.onSurfaceVariant),
-        const SizedBox(width: AppSpacing.xs),
-        Text(
-          '$label: $value',
-          style: context.texts.bodySmall,
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.md,
+      ),
+      decoration: BoxDecoration(
+        color: context.colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: context.colors.primary),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            value,
+            style: context.texts.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: context.texts.labelSmall?.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

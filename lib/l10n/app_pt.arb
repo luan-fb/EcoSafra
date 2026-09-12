@@ -41,16 +41,6 @@
     "description": "Aviso de privacidade abaixo do botão de login"
   },
 
-  "dashboardTitle": "Painel",
-  "@dashboardTitle": {
-    "description": "Título da AppBar do painel principal"
-  },
-
-  "dashboardSignOutTooltip": "Sair",
-  "@dashboardSignOutTooltip": {
-    "description": "Tooltip do botão de logout no painel"
-  },
-
   "dashboardDefaultUserName": "Produtor",
   "@dashboardDefaultUserName": {
     "description": "Nome exibido quando a conta Google não tem displayName"
@@ -136,5 +126,62 @@
         "type": "int"
       }
     }
-  }
+  },
+
+  "weatherConditionClearSky": "Céu limpo",
+  "@weatherConditionClearSky": {"description": "Condição climática: código WMO 0"},
+
+  "weatherConditionPartlyCloudy": "Parcialmente nublado",
+  "@weatherConditionPartlyCloudy": {"description": "Condição climática: códigos WMO 1-2"},
+
+  "weatherConditionCloudy": "Nublado",
+  "@weatherConditionCloudy": {"description": "Condição climática: código WMO 3"},
+
+  "weatherConditionFog": "Neblina",
+  "@weatherConditionFog": {"description": "Condição climática: códigos WMO 45, 48"},
+
+  "weatherConditionDrizzle": "Garoa",
+  "@weatherConditionDrizzle": {"description": "Condição climática: códigos WMO 51-57"},
+
+  "weatherConditionRain": "Chuva",
+  "@weatherConditionRain": {"description": "Condição climática: códigos WMO 61-67"},
+
+  "weatherConditionSnow": "Neve",
+  "@weatherConditionSnow": {"description": "Condição climática: códigos WMO 71-77"},
+
+  "weatherConditionRainShowers": "Pancadas de chuva",
+  "@weatherConditionRainShowers": {"description": "Condição climática: códigos WMO 80-82"},
+
+  "weatherConditionSnowShowers": "Pancadas de neve",
+  "@weatherConditionSnowShowers": {"description": "Condição climática: códigos WMO 85, 86"},
+
+  "weatherConditionThunderstorm": "Tempestade",
+  "@weatherConditionThunderstorm": {"description": "Condição climática: códigos WMO 95, 96, 99"},
+
+  "weatherConditionUnknown": "Sem dados",
+  "@weatherConditionUnknown": {"description": "Condição climática: código WMO não reconhecido"},
+
+  "dashboardGreetingMorning": "Bom dia",
+  "@dashboardGreetingMorning": {"description": "Saudação no cabeçalho do painel, antes das 12h"},
+
+  "dashboardGreetingAfternoon": "Boa tarde",
+  "@dashboardGreetingAfternoon": {"description": "Saudação no cabeçalho do painel, entre 12h e 18h"},
+
+  "dashboardGreetingEvening": "Boa noite",
+  "@dashboardGreetingEvening": {"description": "Saudação no cabeçalho do painel, depois das 18h"},
+
+  "dashboardHeaderSubtitle": "Confira a previsão do seu talhão",
+  "@dashboardHeaderSubtitle": {"description": "Subtítulo abaixo da saudação, no cabeçalho do painel"},
+
+  "drawerMenuDashboard": "Painel",
+  "@drawerMenuDashboard": {"description": "Item do menu lateral que leva ao painel"},
+
+  "drawerMenuSchedule": "Agenda",
+  "@drawerMenuSchedule": {"description": "Item do menu lateral para o caderno de agendamento"},
+
+  "drawerMenuComingSoon": "Em breve",
+  "@drawerMenuComingSoon": {"description": "Selo indicando uma seção do menu ainda não disponível"},
+
+  "drawerMenuSignOut": "Sair",
+  "@drawerMenuSignOut": {"description": "Item do menu lateral para encerrar a sessão"}
 }
