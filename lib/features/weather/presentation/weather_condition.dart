@@ -1,4 +1,5 @@
 import 'package:ecosafra/core/extensions/context_extensions.dart';
+import 'package:ecosafra/features/weather/presentation/weather_animation.dart';
 import 'package:flutter/material.dart';
 
 /// Traduz o código WMO que a Open-Meteo devolve (`weather_code`) para algo
@@ -21,6 +22,22 @@ abstract final class WeatherCondition {
         85 || 86 => Icons.ac_unit_rounded,
         95 || 96 || 99 => Icons.thunderstorm_rounded,
         _ => Icons.cloud_queue_rounded,
+      };
+
+  /// Mais grosso que [iconFor]: só existem 3 animações. Neblina e neve
+  /// viram nuvem; garoa, pancadas e tempestade viram chuva. O rótulo de
+  /// [labelFor] continua dizendo o clima exato.
+  static WeatherAnimation animationFor(int code) => switch (code) {
+        0 => WeatherAnimation.sunny,
+        (>= 51 && <= 57) ||
+        (>= 61 && <= 67) ||
+        (>= 80 && <= 82) ||
+        95 ||
+        96 ||
+        99 =>
+          WeatherAnimation.rainy,
+        // Nuvem, neblina, neve e qualquer código desconhecido.
+        _ => WeatherAnimation.cloudy,
       };
 
   static String labelFor(BuildContext context, int code) => switch (code) {
