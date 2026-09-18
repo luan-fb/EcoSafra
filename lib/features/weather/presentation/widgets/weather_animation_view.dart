@@ -1,5 +1,6 @@
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
+import 'package:ecosafra/features/weather/presentation/weather_animation.dart';
 import 'package:ecosafra/features/weather/presentation/weather_condition.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -75,30 +76,69 @@ class WeatherAnimationView extends StatelessWidget {
                 ? const AlwaysStoppedAnimation(stillProgress)
                 : null,
             repeat: true,
-            // Os JSONs são de 60 fps. Num ícone de 120 dp, 30 fps não
-            // mudam nada visível e cortam pela metade o trabalho por
-            // segundo na tela principal do app.
+            // Quatro dos cinco JSONs são de 60 fps (a nuvem já é de 30).
+            // Num ícone de 120 dp, 30 fps não mudam nada visível e cortam
+            // pela metade o trabalho por segundo na tela principal do app.
             frameRate: const FrameRate(30),
-            errorBuilder: (context, error, stackTrace) {
-              // Sem isso a falha some: o card mostra o ícone e ninguém
-              // fica sabendo que a animação não carregou.
-              FlutterError.reportError(
-                FlutterErrorDetails(
-                  exception: error,
-                  stack: stackTrace,
-                  library: 'weather',
-                  context: ErrorDescription('ao carregar ${animation.name}'),
-                ),
-              );
-              return Icon(
-                WeatherCondition.iconFor(weatherCode),
-                size: size / 2,
-                color: context.colors.primary,
-              );
-            },
+            // O Lottie chama o errorBuilder em todo rebuild; o reporte
+            // fica no State do fallback para acontecer uma vez por falha.
+            errorBuilder: (context, error, stackTrace) => _LottieFallback(
+              error: error,
+              stackTrace: stackTrace,
+              animation: animation,
+              icon: WeatherCondition.iconFor(weatherCode),
+              size: size / 2,
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// Ícone estático exibido quando o JSON não carrega.
+///
+/// Stateful só para reportar a falha no `initState`: o `State` sobrevive
+/// aos rebuilds do card (cache → rede, troca de tema), então uma falha
+/// vira um reporte, e não um por rebuild. Se o Lottie for remontado, há
+/// uma nova tentativa de carga e um novo reporte faz sentido.
+class _LottieFallback extends StatefulWidget {
+  const _LottieFallback({
+    required this.error,
+    required this.stackTrace,
+    required this.animation,
+    required this.icon,
+    required this.size,
+  });
+
+  final Object error;
+  final StackTrace? stackTrace;
+  final WeatherAnimation animation;
+  final IconData icon;
+  final double size;
+
+  @override
+  State<_LottieFallback> createState() => _LottieFallbackState();
+}
+
+class _LottieFallbackState extends State<_LottieFallback> {
+  @override
+  void initState() {
+    super.initState();
+    // Sem isso a falha some: o card mostra o ícone e ninguém fica
+    // sabendo que a animação não carregou.
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: widget.error,
+        stack: widget.stackTrace,
+        library: 'weather',
+        context: ErrorDescription('ao carregar ${widget.animation.name}'),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(widget.icon, size: widget.size, color: context.colors.primary);
   }
 }

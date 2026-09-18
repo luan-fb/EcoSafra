@@ -24,8 +24,8 @@ abstract final class WeatherCondition {
         _ => Icons.cloud_queue_rounded,
       };
 
-  /// A partir desta temperatura (inclusive, já arredondada) o céu sem
-  /// chuva vira a animação de frio.
+  /// Até esta temperatura (inclusive, já arredondada) o céu sem chuva
+  /// vira a animação de frio.
   static const coldThresholdCelsius = 16;
 
   /// Mais grosso que [iconFor]: só existem 5 animações. Neblina vira

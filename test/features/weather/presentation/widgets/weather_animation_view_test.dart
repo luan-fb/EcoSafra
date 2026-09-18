@@ -141,10 +141,16 @@ void main() {
   testWidgets('WLOT-08: asset com erro cai no ícone estático e é reportado', (
     tester,
   ) async {
-    await tester.pumpWidget(host(61, bundle: _FailingAssetBundle()));
+    final bundle = _FailingAssetBundle();
+    await tester.pumpWidget(host(61, bundle: bundle));
+    await tester.pump();
+    // Rebuild com a mesma falha (ex.: a previsão da rede chegando depois do
+    // cache): não pode gerar um segundo reporte.
+    await tester.pumpWidget(host(63, bundle: bundle));
     await tester.pump();
 
-    expect(find.byIcon(WeatherCondition.iconFor(61)), findsOneWidget);
+    expect(find.byIcon(WeatherCondition.iconFor(63)), findsOneWidget);
+    // Dois reportes viram "Multiple exceptions" e não casam isFlutterError.
     expect(tester.takeException(), isFlutterError);
   });
 

@@ -62,8 +62,8 @@ void main() {
   });
 
   group('animationFor', () {
-    // Temperaturas de referência: bem acima e no limite do frio (≤ 16°C
-    // depois de arredondar, igual ao número exibido no card).
+    // Temperaturas de referência: uma quente e uma fria, longe do limite
+    // (≤ 16°C arredondado). O limite exato é testado em 16,4 e 16,5.
     const warm = 25.0;
     const cold = 10.0;
 

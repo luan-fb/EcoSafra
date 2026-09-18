@@ -77,7 +77,10 @@ void main() {
     expect(find.text('9.5 mm'), findsOneWidget);
   });
 
-  testWidgets('WLOT-05: o card recebe o código de hoje e a hora atual', (
+  // Afirma `hourly.first` de propósito: é o comportamento atual, não um
+  // requisito. A primeira hora da resposta é meia-noite, bug conhecido com
+  // tarefa própria; quando for corrigido, este teste muda junto.
+  testWidgets('WLOT-05: o card recebe o código de hoje e a 1ª hora', (
     tester,
   ) async {
     final card = await pumpSection(tester);
