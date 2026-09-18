@@ -64,6 +64,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^8.2.1
   intl: ^0.20.2
+  # Renderiza animações exportadas do After Effects (JSON) direto no canvas
+  # do Flutter — sem vídeo/GIF, então escala sem perder nitidez.
+  lottie: ^3.6.1
 
 dev_dependencies:
   flutter_test:
@@ -93,3 +96,4 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/lottie/
