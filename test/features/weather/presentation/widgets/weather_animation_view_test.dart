@@ -145,11 +145,12 @@ void main() {
     await tester.pumpWidget(host(61, bundle: bundle));
     await tester.pump();
     // Rebuild com a mesma falha (ex.: a previsão da rede chegando depois do
-    // cache): não pode gerar um segundo reporte.
-    await tester.pumpWidget(host(63, bundle: bundle));
+    // cache): não pode gerar um segundo reporte. O 80 continua na animação
+    // de chuva, mas tem outro ícone: prova que o fallback acompanha o código.
+    await tester.pumpWidget(host(80, bundle: bundle));
     await tester.pump();
 
-    expect(find.byIcon(WeatherCondition.iconFor(63)), findsOneWidget);
+    expect(find.byIcon(WeatherCondition.iconFor(80)), findsOneWidget);
     // Dois reportes viram "Multiple exceptions" e não casam isFlutterError.
     expect(tester.takeException(), isFlutterError);
   });
