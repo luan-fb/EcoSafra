@@ -1,4 +1,5 @@
 import 'package:ecosafra/core/extensions/context_extensions.dart';
+import 'package:ecosafra/features/weather/presentation/weather_animation.dart';
 import 'package:flutter/material.dart';
 
 /// Traduz o código WMO que a Open-Meteo devolve (`weather_code`) para algo
@@ -22,6 +23,43 @@ abstract final class WeatherCondition {
         95 || 96 || 99 => Icons.thunderstorm_rounded,
         _ => Icons.cloud_queue_rounded,
       };
+
+  /// Até esta temperatura (inclusive, já arredondada) o céu sem chuva
+  /// vira a animação de frio.
+  static const coldThresholdCelsius = 16;
+
+  /// Mais grosso que [iconFor]: só existem 5 animações. Neblina vira
+  /// nuvem; garoa, pancadas e tempestade viram chuva. O rótulo de
+  /// [labelFor] continua dizendo o clima exato.
+  ///
+  /// Frio só substitui céu sem chuva: com chuva, a chuva é o que importa
+  /// para decidir a adubação. A [temperature] é arredondada igual ao
+  /// número que o card mostra, para os dois nunca discordarem.
+  static WeatherAnimation animationFor(
+    int code, {
+    required double temperature,
+  }) {
+    final byCode = switch (code) {
+      0 => WeatherAnimation.sunny,
+      1 || 2 => WeatherAnimation.partlyCloudy,
+      (>= 51 && <= 57) ||
+      (>= 61 && <= 67) ||
+      (>= 80 && <= 82) ||
+      95 ||
+      96 ||
+      99 => WeatherAnimation.rainy,
+      (>= 71 && <= 77) || 85 || 86 => WeatherAnimation.cold,
+      // Encoberto, neblina e qualquer código desconhecido.
+      _ => WeatherAnimation.cloudy,
+    };
+    final isCold = temperature.round() <= coldThresholdCelsius;
+    return switch (byCode) {
+      WeatherAnimation.sunny ||
+      WeatherAnimation.partlyCloudy ||
+      WeatherAnimation.cloudy when isCold => WeatherAnimation.cold,
+      _ => byCode,
+    };
+  }
 
   static String labelFor(BuildContext context, int code) => switch (code) {
         0 => context.l10n.weatherConditionClearSky,

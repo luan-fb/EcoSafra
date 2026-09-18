@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 5,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::para mapeamentos por faixa numerica testar tambem valores reais do interior de cada faixa nao so as bordas",
+      "text": "Para mapeamentos por faixa numérica, testar também valores reais do interior de cada faixa, não só as bordas",
+      "signal": "surviving_mutant",
+      "scope": "mapping",
+      "status": "candidate",
+      "features": [
+        "weather-lottie"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M11/M12 weather_condition.dart:32-34 (mapping)"
+      ],
+      "created": "2026-09-18T22:29:39Z",
+      "last_seen": "2026-09-18T22:29:39Z"
+    },
+    {
+      "id": "L-002",
+      "key": "surviving_mutant::quando um widget novo substitui outro numa pagina testar a pagina e verificar que o widget novo esta no lugar do antigo",
+      "text": "Quando um widget novo substitui outro numa página, testar a página e verificar que o widget novo está no lugar do antigo",
+      "signal": "surviving_mutant",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "weather-lottie"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M13 dashboard_page.dart:214 (presentation)"
+      ],
+      "created": "2026-09-18T22:29:39Z",
+      "last_seen": "2026-09-18T22:29:39Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::criterios de acessibilidade que exigem expor um rotulo devem ter assercao por find bysemanticslabel na tela real",
+      "text": "Critérios de acessibilidade que exigem expor um rótulo devem ter asserção por find.bySemanticsLabel na tela real",
+      "signal": "ac_gap",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "weather-lottie"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "WLOT-09 dashboard_page.dart:219-220 (presentation)"
+      ],
+      "created": "2026-09-18T22:29:39Z",
+      "last_seen": "2026-09-18T22:29:39Z"
+    },
+    {
+      "id": "L-004",
+      "key": "ac_gap::quando um ac exige que um widget mostre o mesmo valor de outra fonte testar no nivel que liga a fonte ao widget nao so a exibicao",
+      "text": "Quando um AC exige que um widget mostre o mesmo valor de outra fonte, testar no nível que liga a fonte ao widget, não só a exibição",
+      "signal": "ac_gap",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "weather-lottie"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "WLOT-16 dashboard_page.dart:202 (presentation)"
+      ],
+      "created": "2026-09-18T23:37:11Z",
+      "last_seen": "2026-09-18T23:37:11Z"
+    }
+  ]
+}
