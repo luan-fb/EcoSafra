@@ -8,6 +8,7 @@ import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_state.d
 import 'package:ecosafra/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:ecosafra/features/dashboard/presentation/widgets/dashboard_header.dart';
 import 'package:ecosafra/features/dashboard/presentation/widgets/decision_card.dart';
+import 'package:ecosafra/features/dashboard/presentation/widgets/now_weather_card.dart';
 import 'package:ecosafra/features/weather/domain/entities/fertilizer_advice.dart';
 import 'package:ecosafra/features/weather/domain/entities/weather_forecast.dart';
 import 'package:ecosafra/features/weather/presentation/weather_condition.dart';
@@ -198,64 +199,10 @@ class _ForecastSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         FadeSlideIn.staggered(
           index: 1,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                children: [
-                  Text(
-                    context.l10n.dashboardNowCardTitle,
-                    style: context.texts.labelLarge?.copyWith(
-                      color: context.colors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Icon(
-                    WeatherCondition.iconFor(today.weatherCode),
-                    size: 56,
-                    color: context.colors.primary,
-                  ),
-                  Text(
-                    '${now.temperature.round()}°',
-                    style: context.texts.displayLarge,
-                  ),
-                  Text(
-                    WeatherCondition.labelFor(context, today.weatherCode),
-                    style: context.texts.bodyMedium?.copyWith(
-                      color: context.colors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatPill(
-                          icon: Icons.water_drop_outlined,
-                          value: '${now.relativeHumidity}%',
-                          label: context.l10n.dashboardHumidityLabel,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _StatPill(
-                          icon: Icons.air_rounded,
-                          value: '${now.windSpeed.round()} km/h',
-                          label: context.l10n.dashboardWindLabel,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: _StatPill(
-                          icon: Icons.umbrella_outlined,
-                          value: '${rainNext48h.toStringAsFixed(1)} mm',
-                          label: context.l10n.dashboardNext48hRainLabel,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          child: NowWeatherCard(
+            now: now,
+            weatherCode: today.weatherCode,
+            rainNext48h: rainNext48h,
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
@@ -294,55 +241,6 @@ class _ForecastSection extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-/// Pílula de estatística — usada nos três indicadores abaixo do card
-/// "Agora" (umidade, vento, chuva). `surfaceContainerHigh` é um tom que o
-/// Material 3 já deriva pro modo claro e escuro a partir da cor semente,
-/// então o fundo da pílula nunca precisa de um "if isDarkMode" manual.
-class _StatPill extends StatelessWidget {
-  const _StatPill({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.md,
-      ),
-      decoration: BoxDecoration(
-        color: context.colors.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 20, color: context.colors.primary),
-          const SizedBox(height: AppSpacing.xxs),
-          Text(
-            value,
-            style: context.texts.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: context.texts.labelSmall?.copyWith(
-              color: context.colors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
