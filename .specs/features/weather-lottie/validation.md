@@ -1,71 +1,90 @@
-# weather-lottie Validation
+# weather-lottie Validation (spec v2, iteração 3 de 3)
 
 **Date**: 2026-09-18
-**Spec**: `.specs/features/weather-lottie/spec.md`
-**Diff range**: uncommitted working tree sobre `7fe379d` (HEAD). Arquivos da feature: `pubspec.yaml`, `pubspec.lock`, `assets/lottie/{sunny,cloudy,rainy}.json`, `lib/features/weather/presentation/weather_animation.dart`, `lib/features/weather/presentation/weather_condition.dart`, `lib/features/weather/presentation/widgets/weather_animation_view.dart`, `lib/features/dashboard/presentation/widgets/now_weather_card.dart`, `lib/features/dashboard/presentation/pages/dashboard_page.dart`, `test/features/weather/presentation/weather_condition_test.dart`, `test/features/weather/presentation/widgets/weather_animation_view_test.dart`, `test/features/dashboard/presentation/widgets/now_weather_card_test.dart`. A feature schedule/Firestore, também não commitada, ficou fora do escopo.
+**Spec**: `.specs/features/weather-lottie/spec.md` (v2, WLOT-01..17)
+**Diff range**: working tree não commitado contra HEAD `71e7675`. Arquivos: `assets/lottie/partly_cloudy.json`, `assets/lottie/cold.json`, `lib/features/weather/presentation/weather_animation.dart`, `lib/features/weather/presentation/weather_condition.dart`, `lib/features/weather/presentation/widgets/weather_animation_view.dart`, `lib/features/dashboard/presentation/widgets/now_weather_card.dart`, `lib/features/dashboard/presentation/pages/dashboard_page.dart`, `test/features/weather/presentation/weather_condition_test.dart`, `test/features/weather/presentation/widgets/weather_animation_view_test.dart`, `test/features/dashboard/presentation/widgets/now_weather_card_test.dart`, e na iteração 3 `lib/features/dashboard/presentation/widgets/forecast_section.dart` (a `_ForecastSection` extraída sem mudar a lógica) e `test/features/dashboard/presentation/widgets/forecast_section_test.dart`. A feature Agendamento ficou fora do escopo.
 **Verifier**: sub-agente independente (autor ≠ verificador)
-**Iteração**: 2 de 3 (re-verificação depois do Fix 1 e do Fix 2 da iteração 1)
 
-**Verdict**: PASS ✅
+## Validation: weather-lottie - PASS ✅
+
+**Verdict**: PASS ✅. A lacuna da iteração 2 (WLOT-16 no nível da página) foi fechada pela extração da `ForecastSection` e pelo teste dela. As demais evidências da iteração 2 continuam valendo, porque os arquivos delas não mudaram nesta rodada.
 
 ---
 
 ## Task Completion
 
-Não existe `tasks.md`. A verificação foi ancorada nos ACs do `spec.md`. Os fixes da iteração 1 foram aplicados:
-
-| Fix | Status | Notes |
-| --- | ------ | ----- |
-| Fix 1: interior das faixas (WLOT-03) | ✅ Done | Varredura 0..99 contra as listas da spec, montadas no próprio teste |
-| Fix 2: card "Agora" e rótulo (WLOT-05/09) | ✅ Done | Card extraído para `NowWeatherCard`, com teste de widget próprio |
+Não existe `tasks.md`. A verificação foi ancorada nos ACs do `spec.md` v2.
 
 ---
 
 ## Spec-Anchored Acceptance Criteria
 
+Abreviações: `TC` = `test/features/weather/presentation/weather_condition_test.dart`, `TV` = `test/features/weather/presentation/widgets/weather_animation_view_test.dart`, `TK` = `test/features/dashboard/presentation/widgets/now_weather_card_test.dart`.
+
 | Criterion | Spec-defined outcome | `file:line` + assertion | Result |
 | --------- | -------------------- | ----------------------- | ------ |
-| WLOT-01: código 0 → sunny | `WeatherAnimation.sunny` | `test/features/weather/presentation/weather_condition_test.dart:69` + `:101` `expect(WeatherCondition.animationFor(code), expected)`; varredura `:110`, `:126-130` | ✅ PASS |
-| WLOT-02: 1, 2, 3, 45, 48, 71–77, 85, 86 → cloudy | `WeatherAnimation.cloudy` | `weather_condition_test.dart:71-79` + `:101`; varredura 0..99 `:119-131` (tudo fora de sunny/rainy → cloudy) | ✅ PASS |
-| WLOT-03: 51–57, 61–67, 80–82, 95, 96, 99 → rainy | `WeatherAnimation.rainy` para todo código das faixas | `weather_condition_test.dart:111-118` (conjunto `rainy` montado das faixas da spec) + `:126-130` `expect(WeatherCondition.animationFor(code), expected, reason: 'código $code')` | ✅ PASS (M11 e M12 agora são mortos) |
-| WLOT-04: código desconhecido → cloudy | `WeatherAnimation.cloudy` | `weather_condition_test.dart:92-96` (-1, 4, 50, 58, 100) + `:101` | ✅ PASS |
-| WLOT-05: card "Agora" renderiza o Lottie do código de hoje, no lugar do ícone | `WeatherAnimationView(weatherCode)` com asset `assets/lottie/<anim>.json`; sem `Icon(iconFor)` | Card: `test/features/dashboard/presentation/widgets/now_weather_card_test.dart:49` `expect(view.weatherCode, 0)`; `:51` `expect(find.byIcon(WeatherCondition.iconFor(0)), findsNothing)`. Asset: `test/features/weather/presentation/widgets/weather_animation_view_test.dart:56` `expect(assetOf(lottieIn(tester)), expected.assetPath)`; JSON válido `:66` | ✅ PASS (veja o risco residual M18) |
-| WLOT-06: loop contínuo sem redução de movimento | `animate: true`, `repeat: true` | `weather_animation_view_test.dart:76-77` | ✅ PASS |
-| WLOT-07: parada com `disableAnimations` | `animate: false` | `weather_animation_view_test.dart:84` `expect(lottieIn(tester).animate, isFalse)` | ✅ PASS |
-| WLOT-08: falha no asset → `iconFor` do mesmo código | `Icon(WeatherCondition.iconFor(61))` | `weather_animation_view_test.dart:93` `expect(find.byIcon(WeatherCondition.iconFor(61)), findsOneWidget)` | ✅ PASS |
-| WLOT-09: leitor de tela recebe `labelFor`, não a animação | rótulo "Céu limpo" exposto; animação sem rótulo próprio | Rótulo: `now_weather_card_test.dart:64-65` `find.bySemanticsLabel(RegExp(r'^Céu limpo$', multiLine: true))` `findsOneWidget`. Animação silenciosa: `weather_animation_view_test.dart:105` `expect(node.label, isEmpty)` | ✅ PASS |
-| WLOT-10: cross-fade na troca | as duas animações coexistem em `FadeTransition` e depois fica só a nova | `weather_animation_view_test.dart:119-125`, `:126-132`, `:137-140` | ✅ PASS |
-| WLOT-11: mesma animação não reinicia | mesmo `State` | `weather_animation_view_test.dart:152-153` `same(before)` | ✅ PASS |
+| WLOT-01: 0 com mais de 16° → sunny | `sunny` | `test/features/weather/presentation/weather_condition_test.dart:72` + `:101-104` `expect(WeatherCondition.animationFor(code, temperature: warm), expected)`; varredura `TC:169-174` | ✅ PASS |
+| WLOT-02: 3, 45, 48 com mais de 16° → cloudy | `cloudy` | `TC:75-77` + `:101-104`; varredura `TC:170-174` | ✅ PASS |
+| WLOT-03: faixas de chuva → rainy em qualquer temperatura | `rainy` a 25° e a 10° | `TC:78-90` (bordas a 25°); `TC:118-125` `expect(animationFor(code, temperature: cold), WeatherAnimation.rainy)`; varredura 0..99 a 25° e a 10° `TC:151-180` | ✅ PASS |
+| WLOT-04: desconhecido com mais de 16° → cloudy | `cloudy` | `TC:92-96` (-1, 4, 50, 58, 100) + `:101-104` | ✅ PASS |
+| WLOT-05: card "Agora" com o Lottie mapeado, sem o ícone | `WeatherAnimationView(código, temperatura do card)` e sem `Icon(iconFor)`; o asset mapeado é renderizado | `test/features/dashboard/presentation/widgets/now_weather_card_test.dart:53` `expect(view.weatherCode, 0)`; `:55` `expect(view.temperature, currentHour.temperature)`; `:57` `findsNothing` no ícone; asset: `TV:89` `expect(assetOf(lottieIn(tester)), expected.assetPath)` para sunny, partlyCloudy, cloudy, rainy e cold; bundle e JSON válidos `TV:100-102` ; wiring da seção: `test/features/dashboard/presentation/widgets/forecast_section_test.dart:84` `expect(card.weatherCode, forecast.daily.first.weatherCode)` (daily = [0, 61]); `:85` `expect(card.currentHour, forecast.hourly.first)` | ✅ PASS (M18 fechado: P2 morto) |
+| WLOT-06: loop sem redução de movimento | controller interno, `animate: true`, `repeat: true` | `test/features/weather/presentation/widgets/weather_animation_view_test.dart:113` `controller isNull`; `:114` `animate isTrue`; `:115` `repeat isTrue` | ✅ PASS |
+| WLOT-07: quadro parado com ≥ 10% da área desenhada | parado em `stillProgress`; ≥ 0,10 da área com pixel | `TV:124` `isA<AlwaysStoppedAnimation<double>>()`; `:125` `controller!.value == stillProgress`; `:133-136` `drawnFraction(composition, stillProgress) >= 0.10` para as 5 animações. A redução de movimento é ligada pela plataforma (`TV:66-67`) | ✅ PASS |
+| WLOT-08: falha → `iconFor` do código e erro reportado ao `FlutterError` | `Icon(iconFor(61))` + `FlutterError` reportado | `TV:147` `findsOneWidget`; `:148` `expect(tester.takeException(), isFlutterError)` | ✅ PASS |
+| WLOT-09: leitor de tela recebe `labelFor` e nada da animação | "Céu limpo" exposto; a animação sem rótulo | `TK:69-71` `bySemanticsLabel(RegExp(r'^Céu limpo$', multiLine: true))` `findsOneWidget`; `TV:159` `bySemanticsLabel(RegExp(r'\S'))` `findsNothing` | ✅ PASS |
+| WLOT-10: cross-fade | as duas coexistem com opacidade em (0,1) e depois fica só a nova | `TV:179-185` `unorderedEquals([sunny, rainy])`; `:194-195` `hasLength(2)`, `everyElement(inExclusiveRange(0, 1))`; `:200` resta rainy | ✅ PASS |
+| WLOT-11: mesma animação não reinicia | mesmo `State` | `TV:212-213` `same(before)` | ✅ PASS |
+| WLOT-12: 1, 2 com mais de 16° → partlyCloudy | `partlyCloudy` | `TC:73-74` + `:101-104`; varredura `TC:165` | ✅ PASS |
+| WLOT-13: 71–77, 85, 86 → cold | `cold` em qualquer temperatura | `TC:82-87` (a 25°); varredura `TC:159`, `:163` a 25° e a 10° | ✅ PASS |
+| WLOT-14: arredondado ≤ 16 troca sunny, partlyCloudy e cloudy por cold | `cold`; 16,4 → cold; 16,5 → sunny | `TC:109-114` (0, 1, 2, 3, 45, -1 a 10°); `TC:130-134` `animationFor(0, temperature: 16.4) == cold`; `TC:137-141` `animationFor(0, temperature: 16.5) == sunny`; temperatura do card repassada `TK:55` | ✅ PASS |
+| WLOT-15: no máximo 30 fps | `FrameRate(30)` | `TV:165` `expect(lottieIn(tester).frameRate, const FrameRate(30))` | ✅ PASS |
+| WLOT-16: a pílula mostra o **mesmo** `rainNext48h` que a decisão usou | valor da pílula == `advice.rainNext48h` | Só no nível do card: `TK:79-80` `find.text('12.3 mm')` `findsOneWidget`, que prova que o card exibe o valor recebido. A origem (`advice.rainNext48h`, `lib/features/dashboard/presentation/pages/dashboard_page.dart:202`) não tem teste, e nenhum teste referencia `DashboardPage` Iteração 3: `test/features/dashboard/presentation/widgets/forecast_section_test.dart:76` `expect(card.rainNext48h, advice.rainNext48h)` com advice = 9,5 e soma do hourly = 6; `:77` `expect(find.text('9.5 mm'), findsOneWidget)` | ✅ PASS |
+| WLOT-17: com redução de movimento, troca sem transição | no primeiro quadro após a troca só resta a nova | `TV:225` `findsOneWidget`; `:226` asset rainy | ✅ PASS |
 
-**Status**: ✅ Todos os ACs cobertos com asserção no resultado exigido pela spec
+**Edge cases**
+- [x] Código negativo ou > 99 → desconhecido: `TC:92`, `:96` a 25° (cloudy); `TC:109` com -1 a 10° (cold)
+- [x] Asset corrompido, ausente ou não declarado: a falha de carga está coberta em `TV:144-148`; a declaração no pubspec é verificada ao carregar pelo `rootBundle` em `TV:100`
+- [x] 16,4 → frio; 16,5 → não frio: `TC:130-141`
 
-### Avaliação do matcher de WLOT-09
+**Status**: 17/17 ACs com evidência que confere o resultado da spec.
 
-O `Card` é um semantic container, e o Flutter junta os textos filhos num nó só ("Agora\n28°\nCéu limpo\n…"). É esse nó que o TalkBack e o VoiceOver leem. A spec exige que o rótulo seja **exposto** ao leitor de tela, e não que ele seja um nó isolado. `RegExp(r'^Céu limpo$', multiLine: true)` exige a linha inteira exata dentro do nó lido, com âncoras nas duas pontas. Não aceita substring solta nem texto parecido. O matcher **não enfraquece** o teste: os mutantes M14 (texto fixo "Nublado"), M15 (Text removido) e M16 (`labelFor` com código errado) foram todos mortos por ele. Trocar para a string exata testaria uma estrutura de semântica que a spec não pede.
+### Pontos já conhecidos pelo coordenador
+
+Os dois pontos conhecidos da iteração 2 estão fechados:
+- **M18** (dia de hoje): agora testado em `forecast_section_test.dart:84`, e o mutante P2 foi morto.
+- **WLOT-16 na seção** (`forecast_section.dart:73`, `rainNext48h: advice.rainNext48h`): agora testado em `forecast_section_test.dart:76-77`, e o mutante P1 foi morto.
 
 ---
 
 ## Discrimination Sensor
 
-Scratch: `git worktree add --detach <scratchpad>/wt2 HEAD` com cópia dos arquivos da feature, sem a feature schedule. `flutter pub get`, `flutter analyze` limpo e 84/84 testes verdes antes das mutações. Cada mutante rodou a **suíte completa** e foi revertido por backup. Worktree removida com `git worktree remove --force`. `git status --porcelain` do tree real ficou **idêntico** ao baseline desta iteração.
+Scratch: `git worktree add --detach <scratchpad>/wt3 HEAD` + cópia dos 10 arquivos da feature. `flutter pub get`, analyze limpo, 82/82 nos arquivos afetados antes das mutações. Cada mutante rodou **só o arquivo de teste afetado** e foi revertido por backup. Worktree removida com `git worktree remove --force`. `git status --porcelain` real ficou **idêntico** ao baseline. Nada de stash.
 
 | # | File:line | Description | Killed? |
 | - | --------- | ----------- | ------- |
-| M11 | `lib/features/weather/presentation/weather_condition.dart:32` | `(>= 51 && <= 57)` → `51 \|\| 57` | ✅ Killed (varredura 0..99) |
-| M12 | `weather_condition.dart:33-34` | `61 \|\| 63 \|\| 67` e `80 \|\| 82` | ✅ Killed (varredura 0..99) |
-| M13 | `lib/features/dashboard/presentation/widgets/now_weather_card.dart:40` | `WeatherAnimationView` → `Icon(WeatherCondition.iconFor(weatherCode))` | ✅ Killed (WLOT-05) |
-| M14 | `now_weather_card.dart:46` | `labelFor(...)` → texto fixo `'Nublado'` | ✅ Killed (WLOT-09) |
-| M15 | `now_weather_card.dart:45-50` | `Text(labelFor)` removido | ✅ Killed (WLOT-09) |
-| M16 | `now_weather_card.dart:46` | `labelFor(context, weatherCode)` → `labelFor(context, 3)` | ✅ Killed (WLOT-09) |
-| M17 | `now_weather_card.dart:40` | `WeatherAnimationView(weatherCode: 3)` (código fixo) | ✅ Killed (WLOT-05) |
-| M18 | `lib/features/dashboard/presentation/pages/dashboard_page.dart:204` | `today.weatherCode` → `forecast.daily.last.weatherCode` | ⚠️ Survived, risco residual fora do escopo (ver abaixo) |
+| N1 | `lib/features/weather/presentation/weather_condition.dart:55` | limite `<= 16` → `< 16` | ✅ Killed (`TC:130`, 16,4°) |
+| N2 | `weather_condition.dart:55` | sem arredondamento: `temperature <= 16` | ✅ Killed (`TC:130`, 16,4°) |
+| N3 | `weather_condition.dart:57-59` | `rainy` entra na troca pelo frio (a chuva perde para o frio) | ✅ Killed (`TC:118`, varredura `TC:148`) |
+| N4 | `lib/features/weather/presentation/widgets/weather_animation_view.dart:31` | `stillProgress` 0,5 → 0,0 | ✅ Killed (`TV:130`, cloudy < 10%) |
+| N5 | `weather_animation_view.dart:81` | `frameRate` removido | ✅ Killed (`TV:163`) |
+| N6 | `weather_animation_view.dart:85-92` | `FlutterError.reportError` removido | ✅ Killed (`TV:141`) |
+| N7 | `weather_animation_view.dart:68` | duração do switch ignora `reduceMotion` | ✅ Killed (`TV:216`) |
+| N8 | `lib/features/dashboard/presentation/widgets/now_weather_card.dart:42` | `temperature: currentHour.windSpeed` | ✅ Killed (`TK:55`) |
 
-Os mutantes M1 a M10 da iteração 1 miravam `weather_animation_view.dart` e `weather_animation_view_test.dart`, que não mudaram. Os dez foram mortos naquela rodada e o resultado continua valendo.
+Ficaram fora por causa do orçamento de 8 mutantes: partlyCloudy (1/2) e neve → cold. Os dois já estão presos por asserção de valor exato por código (`TC:73-74`, `TC:82-87`) e pela varredura 0..99 a 25° e 10° (`TC:169-180`), que na rodada anterior matou mutantes equivalentes de faixa (M11 e M12).
 
-**M18, avaliação**: a escolha de *qual dia* alimenta o card (`today = forecast.daily.first`, `dashboard_page.dart:160`) já existia antes desta feature. O `Icon(iconFor(today.weatherCode))` antigo usava a mesma fonte, e ela nunca foi testada. A spec registra na Assumption "Código usado no card Agora" que a feature **não muda a fonte de dados**. A linha 204 só repassa o mesmo valor ao widget novo. Testá-la exige um teste do `DashboardPage` com DI do Modular e `AuthCubit`, que é trabalho de cobertura da página e não desta feature. Por isso M18 fica registrado como risco residual e não bloqueia. Veja a recomendação em Fix Plans.
+### Iteração 3 (só `forecast_section.dart`, rodando só `forecast_section_test.dart`)
 
-**Sensor depth**: lightweight ampliado (7 mutações da feature nesta iteração, mais 10 da iteração 1)
-**Result**: 7/7 mutações no código da feature mortas; 1 mutante de wiring pré-existente sobreviveu (M18, não bloqueante). PASS ✅
+Scratch `wt4` (worktree em HEAD + arquivos da feature), baseline verde; worktree removida; porcelain real idêntico ao baseline.
+
+| # | File:line | Description | Killed? |
+| - | --------- | ----------- | ------- |
+| P1 | `lib/features/dashboard/presentation/widgets/forecast_section.dart:73` | `rainNext48h` volta a ser a soma local do `hourly` (6 em vez de 9,5) | ✅ Killed (`forecast_section_test.dart:76`) |
+| P2 | `forecast_section.dart:31` | `daily.first` → `daily.last` | ✅ Killed (`forecast_section_test.dart:84`) |
+| P3 | `forecast_section.dart:30` | `hourly.first` → `hourly.last` | ✅ Killed (`forecast_section_test.dart:85`) |
+
+**Sensor depth**: lightweight ampliado (8 na iteração 2 + 3 na iteração 3, dentro do orçamento)
+**Resultado do sensor**: 11/11 mutantes mortos (8 na iteração 2 + 3 na iteração 3)
 
 ---
 
@@ -73,65 +92,43 @@ Os mutantes M1 a M10 da iteração 1 miravam `weather_animation_view.dart` e `we
 
 | Principle | Status |
 | --------- | ------ |
-| Minimum code | ✅ |
-| Surgical changes | ✅ A extração do `NowWeatherCard` move o bloco sem mudar o comportamento. Foi o que tornou o card testável sem DI; `_StatPill` foi junto porque só esse card usa |
-| No scope creep | ✅ "Próximos dias" continua com ícone estático |
-| Matches patterns | ✅ Mesma pasta `dashboard/presentation/widgets/` do `DecisionCard` e do `DashboardHeader` |
+| Minimum code | ✅ Regra do frio num segundo `switch` com guard; `stillProgress` como constante documentada |
+| Surgical changes | ✅ A página só troca a origem de `rainNext48h` e renomeia `now` → `currentHour` |
+| No scope creep | ✅ O bug de `hourly.first` ficou registrado como fora do escopo e não foi mexido |
+| Matches patterns | ✅ Usa `context.reduceMotion` e `AppMotion.medium`, que já existem no projeto |
 | Spec-anchored outcome check | ✅ |
-| Per-layer Coverage Expectation | ✅ Mapeamento com cobertura 1:1 e varredura completa; widget e card com asserção de valor |
-| Every test maps to a spec requirement | ✅ Todos citam WLOT-xx, edge case ou Assumption (nome dos assets) |
-| Documented guidelines followed | ✅ none - strong defaults applied; `flutter analyze` limpo |
+| Per-layer Coverage Expectation | ✅ Mapeamento 1:1 com varredura; widget, card e seção com asserção de valor |
+| Every test maps to a spec requirement | ✅ Todos citam WLOT-xx ou edge case |
+| Documented guidelines followed | ✅ none - strong defaults applied; analyze limpo |
 
----
-
-## Edge Cases
-
-- [x] Código negativo ou > 99 → cloudy: `weather_condition_test.dart:92` (-1) e `:96` (100)
-- [x] Asset corrompido ou ausente → ícone estático: `weather_animation_view_test.dart:90-93`
+Observação menor (não bloqueia): o parâmetro `bundle` do `WeatherAnimationView` só existe para injetar um bundle nos testes. A produção passa nulo. É aceitável porque imita o `Image.asset`.
 
 ---
 
 ## Gate Check
 
-- **Gate command**: `flutter analyze` + `flutter test`
-- **Result**: analyze `No issues found!` (exit 0). Testes: 93 passaram, 0 falharam, 0 pulados (exit 0, tree real com a feature schedule)
-- **Test count before feature**: 44 (HEAD `7fe379d`)
-- **Test count after feature**: 84 só com a feature (medido no scratch); 93 no tree real (+9 da feature schedule, fora do escopo)
-- **Delta**: +40 testes da feature; nenhum teste removido ou enfraquecido
+- **Gate command**: `flutter analyze` + `flutter test` (tree real, rodado uma vez)
+- **Result** (iteração 3): analyze sem issues (exit 0). Testes: 115 passaram, 0 falharam, 0 pulados (exit 0; inclui o Agendamento). Na iteração 2 eram 113; os +2 são do `forecast_section_test.dart`
+- **Arquivos de teste da feature**: 82 testes, todos verdes no scratch sem o Agendamento
 - **Skipped tests**: nenhum
 - **Failures**: nenhuma
+- **Integridade**: nenhum teste removido; as asserções ficaram mais fortes que na v1 (opacidade no cross-fade, bundle real, pixels desenhados)
 
 ---
 
 ## Fix Plans
 
-Nenhum fix bloqueante.
-
-### Recomendação (não bloqueante): teste da página para o wiring do dia
-
-- **Root cause**: M18. Nenhum teste prova que o `DashboardPage` passa o código de **hoje** (`forecast.daily.first`) ao card. É um comportamento anterior a esta feature.
-- **Sugestão**: quando existir um teste de widget do `DashboardPage` (com `DashboardCubit` mockado via `mocktail`/`bloc_test`, que já estão nas dev_dependencies), verificar `NowWeatherCard.weatherCode == forecast.daily.first.weatherCode` com um `daily` de códigos diferentes.
-- **Priority**: Minor, fora do escopo
+Nenhum. O Fix 1 da iteração 2 (WLOT-16 e M18 no nível da seção) foi aplicado e verificado.
 
 ---
 
 ## Requirement Traceability Update
 
-Proposta para o orquestrador aplicar no `spec.md`. O Verifier não edita o spec.
+Aplicado no `spec.md` a pedido do orquestrador.
 
-| Requirement | Previous Status | New Status |
-| ----------- | --------------- | ---------- |
-| WLOT-01 | Implementing | ✅ Verified |
-| WLOT-02 | Implementing | ✅ Verified |
-| WLOT-03 | Implementing | ✅ Verified |
-| WLOT-04 | Implementing | ✅ Verified |
-| WLOT-05 | Implementing | ✅ Verified |
-| WLOT-06 | Implementing | ✅ Verified |
-| WLOT-07 | Implementing | ✅ Verified |
-| WLOT-08 | Implementing | ✅ Verified |
-| WLOT-09 | Implementing | ✅ Verified |
-| WLOT-10 | Implementing | ✅ Verified |
-| WLOT-11 | Implementing | ✅ Verified |
+| Requirement | New Status |
+| ----------- | ---------- |
+| WLOT-01..17 | ✅ Verified (aplicado no `spec.md`) |
 
 ---
 
@@ -139,12 +136,8 @@ Proposta para o orquestrador aplicar no `spec.md`. O Verifier não edita o spec.
 
 **Overall**: ✅ Ready
 
-**Spec-anchored check**: 11/11 ACs batem com o resultado da spec; 0 gaps de precisão
-**Sensor**: 7/7 mutações da feature mortas nesta iteração (10/10 na anterior); 1 sobrevivente pré-existente e fora do escopo (M18)
-**Gate**: 93 passaram, 0 falharam; analyze limpo
+**Spec-anchored check**: 17/17 ACs batem com o resultado da spec; 0 gaps de precisão
+**Sensor**: 11/11 mutações mortas (8 na iteração 2 + 3 na iteração 3)
+**Gate**: 115 passaram, 0 falharam; analyze limpo
 
-**What works**: mapeamento WMO completo (varredura 0..99); card "Agora" com animação no lugar do ícone; rótulo exposto ao leitor de tela e animação silenciosa; loop, redução de movimento, fallback, cross-fade e não-reinício.
-
-**Issues found**: nenhum bloqueante. M18 é risco residual do wiring da página, anterior à feature.
-
-**Next steps**: aplicar a rastreabilidade no `spec.md` e commitar pela skill `commit`, depois do ok do usuário.
+**Next steps**: commit pela skill `commit`, depois do ok do usuário.

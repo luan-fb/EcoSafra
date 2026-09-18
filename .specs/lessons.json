@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 4,
+  "next_id": 5,
   "lessons": [
     {
       "id": "L-001",
@@ -58,6 +58,24 @@
       ],
       "created": "2026-09-18T22:29:39Z",
       "last_seen": "2026-09-18T22:29:39Z"
+    },
+    {
+      "id": "L-004",
+      "key": "ac_gap::quando um ac exige que um widget mostre o mesmo valor de outra fonte testar no nivel que liga a fonte ao widget nao so a exibicao",
+      "text": "Quando um AC exige que um widget mostre o mesmo valor de outra fonte, testar no nível que liga a fonte ao widget, não só a exibição",
+      "signal": "ac_gap",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "weather-lottie"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "WLOT-16 dashboard_page.dart:202 (presentation)"
+      ],
+      "created": "2026-09-18T23:37:11Z",
+      "last_seen": "2026-09-18T23:37:11Z"
     }
   ]
 }

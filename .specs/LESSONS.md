@@ -32,6 +32,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: WLOT-09 dashboard_page.dart:219-220 (presentation)
 - last seen: 2026-09-18T22:29:39Z
 
+### L-004 - Quando um AC exige que um widget mostre o mesmo valor de outra fonte, testar no nível que liga a fonte ao widget, não só a exibição
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `presentation` · harmful: 0
+- features: weather-lottie
+- evidence: WLOT-16 dashboard_page.dart:202 (presentation)
+- last seen: 2026-09-18T23:37:11Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
