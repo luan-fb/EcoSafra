@@ -10,7 +10,7 @@ import 'package:lottie/lottie.dart';
 void main() {
   setUp(() => Lottie.cache.clear());
 
-  final now = HourlyForecastPoint(
+  final currentHour = HourlyForecastPoint(
     time: DateTime(2026, 9, 18, 10),
     precipitation: 0,
     precipitationProbability: 0,
@@ -19,7 +19,11 @@ void main() {
     windSpeed: 12,
   );
 
-  Future<void> pumpCard(WidgetTester tester, {required int weatherCode}) {
+  Future<void> pumpCard(
+    WidgetTester tester, {
+    required int weatherCode,
+    double rainNext48h = 0,
+  }) {
     return tester.pumpWidget(
       MaterialApp(
         locale: const Locale('pt'),
@@ -28,9 +32,9 @@ void main() {
         home: Scaffold(
           body: SingleChildScrollView(
             child: NowWeatherCard(
-              now: now,
+              currentHour: currentHour,
               weatherCode: weatherCode,
-              rainNext48h: 0,
+              rainNext48h: rainNext48h,
             ),
           ),
         ),
@@ -47,6 +51,8 @@ void main() {
       find.byType(WeatherAnimationView),
     );
     expect(view.weatherCode, 0);
+    // WLOT-14: a animação decide o frio pela mesma temperatura do card.
+    expect(view.temperature, currentHour.temperature);
     // O ícone estático de antes (sol) não pode continuar no card.
     expect(find.byIcon(WeatherCondition.iconFor(0)), findsNothing);
   });
@@ -65,5 +71,12 @@ void main() {
       findsOneWidget,
     );
     semantics.dispose();
+  });
+
+  testWidgets('WLOT-16: a pílula de chuva mostra o valor recebido', (
+    tester,
+  ) async {
+    await pumpCard(tester, weatherCode: 0, rainNext48h: 12.34);
+    expect(find.text('12.3 mm'), findsOneWidget);
   });
 }

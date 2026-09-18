@@ -9,13 +9,13 @@ import 'package:flutter/material.dart';
 /// condição e os três indicadores (umidade, vento, chuva em 48h).
 class NowWeatherCard extends StatelessWidget {
   const NowWeatherCard({
-    required this.now,
+    required this.currentHour,
     required this.weatherCode,
     required this.rainNext48h,
     super.key,
   });
 
-  final HourlyForecastPoint now;
+  final HourlyForecastPoint currentHour;
 
   /// Código WMO do dia: a previsão horária não traz código de clima.
   final int weatherCode;
@@ -37,9 +37,12 @@ class NowWeatherCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            WeatherAnimationView(weatherCode: weatherCode),
+            WeatherAnimationView(
+              weatherCode: weatherCode,
+              temperature: currentHour.temperature,
+            ),
             Text(
-              '${now.temperature.round()}°',
+              '${currentHour.temperature.round()}°',
               style: context.texts.displayLarge,
             ),
             Text(
@@ -54,7 +57,7 @@ class NowWeatherCard extends StatelessWidget {
                 Expanded(
                   child: _StatPill(
                     icon: Icons.water_drop_outlined,
-                    value: '${now.relativeHumidity}%',
+                    value: '${currentHour.relativeHumidity}%',
                     label: context.l10n.dashboardHumidityLabel,
                   ),
                 ),
@@ -62,7 +65,7 @@ class NowWeatherCard extends StatelessWidget {
                 Expanded(
                   child: _StatPill(
                     icon: Icons.air_rounded,
-                    value: '${now.windSpeed.round()} km/h',
+                    value: '${currentHour.windSpeed.round()} km/h',
                     label: context.l10n.dashboardWindLabel,
                   ),
                 ),

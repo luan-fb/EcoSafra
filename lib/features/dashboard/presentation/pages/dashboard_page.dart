@@ -156,13 +156,8 @@ class _ForecastSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = forecast.hourly.first;
+    final currentHour = forecast.hourly.first;
     final today = forecast.daily.first;
-
-    // Soma a chuva das próximas ~48h (a API devolve uma entrada por hora).
-    final next48h = forecast.hourly.take(48);
-    final rainNext48h =
-        next48h.fold<double>(0, (total, point) => total + point.precipitation);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,9 +195,11 @@ class _ForecastSection extends StatelessWidget {
         FadeSlideIn.staggered(
           index: 1,
           child: NowWeatherCard(
-            now: now,
+            currentHour: currentHour,
             weatherCode: today.weatherCode,
-            rainNext48h: rainNext48h,
+            // O mesmo número que a decisão usou: se o motor mudar a janela,
+            // a pílula e o card de decisão continuam concordando.
+            rainNext48h: advice.rainNext48h,
           ),
         ),
         const SizedBox(height: AppSpacing.xl),

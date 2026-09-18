@@ -24,21 +24,42 @@ abstract final class WeatherCondition {
         _ => Icons.cloud_queue_rounded,
       };
 
-  /// Mais grosso que [iconFor]: só existem 3 animações. Neblina e neve
-  /// viram nuvem; garoa, pancadas e tempestade viram chuva. O rótulo de
+  /// A partir desta temperatura (inclusive, já arredondada) o céu sem
+  /// chuva vira a animação de frio.
+  static const coldThresholdCelsius = 16;
+
+  /// Mais grosso que [iconFor]: só existem 5 animações. Neblina vira
+  /// nuvem; garoa, pancadas e tempestade viram chuva. O rótulo de
   /// [labelFor] continua dizendo o clima exato.
-  static WeatherAnimation animationFor(int code) => switch (code) {
-        0 => WeatherAnimation.sunny,
-        (>= 51 && <= 57) ||
-        (>= 61 && <= 67) ||
-        (>= 80 && <= 82) ||
-        95 ||
-        96 ||
-        99 =>
-          WeatherAnimation.rainy,
-        // Nuvem, neblina, neve e qualquer código desconhecido.
-        _ => WeatherAnimation.cloudy,
-      };
+  ///
+  /// Frio só substitui céu sem chuva: com chuva, a chuva é o que importa
+  /// para decidir a adubação. A [temperature] é arredondada igual ao
+  /// número que o card mostra, para os dois nunca discordarem.
+  static WeatherAnimation animationFor(
+    int code, {
+    required double temperature,
+  }) {
+    final byCode = switch (code) {
+      0 => WeatherAnimation.sunny,
+      1 || 2 => WeatherAnimation.partlyCloudy,
+      (>= 51 && <= 57) ||
+      (>= 61 && <= 67) ||
+      (>= 80 && <= 82) ||
+      95 ||
+      96 ||
+      99 => WeatherAnimation.rainy,
+      (>= 71 && <= 77) || 85 || 86 => WeatherAnimation.cold,
+      // Encoberto, neblina e qualquer código desconhecido.
+      _ => WeatherAnimation.cloudy,
+    };
+    final isCold = temperature.round() <= coldThresholdCelsius;
+    return switch (byCode) {
+      WeatherAnimation.sunny ||
+      WeatherAnimation.partlyCloudy ||
+      WeatherAnimation.cloudy when isCold => WeatherAnimation.cold,
+      _ => byCode,
+    };
+  }
 
   static String labelFor(BuildContext context, int code) => switch (code) {
         0 => context.l10n.weatherConditionClearSky,

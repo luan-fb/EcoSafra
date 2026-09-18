@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:ecosafra/features/weather/presentation/weather_animation.dart';
 import 'package:ecosafra/features/weather/presentation/weather_condition.dart';
@@ -15,26 +15,57 @@ class _FailingAssetBundle extends CachingAssetBundle {
       Future.error(FlutterError('asset indisponível: $key'));
 }
 
+/// Fração (0..1) da área de 120x120 que tem algum pixel desenhado quando a
+/// composição é parada em [progress]. Olha o desenho, não uma flag.
+Future<double> drawnFraction(LottieComposition c, double progress) async {
+  const side = 120;
+  final recorder = ui.PictureRecorder();
+  LottieDrawable(c)
+    ..setProgress(progress)
+    ..draw(
+      Canvas(recorder),
+      Rect.fromLTWH(0, 0, side.toDouble(), side.toDouble()),
+    );
+  final image = await recorder.endRecording().toImage(side, side);
+  final bytes = (await image.toByteData())!;
+  var drawn = 0;
+  for (var i = 3; i < bytes.lengthInBytes; i += 4) {
+    if (bytes.getUint8(i) > 16) drawn++;
+  }
+  return drawn / (side * side);
+}
+
 void main() {
   // O `lottie` guarda a composição carregada num cache global, com o
   // provider como chave. Sem limpar, um teste herdaria o resultado de outro.
   setUp(() => Lottie.cache.clear());
 
+  const warm = 25.0;
+
   Widget host(
     int weatherCode, {
-    bool disableAnimations = false,
+    double temperature = warm,
     AssetBundle? bundle,
   }) {
-    Widget child = WeatherAnimationView(weatherCode: weatherCode);
-    if (bundle != null) {
-      child = DefaultAssetBundle(bundle: bundle, child: child);
-    }
     return MaterialApp(
-      home: MediaQuery(
-        data: MediaQueryData(disableAnimations: disableAnimations),
-        child: Scaffold(body: Center(child: child)),
+      home: Scaffold(
+        body: Center(
+          child: WeatherAnimationView(
+            weatherCode: weatherCode,
+            temperature: temperature,
+            bundle: bundle,
+          ),
+        ),
       ),
     );
+  }
+
+  /// Liga "Remover animações" do jeito que o sistema faz: pela plataforma,
+  /// e não por um MediaQuery montado à mão.
+  void disableAnimations(WidgetTester tester) {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
   }
 
   LottieBuilder lottieIn(WidgetTester tester) =>
@@ -44,27 +75,33 @@ void main() {
       (builder.lottie as AssetLottie).assetName;
 
   group('WLOT-05: asset da animação mapeada', () {
-    for (final (code, expected) in [
-      (0, WeatherAnimation.sunny),
-      (3, WeatherAnimation.cloudy),
-      (63, WeatherAnimation.rainy),
+    for (final (code, temperature, expected) in [
+      (0, warm, WeatherAnimation.sunny),
+      (2, warm, WeatherAnimation.partlyCloudy),
+      (3, warm, WeatherAnimation.cloudy),
+      (63, warm, WeatherAnimation.rainy),
+      (0, 10.0, WeatherAnimation.cold),
     ]) {
-      testWidgets('código $code renderiza ${expected.assetPath}', (
+      testWidgets('código $code a $temperature° usa ${expected.assetPath}', (
         tester,
       ) async {
-        await tester.pumpWidget(host(code));
+        await tester.pumpWidget(host(code, temperature: temperature));
         expect(assetOf(lottieIn(tester)), expected.assetPath);
       });
     }
 
-    // Os JSONs vieram de fora (LottieFiles): garante que o parser do
-    // pacote entende os três e que nenhum deles é uma animação vazia.
+    // Carrega pelo bundle, o mesmo caminho do app: pega o asset que existe
+    // no disco mas não foi declarado no pubspec, e JSON que o pacote não
+    // consegue interpretar.
     for (final animation in WeatherAnimation.values) {
-      test('${animation.assetPath} é um Lottie válido', () async {
-        final bytes = File(animation.assetPath).readAsBytesSync();
-        final composition = await LottieComposition.fromBytes(bytes);
-        expect(composition.duration, greaterThan(Duration.zero));
-      });
+      test(
+        '${animation.assetPath} está no bundle e é um Lottie válido',
+        () async {
+          final data = await rootBundle.load(animation.assetPath);
+          final composition = await LottieComposition.fromByteData(data);
+          expect(composition.duration, greaterThan(Duration.zero));
+        },
+      );
     }
   });
 
@@ -73,24 +110,42 @@ void main() {
   ) async {
     await tester.pumpWidget(host(0));
     final builder = lottieIn(tester);
+    expect(builder.controller, isNull, reason: 'controller próprio do Lottie');
     expect(builder.animate, isTrue);
     expect(builder.repeat, isTrue);
   });
 
-  testWidgets('WLOT-07: fica parada com "remover animações" ativo', (
-    tester,
-  ) async {
-    await tester.pumpWidget(host(0, disableAnimations: true));
-    expect(lottieIn(tester).animate, isFalse);
+  group('WLOT-07: "remover animações" ativo', () {
+    testWidgets('para no quadro fixo', (tester) async {
+      disableAnimations(tester);
+      await tester.pumpWidget(host(0));
+
+      final controller = lottieIn(tester).controller;
+      expect(controller, isA<AlwaysStoppedAnimation<double>>());
+      expect(controller!.value, WeatherAnimationView.stillProgress);
+    });
+
+    // O quadro 0 da nuvem é vazio: parar lá deixava o card sem desenho.
+    for (final animation in WeatherAnimation.values) {
+      test('${animation.name} desenha ≥ 10% da área no quadro fixo', () async {
+        final data = await rootBundle.load(animation.assetPath);
+        final composition = await LottieComposition.fromByteData(data);
+        expect(
+          await drawnFraction(composition, WeatherAnimationView.stillProgress),
+          greaterThanOrEqualTo(0.10),
+        );
+      });
+    }
   });
 
-  testWidgets('WLOT-08: asset com erro cai no ícone estático do código', (
+  testWidgets('WLOT-08: asset com erro cai no ícone estático e é reportado', (
     tester,
   ) async {
     await tester.pumpWidget(host(61, bundle: _FailingAssetBundle()));
     await tester.pump();
 
     expect(find.byIcon(WeatherCondition.iconFor(61)), findsOneWidget);
+    expect(tester.takeException(), isFlutterError);
   });
 
   testWidgets('WLOT-09: a animação não expõe nada ao leitor de tela', (
@@ -100,10 +155,14 @@ void main() {
     await tester.pumpWidget(host(0));
 
     // O rótulo ("Céu limpo") é lido do Text que o card já mostra; a
-    // animação é decorativa e não pode gerar um segundo anúncio.
-    final node = tester.getSemantics(find.byType(WeatherAnimationView));
-    expect(node.label, isEmpty);
+    // animação é decorativa e não pode gerar nenhum anúncio.
+    expect(find.bySemanticsLabel(RegExp(r'\S')), findsNothing);
     semantics.dispose();
+  });
+
+  testWidgets('WLOT-15: limita a 30 quadros por segundo', (tester) async {
+    await tester.pumpWidget(host(0));
+    expect(lottieIn(tester).frameRate, const FrameRate(30));
   });
 
   group('troca de clima', () {
@@ -112,7 +171,8 @@ void main() {
       await tester.pumpWidget(host(61));
       await tester.pump(const Duration(milliseconds: 100));
 
-      // No meio da transição as duas coexistem, cada uma num FadeTransition.
+      // No meio da transição as duas coexistem, cada uma num FadeTransition
+      // do próprio AnimatedSwitcher, com opacidade entre 0 e 1.
       final assets = tester
           .widgetList<LottieBuilder>(find.byType(LottieBuilder))
           .map(assetOf);
@@ -123,21 +183,21 @@ void main() {
           WeatherAnimation.rainy.assetPath,
         ]),
       );
-      expect(
-        find.ancestor(
-          of: find.byType(LottieBuilder),
-          matching: find.byType(FadeTransition),
-        ),
-        findsWidgets,
-      );
+      final opacities = tester
+          .widgetList<FadeTransition>(
+            find.descendant(
+              of: find.byType(WeatherAnimationView),
+              matching: find.byType(FadeTransition),
+            ),
+          )
+          .map((fade) => fade.opacity.value);
+      expect(opacities, hasLength(2));
+      expect(opacities, everyElement(inExclusiveRange(0, 1)));
 
       // Não dá pra usar pumpAndSettle: a animação nova está em loop e
       // nunca "assenta". Avança o tempo além da duração do switch.
       await tester.pump(const Duration(seconds: 1));
-      expect(
-        assetOf(lottieIn(tester)),
-        WeatherAnimation.rainy.assetPath,
-      );
+      expect(assetOf(lottieIn(tester)), WeatherAnimation.rainy.assetPath);
     });
 
     testWidgets('WLOT-11: mesma animação não reinicia', (tester) async {
@@ -151,6 +211,19 @@ void main() {
       // descartar e criar outro (o que reiniciaria a animação do zero).
       expect(find.byType(LottieBuilder), findsOneWidget);
       expect(tester.state(find.byType(LottieBuilder)), same(before));
+    });
+
+    testWidgets('WLOT-17: sem transição com "remover animações"', (
+      tester,
+    ) async {
+      disableAnimations(tester);
+      await tester.pumpWidget(host(0));
+      await tester.pumpWidget(host(61));
+      await tester.pump();
+
+      // Troca seca: no primeiro quadro depois da mudança só resta a nova.
+      expect(find.byType(LottieBuilder), findsOneWidget);
+      expect(assetOf(lottieIn(tester)), WeatherAnimation.rainy.assetPath);
     });
   });
 }
