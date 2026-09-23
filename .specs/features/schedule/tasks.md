@@ -199,7 +199,7 @@ T15 → T16
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(core): adiciona extensões de data sem hora`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

@@ -13,10 +13,10 @@
 ## Handoff
 
 - **Feature**: `.specs/features/schedule`
-- **Phase / Task**: Tasks prontas (16 tasks, 6 fases), aguardando aprovação do usuário para o Execute
-- **Completed**: Specify, Design, Tasks
+- **Phase / Task**: Fase 1 concluída (T1–T3); próxima é a Fase 2, começando pelo T4
+- **Completed**: T1, T2, T3
 - **In-progress** (file:line): none
-- **Next step**: Com o ok do usuário, commitar os artefatos de spec e iniciar o Execute pelo grupo 1 (T1–T3, Mecânica)
+- **Next step**: Executar T4 (janela de agendamento, complexidade Média)
 - **Blockers**: none
-- **Uncommitted files**: rascunho da Agenda (ver tabela "Como retomar" em `tasks.md`); `.specs/features/schedule/{spec,design,tasks}.md`; `.specs/STATE.md`
+- **Uncommitted files**: rascunho da Agenda (ver tabela "Como retomar" em `tasks.md`), incluindo o import e a rota do `ScheduleModule` em `lib/app/app_module.dart`
 - **Branch**: `feat/schedule`
