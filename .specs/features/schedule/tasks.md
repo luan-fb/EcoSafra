@@ -228,7 +228,7 @@ T15 → T16
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(schedule): define a janela de datas agendáveis`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
