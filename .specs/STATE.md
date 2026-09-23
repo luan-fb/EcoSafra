@@ -13,10 +13,10 @@
 ## Handoff
 
 - **Feature**: `.specs/features/schedule`
-- **Phase / Task**: Fase 1 concluída (T1–T3); próxima é a Fase 2, começando pelo T4
-- **Completed**: T1, T2, T3
+- **Phase / Task**: Fase 2 concluída (T4–T5); próxima é a Fase 3, começando pelo T6
+- **Completed**: T1, T2, T3, T4, T5
 - **In-progress** (file:line): none
-- **Next step**: Executar T4 (janela de agendamento, complexidade Média)
+- **Next step**: Executar T6 (tabela de agendamentos e migração v1 → v2, complexidade Muito alta)
 - **Blockers**: none
 - **Uncommitted files**: rascunho da Agenda (ver tabela "Como retomar" em `tasks.md`), incluindo o import e a rota do `ScheduleModule` em `lib/app/app_module.dart`
 - **Branch**: `feat/schedule`

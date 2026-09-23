@@ -256,7 +256,7 @@ T15 → T16
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(schedule): adiciona observação e conclusão ao agendamento`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
