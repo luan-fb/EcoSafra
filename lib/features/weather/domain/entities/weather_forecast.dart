@@ -92,6 +92,11 @@ final class WeatherForecast extends Equatable {
     this.isStale = false,
   });
 
+  /// Quantos dias de previsão o app pede à Open-Meteo. É a fonte única:
+  /// o data source usa este valor na requisição, e a agenda usa o mesmo
+  /// para limitar as datas a hoje até hoje + (coverageDays - 1).
+  static const int coverageDays = 7;
+
   final Coordinates coordinates;
 
   /// Próximas ~48h, uma entrada por hora.

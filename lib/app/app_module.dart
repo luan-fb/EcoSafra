@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
@@ -22,6 +23,7 @@ import 'package:go_router_modular/go_router_modular.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 /// Módulo raiz: composição da árvore de rotas e dos serviços de app inteiro.
 ///
@@ -44,6 +46,11 @@ class AppModule extends Module {
       ..addSingleton<AppDatabase>((i) => AppDatabase())
       ..addSingleton<FirebaseAuth>((i) => FirebaseAuth.instance)
       ..addSingleton<GoogleSignIn>((i) => GoogleSignIn.instance)
+      // Relógio e gerador de id injetáveis: em produção, a hora do aparelho
+      // e UUID v4; nos testes, `Clock.fixed(...)` e um `Uuid` falso deixam
+      // "hoje", "amanhã" e os ids previsíveis.
+      ..addSingleton<Clock>((i) => const Clock())
+      ..addSingleton<Uuid>((i) => const Uuid())
       ..addSingleton<NetworkInfo>(
         (i) => ConnectivityNetworkInfo(Connectivity()),
       )

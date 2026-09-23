@@ -171,7 +171,7 @@ T15 → T16
 **Tests**: none
 **Gate**: build
 **Commit**: `build(core): adiciona relógio e gerador de id injetáveis`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

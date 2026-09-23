@@ -53,6 +53,12 @@ dependencies:
   shared_preferences: ^2.5.5
   path_provider: ^2.1.6
 
+  # --- Infraestrutura de app ---
+  # Relógio injetável para testes determinísticos de "hoje" e "amanhã".
+  clock: ^1.1.2
+  # Gerador de IDs (UUID v4) injetável e sem dependência de banco de dados.
+  uuid: ^4.6.0
+
   # --- Banco local (cache offline-first) ---
   # O equivalente do Room: tabelas tipadas geradas por code gen. Guarda a
   # última previsão que deu certo pra servir quando a Open-Meteo não
