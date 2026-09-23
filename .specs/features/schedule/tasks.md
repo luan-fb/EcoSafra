@@ -10,7 +10,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 **Spec**: `.specs/features/schedule/spec.md`
 **Design**: `.specs/features/schedule/design.md`
-**Status**: Draft
+**Status**: In Progress
 **Branch**: `feat/schedule`
 
 ---
@@ -20,9 +20,9 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 Este arquivo é o checkpoint da feature. Qualquer agente, humano ou outra IA continua daqui sem o histórico da conversa:
 
 1. Leia `.specs/STATE.md` (decisões e handoff), depois este arquivo.
-2. Rode `git log --oneline main..feat/schedule` e `git status --short`. A **evidência do git vence** o que estiver escrito: task com commit na branch está feita, mesmo sem `[x]` aqui.
+2. Rode `git log --oneline --grep "Refs: T" main..feat/schedule` e `git status --short`. A **evidência do git vence** o que estiver escrito: task com commit `Refs: T<n>` na branch está feita, mesmo sem `[x]` aqui.
 3. Pegue a primeira task sem `[x]` em **Status**, na ordem das fases.
-4. Ao terminar uma task: gate verde → marque o `Status` como `[x] feito — <hash do commit>` → commit único com código, testes e esta atualização. Nunca pule o gate, nunca apague ou enfraqueça teste.
+4. Ao terminar uma task: gate verde → marque o `Status` como `[x] feito` → commit único com código, testes e esta atualização, com o rodapé `Refs: T<n>`. Nunca pule o gate, nunca apague ou enfraqueça teste.
 
 **Estado do working tree no início**: existe um **rascunho não commitado** da Agenda feito sobre Firestore, que nunca funcionou. Ele é matéria-prima: cada task diz quais arquivos do rascunho **adota** (inclui no seu commit, já ajustados), **reescreve** ou **apaga**.
 
@@ -142,7 +142,7 @@ T15 → T16
 **Tests**: none
 **Gate**: build
 **Commit**: `build(database): registra o schema v1 para migrações do drift`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

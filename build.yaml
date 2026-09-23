@@ -10,3 +10,9 @@ targets:
           create_to_json: true
           include_if_null: false
           explicit_to_json: true
+      # Drift versionamento: gera snapshots do schema e migração incremental
+      # quando a versão do AppDatabase muda. O make-migrations reusa esses arquivos.
+      drift_dev:
+        options:
+          databases:
+            app_database: lib/core/database/app_database.dart
