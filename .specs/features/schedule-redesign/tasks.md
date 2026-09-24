@@ -100,10 +100,10 @@ T3 → T4
 
 **Done when**:
 
-- [ ] `_EmptyView` exibe `ScheduleEmptyAnimation`.
-- [ ] Testes de widget do `SchedulePage` continuam passando e atestam que o estado vazio renderiza o novo componente.
-- [ ] Gate check passes: `flutter test`
-- [ ] Test count: Ajuste de testes de `ScheduleView` para cobrir os ACs de estado vazio animado.
+- [x] `_EmptyView` exibe `ScheduleEmptyAnimation`.
+- [x] Testes de widget do `SchedulePage` continuam passando e atestam que o estado vazio renderiza o novo componente.
+- [x] Gate check passes: `flutter test`
+- [x] Test count: Ajuste de testes de `ScheduleView` para cobrir os ACs de estado vazio animado.
 
 **Tests**: unit
 **Gate**: Quick

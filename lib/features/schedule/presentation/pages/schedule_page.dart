@@ -5,6 +5,7 @@ import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dar
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_form_sheet.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // Mesmo motivo do painel: `Modular.get<T>()` colide com o `context.read<T>()`
@@ -224,11 +225,7 @@ class _EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.event_available_rounded,
-              size: 48,
-              color: context.colors.onSurfaceVariant,
-            ),
+            const ScheduleEmptyAnimation(),
             const SizedBox(height: AppSpacing.md),
             Text(
               message,

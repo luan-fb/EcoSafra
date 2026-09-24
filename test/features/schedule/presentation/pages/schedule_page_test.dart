@@ -83,9 +83,12 @@ void main() {
         locale: const Locale('pt'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider<ScheduleCubit>.value(
-          value: cubit,
-          child: const ScheduleView(),
+        home: MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: BlocProvider<ScheduleCubit>.value(
+            value: cubit,
+            child: const ScheduleView(),
+          ),
         ),
       ),
     );
