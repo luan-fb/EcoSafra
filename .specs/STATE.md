@@ -13,10 +13,10 @@
 ## Handoff
 
 - **Feature**: `.specs/features/schedule`
-- **Phase / Task**: Fase 2 concluída (T4–T5); próxima é a Fase 3, começando pelo T6
-- **Completed**: T1, T2, T3, T4, T5
+- **Phase / Task**: Fase 3 concluída (T6–T8); próxima é a Fase 4, começando pelo T9
+- **Completed**: T1–T8
 - **In-progress** (file:line): none
-- **Next step**: Executar T6 (tabela de agendamentos e migração v1 → v2, complexidade Muito alta)
+- **Next step**: Executar T9 (casos de uso de escrita com validação, complexidade Média)
 - **Blockers**: none
-- **Uncommitted files**: rascunho da Agenda (ver tabela "Como retomar" em `tasks.md`), incluindo o import e a rota do `ScheduleModule` em `lib/app/app_module.dart`
+- **Uncommitted files**: rascunho da Agenda que ainda falta adotar (ver tabela "Como retomar" em `tasks.md`): `create_schedule.dart`, `evaluate_schedule_risk.dart`, `schedule_risk_level.dart` e o teste dele, `presentation/**`, `schedule_module.dart`, os binds de `CreateSchedule` e `EvaluateScheduleRisk` no `schedule_data_module.dart`, e as linhas de rota/menu/l10n em `app_module.dart`, `app_routes.dart`, `app_drawer.dart`, `app_pt.arb`
 - **Branch**: `feat/schedule`

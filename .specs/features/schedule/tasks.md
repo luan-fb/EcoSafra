@@ -338,7 +338,7 @@ T15 → T16
 **Done when**:
 
 - [ ] `ScheduleRepositoryImpl(local, authRepository, clock, uuid)` conforme o design: sem login → `Left(AuthFailure('É preciso estar logado para usar a agenda.'))` sem chamar o data source; `watchSchedules()` sem login → lista vazia; `createSchedule` usa `uuid.v4()` e `clock.now()`; `setScheduleCompleted(true)` grava `clock.now()`, `false` grava `null`; `AppException` → `toFailure()`
-- [ ] `lib/features/schedule/schedule_data_module.dart` registra data source, repositório, `WatchSchedules`, `CreateSchedule`, `DeleteSchedule`, `EvaluateScheduleRisk`; o `ScheduleModule` do rascunho importa `ScheduleDataModule` e deixa de registrar esses binds
+- [ ] `lib/features/schedule/schedule_data_module.dart` registra data source, repositório, `WatchSchedules` e `DeleteSchedule`; `CreateSchedule` entra no commit do T9 e `EvaluateScheduleRisk` no do T10, junto com os arquivos que os definem, para cada commit compilar sozinho; o `ScheduleModule` do rascunho importa `ScheduleDataModule` e deixa de registrar esses binds
 - [ ] Apagados: `firestore.rules`, `firestore_schedule_data_source.dart`, `schedule_remote_data_source.dart`, `schedule_model.dart`, `schedule_model.freezed.dart`; `cloud_firestore` fora do `pubspec.yaml`; `git grep -n "cloud_firestore\|Firestore" lib test pubspec.yaml` vazio
 - [ ] Commit adota `watch_schedules.dart` e `delete_schedule.dart` do rascunho
 - [ ] `test/features/schedule/data/repositories/schedule_repository_impl_test.dart` reescrito: cada método com sucesso, sem login e `CacheException` → `CacheFailure`; `Clock.fixed` e `Uuid` mockado para asserir id e datas gravados
@@ -347,13 +347,13 @@ T15 → T16
 **Tests**: unit
 **Gate**: full
 **Commit**: `feat(schedule): troca o rascunho em Firestore pelo repositório local`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
 ### T9: Casos de uso de escrita com validação
 
-**What**: Reescrever `CreateSchedule` e criar `UpdateSchedule` e `SetScheduleCompleted`, com validação de janela e de observação; registrar os dois novos no `ScheduleDataModule`.
+**What**: Reescrever `CreateSchedule` e criar `UpdateSchedule` e `SetScheduleCompleted`, com validação de janela e de observação; registrar os três no `ScheduleDataModule`.
 **Where**: `lib/features/schedule/domain/usecases/create_schedule.dart`
 **Depends on**: None (fase anterior concluída)
 **Reuses**: `SchedulingWindow` (T4), `ScheduleNote` (T5), `ValidationFailure` (T2), `UseCase` de `core/usecase`
@@ -381,7 +381,7 @@ T15 → T16
 
 ### T10: Regra do aviso do painel
 
-**What**: Criar `ScheduleAlert` (sealed) e `EvaluateScheduleAlert`, e registrar no `ScheduleDataModule`; o commit adota `EvaluateScheduleRisk`, `ScheduleRiskLevel` e o teste deles do rascunho.
+**What**: Criar `ScheduleAlert` (sealed) e `EvaluateScheduleAlert` e registrar `EvaluateScheduleRisk` e `EvaluateScheduleAlert` no `ScheduleDataModule`; o commit adota `EvaluateScheduleRisk`, `ScheduleRiskLevel` e o teste deles do rascunho.
 **Where**: `lib/features/schedule/domain/usecases/evaluate_schedule_alert.dart`
 **Depends on**: T9
 **Reuses**: `EvaluateScheduleRisk` (rascunho), `date_extensions` (T3), `SyncUseCase`
