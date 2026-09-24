@@ -12,11 +12,11 @@
 
 ## Handoff
 
-- **Feature**: `.specs/features/schedule`
-- **Phase / Task**: Feature concluída e commitada: T1–T16, correções da verificação e do teste no aparelho; verificação independente PASS (`validation.md`)
-- **Completed**: T1–T16, verificação, correção do tema dos botões
+- **Feature**: `.specs/features/schedule-redesign`
+- **Phase / Task**: Fase 3 concluída (T5–T6); próxima é a Fase 4, T7
+- **Completed**: T1–T6
 - **In-progress** (file:line): none
-- **Next step**: O usuário vai fazer alterações simples com outro agente; depois: revisar o diff dele, rodar `flutter analyze && flutter test`, commitar, fazer push de `feat/schedule` e abrir o PR para a `main` com `flutter-review`
+- **Next step**: Executar T7 (remoção otimista, restauração e chuva do dia no cubit, complexidade Alta)
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: `feat/schedule`

@@ -9,6 +9,7 @@ import 'package:ecosafra/features/schedule/domain/usecases/create_schedule.dart'
 import 'package:ecosafra/features/schedule/domain/usecases/delete_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/evaluate_schedule_alert.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/evaluate_schedule_risk.dart';
+import 'package:ecosafra/features/schedule/domain/usecases/restore_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/set_schedule_completed.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/update_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/watch_schedules.dart';
@@ -46,6 +47,9 @@ class ScheduleDataModule extends Module {
       )
       ..addSingleton<DeleteSchedule>(
         (i) => DeleteSchedule(i.get<ScheduleRepository>()),
+      )
+      ..addSingleton<RestoreSchedule>(
+        (i) => RestoreSchedule(i.get<ScheduleRepository>()),
       )
       ..addSingleton<EvaluateScheduleRisk>(
         (i) => const EvaluateScheduleRisk(),

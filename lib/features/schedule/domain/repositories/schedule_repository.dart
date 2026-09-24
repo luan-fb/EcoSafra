@@ -27,4 +27,8 @@ abstract interface class ScheduleRepository {
   });
 
   Future<Either<Failure, void>> deleteSchedule(String id);
+
+  /// Reinsere o agendamento com o mesmo `id`, `scheduledDate`, `note`,
+  /// `createdAt` e `completedAt` — usado para desfazer uma exclusão.
+  Future<Either<Failure, void>> restoreSchedule(FertilizationSchedule schedule);
 }

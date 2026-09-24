@@ -220,7 +220,7 @@ T11 → T12
 
 **Tests**: unit
 **Gate**: full
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

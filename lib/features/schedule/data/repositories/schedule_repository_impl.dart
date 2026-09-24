@@ -88,6 +88,22 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   Future<Either<Failure, void>> deleteSchedule(String id) =>
       _write((userId) => _local.delete(id: id, userId: userId));
 
+  @override
+  Future<Either<Failure, void>> restoreSchedule(
+    FertilizationSchedule schedule,
+  ) => _write(
+    (userId) => _local.insert(
+      ScheduleRow(
+        id: schedule.id,
+        userId: userId,
+        scheduledDate: schedule.scheduledDate,
+        note: schedule.note,
+        createdAt: schedule.createdAt,
+        completedAt: schedule.completedAt,
+      ),
+    ),
+  );
+
   Future<Either<Failure, void>> _write(
     Future<void> Function(String userId) action,
   ) async {

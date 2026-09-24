@@ -397,6 +397,73 @@ void main() {
     });
   });
 
+  group('restoreSchedule', () {
+    test(
+      'insere a ScheduleRow com id, data, nota, createdAt e completedAt do '
+      'agendamento e o uid da conta atual',
+      () async {
+        when(() => local.insert(any())).thenAnswer((_) async {});
+        final schedule = FertilizationSchedule(
+          id: 's1',
+          scheduledDate: DateTime(2026, 9, 25),
+          createdAt: DateTime(2026, 9, 23, 8),
+          note: 'talhão norte',
+          completedAt: DateTime(2026, 9, 25, 16),
+        );
+
+        final result = await repository.restoreSchedule(schedule);
+
+        expect(result, const Right<Failure, void>(null));
+        verify(
+          () => local.insert(
+            ScheduleRow(
+              id: 's1',
+              userId: _uid,
+              scheduledDate: DateTime(2026, 9, 25),
+              note: 'talhão norte',
+              createdAt: DateTime(2026, 9, 23, 8),
+              completedAt: DateTime(2026, 9, 25, 16),
+            ),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('sem login, devolve AuthFailure sem tocar no banco', () async {
+      signOut();
+      final schedule = FertilizationSchedule(
+        id: 's1',
+        scheduledDate: DateTime(2026, 9, 25),
+        createdAt: DateTime(2026, 9, 23, 8),
+      );
+
+      final result = await repository.restoreSchedule(schedule);
+
+      expect(result, const Left<Failure, void>(_signedOut));
+      verifyZeroInteractions(local);
+    });
+
+    test('CacheException vira CacheFailure com a mesma mensagem', () async {
+      when(() => local.insert(any())).thenThrow(
+        const CacheException('Não foi possível salvar o agendamento.'),
+      );
+      final schedule = FertilizationSchedule(
+        id: 's1',
+        scheduledDate: DateTime(2026, 9, 25),
+        createdAt: DateTime(2026, 9, 23, 8),
+      );
+
+      final result = await repository.restoreSchedule(schedule);
+
+      expect(
+        result,
+        const Left<Failure, void>(
+          CacheFailure('Não foi possível salvar o agendamento.'),
+        ),
+      );
+    });
+  });
+
   test(
     'lê o uid a cada chamada: troca de conta vale na escrita seguinte',
     () async {
