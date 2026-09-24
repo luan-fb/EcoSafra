@@ -185,6 +185,18 @@
   "drawerMenuSignOut": "Sair",
   "@drawerMenuSignOut": {"description": "Item do menu lateral para encerrar a sessão"},
 
+  "scheduleRiskOk": "Previsão favorável",
+  "@scheduleRiskOk": {"description": "Rótulo quando o dia agendado não tem chuva de risco prevista"},
+
+  "scheduleRiskAtRisk": "Risco de chuva forte no dia",
+  "@scheduleRiskAtRisk": {"description": "Rótulo quando a previsão mudou e o dia agendado ficou arriscado"},
+
+  "scheduleRiskUnknown": "Sem previsão para este dia ainda",
+  "@scheduleRiskUnknown": {"description": "Rótulo quando o dia agendado está fora da janela de previsão"},
+
+  "scheduleDeleteConfirmConfirm": "Excluir",
+  "@scheduleDeleteConfirmConfirm": {"description": "Botão de confirmar exclusão no diálogo"},
+
   "scheduleFormCreateTitle": "Novo agendamento",
   "@scheduleFormCreateTitle": {"description": "Título do formulário ao criar um agendamento"},
 
@@ -204,5 +216,8 @@
   "@scheduleFormSave": {"description": "Botão de confirmar o formulário de agendamento"},
 
   "scheduleFormCancel": "Cancelar",
-  "@scheduleFormCancel": {"description": "Botão de cancelar o formulário de agendamento"}
+  "@scheduleFormCancel": {"description": "Botão de cancelar o formulário de agendamento"},
+
+  "scheduleStatusPastDue": "Data passada",
+  "@scheduleStatusPastDue": {"description": "Rótulo de um agendamento não concluído cuja data já passou"}
 }

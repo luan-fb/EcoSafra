@@ -492,7 +492,7 @@ T15 → T16
 **Tests**: widget
 **Gate**: quick
 **Commit**: `feat(schedule): mostra risco, conclusão e ações em cada agendamento`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
