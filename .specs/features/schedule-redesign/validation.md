@@ -1,5 +1,7 @@
 ## Validation: schedule-redesign - PASS ✅
 
+**Estado atual (2026-09-24)**: aprovado. Vale a última seção, "Re-verificação das lacunas de teste". Histórico: a iteração 1 reprovou; a iteração 2 aprovou; a revisão pós-teste no aparelho (bottom sheet e menu) reprovou só por lacunas de teste; a re-verificação dessas lacunas aprovou. Os 26 requisitos estão verificados.
+
 **Iteração**: 2 de 3 (re-verificação das lacunas da iteração 1)
 **Date**: 2026-09-24
 **Spec**: `.specs/features/schedule-redesign/spec.md`
@@ -261,3 +263,138 @@ Não aplicada ao `spec.md` (veredito FAIL; o orquestrador pediu atualização s�
 **Issues found**: todos são testes fracos ou ausentes; nenhum defeito de comportamento observado no código lido.
 
 **Next steps**: Fixes 1–6 (só testes), Fix 7 (docs), depois re-verify.
+
+---
+
+## Re-verificação: bottom sheet e menu (2026-09-24)
+
+**Escopo**: só SCHEDUI-17, 18, 21 (parte do formulário), 22, 23, 24, 25 e 26, ou seja, os ACs 1, 2, 5, 6, 7, 8, 9 e 10 de "P2: Animações de destaque", revisados depois do teste no aparelho (design: "Revisão pós-teste no aparelho"). Os demais requisitos continuam com o PASS acima e não foram reverificados.
+**Diff**: working tree não commitado sobre `d329fab` (`feat/schedule`): `schedule_form_sheet.dart` (renomeado de `pages/schedule_form_page.dart`), `schedule_page.dart`, `schedule_date_block.dart`, `schedule_tile.dart`, `app_drawer.dart`, `dashboard_page.dart`, `app_theme.dart`, `pubspec.*`.
+**Verifier**: sub-agente independente (autor ≠ verificador)
+
+### Checagem contra a spec
+
+| Req. (AC) | Resultado definido na spec | Evidência (`arquivo:linha`, asserção) | Veredito |
+| --- | --- | --- | --- |
+| SCHEDUI-17 (AC1) | Tocar num agendamento não concluído abre a edição preenchida num bottom sheet | `test/features/schedule/presentation/pages/schedule_page_test.dart:378`: `expect(form.initial, upcomingItem(target))`; `:320-321`: `find.text('Editar agendamento')` e `find.text('ureia')`; `:385-387`: `verify(() => cubit.editSchedule('s1', window.first, note: 'NPK')).called(1)`; `:404-407`: fechar sem salvar dá `verifyNever(editSchedule)` | ✅ PASS (ver lacuna 4: o tipo "bottom sheet" é provado só de forma indireta) |
+| SCHEDUI-18 (AC2) | Tocar em "Agendar" abre a criação num bottom sheet | `schedule_page_test.dart:223`: `find.text('Novo agendamento'), findsOneWidget`; `:355`: `find.byType(ScheduleFormSheet), findsOneWidget`; `:229-231`: `verify(() => cubit.addSchedule(window.first, note: 'talhão 3')).called(1)`; `:360-361`: fechar sem salvar dá `verifyNever(addSchedule)` | ✅ PASS (mesma ressalva da lacuna 4) |
+| SCHEDUI-21 (AC5, parte do formulário) | Com `disableAnimations`, o formulário abre sem animação | `test/features/schedule/presentation/widgets/schedule_form_sheet_test.dart:378`: `expect(route.animation!.status, AnimationStatus.completed)` depois de um único `pump()` | ✅ PASS |
+| SCHEDUI-22 (AC6) | Mantém a janela de datas, a observação de até 200 caracteres e o preenchimento na edição | `schedule_form_sheet_test.dart:79-80`: `dialog.firstDate == window.first`, `dialog.lastDate == window.last`; `:166`: `field.maxLength == ScheduleNote.maxLength`; `:172`: `controller.text.length == ScheduleNote.maxLength`; `:245-253`: título de edição, `'ureia'` e `result!.date == window.last`; `schedule_page_test.dart:259-260` e `:299-300`: a janela vem de `currentWindow()` | ✅ PASS |
+| SCHEDUI-23 (AC7) | A Agenda mostra o menu lateral com o item "Agenda" **selecionado** | `schedule_page_test.dart:468`: `expect(drawer.currentRoute, AppRoute.schedule)`. O teste confere o parâmetro, não o `ListTile` "Agenda" com `selected: true` | ❌ GAP (parcial; M5 sobreviveu) |
+| SCHEDUI-24 (AC8) | Sem sheet nem menu, o voltar leva ao Painel; com o sheet **ou o menu** abertos, fecha só eles | `schedule_page_test.dart:821-822`: `find.text('painel-aberto'), findsOneWidget`, `find.byType(ScheduleView), findsNothing`; `:839-841`: com o sheet aberto, o sheet some e o Painel não abre. Menu aberto: **nenhuma evidência** | ❌ GAP (parcial; M6 sobreviveu) |
+| SCHEDUI-25 (AC9) | Na edição, o bloco de data aparece no topo com a cor do status, crescendo e surgindo enquanto o sheet sobe; com outra data, o bloco fica em cor neutra | `schedule_form_sheet_test.dart:272-273`: `block.date == window.last`, `block.background == AppColors.safe` (risco ok); `:345` e `:353`: no meio de `AppMotion.slow`, `scale.value` e `opacity.value` em `inExclusiveRange(0, 1)`; `:306` e `:309-312`: `block.date == target`, `block.background == colorScheme.surfaceContainerHigh`; `:282`: não aparece na criação | ✅ PASS |
+| SCHEDUI-26 (AC10) | Sem redução de movimento, abre em `AppMotion.slow`, fecha em `AppMotion.medium` e usa a curva `AppMotion.emphasized` | `schedule_form_sheet_test.dart:399`: `route.animation!.value` em `inExclusiveRange(0, 1)` em `slow/2`; `:402`: `route.animation!.value == 1` em `slow`. Isso prende a abertura. Fechamento em `medium` e curva `emphasized`: **nenhuma evidência** | ❌ GAP (parcial; M8 sobreviveu) |
+
+**Status**: ❌ 5/8 casam com o resultado da spec; 3 gaps parciais (SCHEDUI-23, 24, 26).
+
+### Gate
+
+- **Comando**: `flutter analyze` e `flutter test` (árvore real, sem alterações)
+- **Resultado**: analyze "No issues found!" (exit 0); 388 passed, 0 failed, 0 skipped (exit 0)
+- **Contagem**: 382 na verificação anterior, 388 agora (+6). Os testes do formulário migraram de `pages/schedule_form_page_test.dart` para `widgets/schedule_form_sheet_test.dart`, sem perder os testes de regra (AGD-01, 03, 04, 26 e maxLength continuam lá)
+
+### Sensor de discriminação
+
+Cópia isolada: `git worktree add --detach` em HEAD no scratchpad da sessão, com os arquivos do diff copiados do working tree (os dois arquivos renomeados foram removidos da cópia) e `flutter pub get --offline`. Baseline verde: 56 testes afetados (`schedule_form_sheet_test.dart`, `schedule_page_test.dart`, `test/features/dashboard`). Cada mutante foi aplicado com backup por `cp` e restaurado com `cp`, e `cmp` confirmou que o arquivo ficou idêntico ao do projeto. Depois, `git worktree remove --force` e `git worktree prune`. O `git status --porcelain` do projeto bate com a baseline.
+
+| # | Req. | Arquivo:linha | Mutação | Morto? |
+| --- | --- | --- | --- | --- |
+| M1 | SCHEDUI-17 | `lib/features/schedule/presentation/pages/schedule_page.dart:317` | Remove `initial: item` (a edição abre vazia, como criação) | ✅ Morto (2 testes: `:320`, `:378`) |
+| M2 | SCHEDUI-18 (e 17) | `lib/features/schedule/presentation/widgets/schedule_form_sheet.dart:45-58` | `showModalBottomSheet` vira `Navigator.push(MaterialPageRoute)` (tela cheia) | ✅ Morto (2 testes: `form_sheet_test:345`, `:378`), mas só por tempo de animação (ver lacuna 4) |
+| M3 | SCHEDUI-21 | `schedule_form_sheet.dart:50` | `context.reduceMotion` vira `false` (sempre anima) | ✅ Morto (`form_sheet_test:378`) |
+| M4 | SCHEDUI-22 | `schedule_form_sheet.dart:139` | Remove `maxLength: ScheduleNote.maxLength` | ✅ Morto (`form_sheet_test:166`) |
+| M5 | SCHEDUI-23 | `lib/features/dashboard/presentation/widgets/app_drawer.dart:78` | `selected: currentRoute == AppRoute.schedule` vira `selected: false` | ❌ Sobreviveu |
+| M6 | SCHEDUI-24 | `schedule_page.dart:113` | `canPop: _isDrawerOpen` vira `canPop: false` (com o menu aberto, o voltar vai ao Painel em vez de fechar o menu) | ❌ Sobreviveu |
+| M7 | SCHEDUI-25 | `schedule_form_sheet.dart:210` | `DateUtils.isSameDay(...)` vira `true` (a data nova herda a cor do status) | ✅ Morto (`form_sheet_test:309`) |
+| M8 | SCHEDUI-26 | `schedule_form_sheet.dart:54` | `reverseDuration: AppMotion.medium` vira `AppMotion.slow` | ❌ Sobreviveu |
+
+**Profundidade**: 8 mutantes, um por requisito (orçamento do orquestrador).
+**Sensor**: 5/8 mortos.
+
+Sonda de confirmação (na mesma cópia isolada, descartada depois): um teste com o roteador real, que abre o menu, confere `ListTile("Agenda").selected == true`, dá `handlePopRoute` e espera o menu fechado com a Agenda ainda na tela, **passa** no código atual e **mata M5 e M6**. Portanto o comportamento está certo e falta só o teste. Outra sonda, que lê `(ModalRoute.of(ctx) as ModalBottomSheetRoute).sheetAnimationStyle` e confere `duration`, `reverseDuration` e `curve`, também passa no código atual. É a forma direta de matar M8 e de provar o bottom sheet.
+
+### Lacunas e correções
+
+1. **SCHEDUI-24, menu aberto (Major)**: não há teste para "com o menu aberto, o voltar fecha só o menu", e é justamente a lógica não óbvia do `PopScope(canPop: _isDrawerOpen)`; M6 sobreviveu. **Correção**: no grupo `voltar do sistema` (`schedule_page_test.dart:764`), abrir o drawer (`DrawerButton`), rodar `handlePopRoute` e esperar `find.byType(AppDrawer), findsNothing`, `find.byType(ScheduleView), findsOneWidget` e `find.text('painel-aberto'), findsNothing`. Depois, um segundo `handlePopRoute` deve abrir o Painel.
+2. **SCHEDUI-26, fechamento e curva (Minor)**: `reverseDuration: AppMotion.medium` e `curve: AppMotion.emphasized` não têm asserção; M8 sobreviveu, e trocar a curva também passaria, porque `route.animation` é linear e os testes `:399/:402` aceitam qualquer curva. **Correção**: em `schedule_form_sheet_test.dart`, pegar `ModalRoute.of(...)` como `ModalBottomSheetRoute` e conferir `sheetAnimationStyle.duration == AppMotion.slow`, `.reverseDuration == AppMotion.medium` e `.curve == AppMotion.emphasized`. Outra opção é medir o fechamento: `route.animation.value` fica entre 0 e 1 em `medium/2` e chega a 0 em `medium`.
+3. **SCHEDUI-23, item selecionado (Minor)**: `schedule_page_test.dart:468` confere só `drawer.currentRoute`, e o AC pede o item "Agenda" selecionado; M5 sobreviveu. **Correção**: depois de abrir o drawer, `tester.widget<ListTile>(find.ancestor(of: find.text('Agenda'), matching: find.byType(ListTile)))` e `expect(tile.selected, isTrue)`. O item "Painel" deve ter `selected == false`.
+4. **SCHEDUI-17/18, tipo da rota (Minor)**: nenhum teste afirma que o formulário é um bottom sheet. M2 só morreu porque a rota trocada tinha outro tempo de animação; um `showDialog(animationStyle: ...)` com os mesmos tempos passaria. **Correção**: `expect(ModalRoute.of(tester.element(find.byType(ScheduleFormSheet))), isA<ModalBottomSheetRoute<ScheduleFormResult>>())`, que pode ir no mesmo teste da correção 2.
+5. **Info**: o `Interval(0.3, 1)` da revelação do bloco (SCHEDUI-25) não é discriminado (`:345/:353` aceitam `Interval(0, 1)`). É detalhe do design e a spec não fixa o intervalo; não bloqueia.
+
+### Qualidade do código (só o diff)
+
+| Princípio | Status |
+| --- | --- |
+| Mínimo de código / sem escopo extra | ✅ (a paleta foi extraída para uma regra única, usada por card e sheet; o pacote `animations` saiu com o container transform) |
+| Mudanças cirúrgicas | ✅ (`dashboard_page.dart` e `app_drawer.dart` trocam `pushNamed` por `goNamed`, como o design pede; `app_theme.dart` troca a borda, conforme a revisão do design) |
+| Segue os padrões | ✅ (`context.reduceMotion`, `AppMotion`, textos do `.arb`, `AppTheme` real nos testes) |
+| Asserções casam com a spec | ⚠️ 3 parciais (lacunas 1 a 3) |
+| Todo teste no escopo mapeia para um AC | ✅ |
+
+### Rastreabilidade proposta (não aplicada ao `spec.md`, veredito FAIL)
+
+| Requisito | Status atual | Proposto |
+| --- | --- | --- |
+| SCHEDUI-17, 18, 21, 22, 25 | Implementing | ✅ Verified |
+| SCHEDUI-23, 24, 26 | Implementing | ❌ Needs Fix (só testes) |
+
+### Resultado final
+
+**Resultado (histórico, superado pela seção seguinte)**: re-verificação escopada - FAIL ❌. 5/8 ACs casam com a spec, sensor com 5/8 mortos, gate verde (388 passed, analyze limpo). O comportamento está implementado; o que falta são asserções (lacunas 1 a 4). Depois das correções, re-verificar com um verifier novo, escopado aos testes corrigidos.
+
+## Re-verificação das lacunas de teste (2026-09-24)
+
+**Escopo**: só as lacunas 1 a 4 da seção anterior (SCHEDUI-23, 24 e 26, e a prova de que o formulário abre num bottom sheet em SCHEDUI-17/18). SCHEDUI-21, 22 e 25 continuam com o PASS da seção anterior e não foram reverificados.
+**Diff**: working tree não commitado sobre `d329fab`. Nesta rodada mudaram só os testes `test/features/schedule/presentation/pages/schedule_page_test.dart` e `test/features/schedule/presentation/widgets/schedule_form_sheet_test.dart`. O código de produção é o mesmo da seção anterior.
+**Verifier**: sub-agente independente (autor ≠ verificador)
+
+### Checagem contra a spec
+
+| Req. (AC) | Resultado definido na spec | Evidência (`arquivo:linha`, asserção) | Veredito |
+| --- | --- | --- | --- |
+| SCHEDUI-17 (AC1) | A edição abre preenchida num bottom sheet | `test/features/schedule/presentation/pages/schedule_page_test.dart:384-387`: `expect(ModalRoute.of(tester.element(find.byType(ScheduleFormSheet))), isA<ModalBottomSheetRoute<ScheduleFormResult>>())`, depois de tocar no card; `:382`: `form.initial == upcomingItem(target)`. As evidências de preenchimento e de `editSchedule` da seção anterior continuam valendo | ✅ PASS (lacuna 4 fechada) |
+| SCHEDUI-18 (AC2) | "Agendar" abre a criação num bottom sheet | `schedule_page_test.dart:356-359`: mesma asserção `isA<ModalBottomSheetRoute<ScheduleFormResult>>()`, depois de tocar em "Agendar" | ✅ PASS (lacuna 4 fechada) |
+| SCHEDUI-23 (AC7) | O menu lateral da Agenda tem o item "Agenda" selecionado | `schedule_page_test.dart:481`: `expect(tileOf('Agenda').selected, isTrue)`; `:482`: `expect(tileOf('Painel').selected, isFalse)`. O `ListTile` é buscado dentro do `AppDrawer` aberto | ✅ PASS (M5 morre) |
+| SCHEDUI-24 (AC8) | Com o menu aberto, o voltar fecha só o menu (o caso sem sheet nem menu e o caso com o sheet aberto já passaram) | `schedule_page_test.dart:867`: `AppDrawer` `findsOneWidget` antes do voltar; `handlePopRoute` com o roteador real; `:872`: `find.byType(AppDrawer), findsNothing`; `:873`: `find.byType(ScheduleView), findsOneWidget`; `:874`: `find.text('painel-aberto'), findsNothing` | ✅ PASS (M6 morre) |
+| SCHEDUI-26 (AC10) | Sem redução de movimento, o sheet abre em `AppMotion.slow`, fecha em `AppMotion.medium` e usa a curva `AppMotion.emphasized` | `test/features/schedule/presentation/widgets/schedule_form_sheet_test.dart:420-422`: o teste converte a rota para `ModalBottomSheetRoute<ScheduleFormResult>` e lê `sheetAnimationStyle`; `:423`: `style.duration == AppMotion.slow`; `:424`: `style.reverseDuration == AppMotion.medium`; `:425`: `style.curve == AppMotion.emphasized`. O teste roda com `disableAnimations: false`; a abertura medida continua em `:399/:402` | ✅ PASS (M8 e M9 morrem) |
+
+**Status**: ✅ 5/5 casam com o resultado da spec. Somando as seções anteriores, os 26 requisitos estão cobertos.
+
+**Solidez dos testes novos**: as asserções pegam o valor exato da spec: tipo da rota, `selected` true e false, estado do menu, da Agenda e do Painel, e os três campos do `AnimationStyle`. Nenhum teste existente perdeu força; a contagem subiu de 388 para 390 (dois testes novos) e nada foi removido. O teste de SCHEDUI-26 confere a configuração que o framework consome, não o fechamento medido quadro a quadro. Para um parâmetro declarativo isso basta: M8 e M9 morrem.
+
+### Gate
+
+- **Comandos**: `flutter analyze` e `flutter test`, rodados na árvore real sem alterações
+- **Resultado**: analyze "No issues found!" (exit 0); 390 passed, 0 failed, 0 skipped (exit 0)
+- **Contagem**: 388 na seção anterior, 390 agora (+2: "com o menu aberto, o voltar fecha só o menu" e "SCHEDUI-26: abre em AppMotion.slow, fecha em AppMotion.medium, com a curva AppMotion.emphasized")
+
+### Sensor de discriminação
+
+Cópia isolada: `git worktree add --detach` em HEAD no scratchpad da sessão, espelhada do working tree com `rsync --delete` (sem `.git`, `build` e `.dart_tool`), mais `flutter pub get --offline`. Na cópia, a baseline dos dois arquivos de teste afetados ficou verde. Cada mutante teve backup por `cp`, foi restaurado com `cp`, e o `cmp` confirmou que o arquivo voltou idêntico ao do projeto. Depois vieram `git worktree remove --force` e `git worktree prune`. O `git status --porcelain` do projeto ficou idêntico à baseline.
+
+| # | Req. | Arquivo:linha | Mutação | Morto? |
+| --- | --- | --- | --- | --- |
+| M5 | SCHEDUI-23 | `lib/features/dashboard/presentation/widgets/app_drawer.dart:78` | `selected: currentRoute == AppRoute.schedule` vira `selected: false` | ✅ Morto ("a Agenda mostra o AppDrawer com o item "Agenda" selecionado", `schedule_page_test.dart:481`) |
+| M6 | SCHEDUI-24 | `lib/features/schedule/presentation/pages/schedule_page.dart:113` | `canPop: _isDrawerOpen` vira `canPop: false` | ✅ Morto ("com o menu aberto, o voltar fecha só o menu", `schedule_page_test.dart:872-874`) |
+| M8 | SCHEDUI-26 | `lib/features/schedule/presentation/widgets/schedule_form_sheet.dart:54` | `reverseDuration: AppMotion.medium` vira `AppMotion.slow` | ✅ Morto (`schedule_form_sheet_test.dart:424`) |
+| M9 | SCHEDUI-26 | `schedule_form_sheet.dart:55` | `curve: AppMotion.emphasized` vira `Curves.easeInOut` | ✅ Morto (`schedule_form_sheet_test.dart:425`) |
+
+**Profundidade**: 4 mutantes (orçamento do orquestrador).
+**Sensor**: 4/4 mortos. Com M1 a M4 e M7 da seção anterior, os 9 mutantes das mudanças pós-aparelho morrem.
+
+O `isA<ModalBottomSheetRoute<...>>` de SCHEDUI-17/18 não ganhou mutante próprio, por falta de orçamento. Pela leitura do código, M2 (`MaterialPageRoute`) e a troca por `showDialog` com os mesmos tempos, citada na lacuna 4, falham nessa asserção de tipo em `schedule_page_test.dart:358` e `:386`.
+
+### Lacunas restantes (não bloqueiam)
+
+1. **Info**: o `Interval(0.3, 1)` da revelação do bloco (SCHEDUI-25) segue sem discriminação, como já registrado na seção anterior (lacuna 5). A spec não fixa o intervalo.
+2. **Info**: o teste do menu não dá um segundo voltar para confirmar a ida ao Painel depois de fechar o menu. O caso "sem menu, voltar vai ao Painel" tem teste próprio (`schedule_page_test.dart:826`), então o fluxo completo é coberto pelas duas partes.
+
+### Rastreabilidade (aplicada ao `spec.md`)
+
+| Requisito | Status anterior | Novo status |
+| --- | --- | --- |
+| SCHEDUI-17, 18, 21, 22, 23, 24, 25, 26 | Implementing | ✅ Verified |
+
+### Resultado final
+
+**Result**: re-verificação das lacunas de teste - PASS ✅. 5/5 ACs casam com a spec, o sensor matou 4/4, o gate está verde (390 passed, analyze limpo), e não há mudança de código de produção nem de teste feita pelo verificador. Os 26 requisitos de schedule-redesign estão verificados.

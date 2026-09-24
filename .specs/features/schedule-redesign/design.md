@@ -1,7 +1,7 @@
 # Redesign da Agenda — Design
 
 **Spec**: `.specs/features/schedule-redesign/spec.md`
-**Status**: Approved (decisões do usuário em 2026-09-24: bloco de data, swipe com Desfazer, container transform, check desenhado, alerta pulsando)
+**Status**: Approved (decisões do usuário em 2026-09-24: bloco de data, swipe com Desfazer, container transform, check desenhado, alerta pulsando). **Revisão pós-teste no aparelho:** o container transform foi trocado pelo bottom sheet e a Agenda ganhou o menu lateral; ver "Revisão" no fim.
 
 ---
 
@@ -117,3 +117,18 @@ Nenhuma mudança de banco: restaurar usa a mesma tabela e o mesmo `insert`.
 | Remoção otimista | Conjunto de ids ocultos no cubit | O `Dismissible` não espera o stream do banco |
 | Desfazer | Reinserir a linha original, com o mesmo id | Volta exatamente o mesmo registro; o aviso do painel se atualiza sozinho pelo stream |
 | Check | `CustomPainter` + `PathMetric` | Traçado progressivo real; o `Checkbox` do Material não anima o desenho |
+
+---
+
+## Revisão pós-teste no aparelho (2026-09-24)
+
+Depois de usar o app, o usuário trocou o container transform pelo formulário em bottom sheet e pôs o `AppDrawer` na Agenda. O que muda no design acima:
+
+- **Formulário:** `ScheduleFormSheet` (em `presentation/widgets/`), aberto por `ScheduleFormSheet.show` com `showModalBottomSheet(isScrollControlled: true, useSafeArea: true, showDragHandle: true)`. Com redução de movimento, `sheetAnimationStyle: AnimationStyle.noAnimation`. As regras (janela via `currentWindow()`, observação de 200 caracteres, edição preenchida) não mudam.
+- **Sai o pacote `animations`** e a linha "Container transform" das Tech Decisions deixa de valer.
+- **Menu:** Painel e Agenda são destinos do menu, trocados com `goNamed` (substituem a tela em vez de empilhar).
+- **Tema:** os campos preenchidos passam a usar `UnderlineInputBorder`; com `OutlineInputBorder`, o rótulo flutuante ficava sobre a borda de cima, metade para fora da caixa.
+- **Voltar na Agenda (SCHEDUI-24):** `PopScope(canPop: _isDrawerOpen)` com `goNamed(dashboard)` quando o pop é barrado. O `canPop` segue o drawer porque ele fecha por uma entrada de histórico local da própria rota, que o `PopScope` barraria; o sheet é outra rota, por cima, e não precisa disso.
+- **Bloco de data na edição (SCHEDUI-25):** `Hero` não serve: o `HeroController` só anima entre `PageRoute`s, e o sheet é `PopupRoute`. No lugar, o `ScheduleDateBlock` entra com `ScaleTransition` + `FadeTransition` sobre `ModalRoute.of(context).animation`, num `Interval(0.3, 1)` com `AppMotion.emphasized`. A regra de cor foi extraída para `scheduleDateBlockPalette`, usada pelo card e pelo sheet; numa data diferente da salva, o bloco fica neutro. `ScheduleFormSheet.initial` passa a ser `ScheduleItem?` para levar o status.
+- **Ritmo do sheet (SCHEDUI-26):** `sheetAnimationStyle: AnimationStyle(duration: AppMotion.slow, reverseDuration: AppMotion.medium, curve: AppMotion.emphasized)`.
+

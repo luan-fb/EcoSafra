@@ -35,7 +35,8 @@ A Agenda funciona, mas o item da lista ainda é um `ListTile` simples com a data
 | Exclusão sem gesto | Ação de acessibilidade "Excluir" no card, com o mesmo Desfazer | Leitor de tela não faz swipe num item específico | y |
 | Duas exclusões seguidas | O snackbar novo substitui o anterior; a primeira exclusão fica confirmada | Um Desfazer por vez, como no Gmail | y |
 | Sair da Agenda com o snackbar aberto | O snackbar some junto com a tela; a exclusão fica confirmada | O Desfazer nunca chama um cubit já fechado | y |
-| Formulário | Vira tela cheia, aberta pela transição de container (pacote oficial `animations`) a partir do card ou do botão "Agendar" | A transição expande um elemento até ocupar a tela: não existe container transform para bottom sheet | y |
+| Formulário | **Revisado em 2026-09-24:** bottom sheet (`showModalBottomSheet`), no lugar da tela cheia com container transform | Decisão do usuário depois de testar no aparelho: o sheet com a animação padrão ficou melhor; o pacote `animations` saiu do projeto | y |
+| Menu na Agenda | A Agenda tem o `AppDrawer` com o item "Agenda" selecionado; Painel e Agenda são destinos do menu, trocados com `goNamed` | Decisão do usuário: os dois viram telas de mesmo nível, como abas | y |
 | Chuva no card | Só nos agendamentos em risco: "X mm previstos", com uma casa decimal, da previsão diária do dia | Explica o porquê do vermelho; nos demais casos o rótulo basta | y |
 | Check desenhado | Substitui o `Checkbox` padrão por um componente próprio com `CustomPainter`, mantendo semântica de checkbox e alvo de toque de 48 | Estudo de animação explícita com traçado progressivo | y |
 
@@ -121,14 +122,18 @@ A Agenda funciona, mas o item da lista ainda é um `ListTile` simples com a data
 
 **Acceptance Criteria**:
 
-1. WHEN o usuário toca num agendamento não concluído THEN the system SHALL abrir o formulário de edição em tela cheia com o card se expandindo até ocupar a tela, e fechar fazendo o caminho inverso.
-2. WHEN o usuário toca em "Agendar" THEN the system SHALL abrir o formulário de criação com a mesma transição a partir do botão.
+1. WHEN o usuário toca num agendamento não concluído THEN the system SHALL abrir o formulário de edição preenchido num bottom sheet.
+2. WHEN o usuário toca em "Agendar" THEN the system SHALL abrir o formulário de criação num bottom sheet.
 3. WHEN o usuário marca um agendamento como concluído THEN the system SHALL desenhar o check progressivamente em `AppMotion.medium`, e WHEN desmarca THEN the system SHALL apagá-lo no mesmo tempo.
 4. WHILE um agendamento não concluído está em risco the system SHALL pulsar o bloco de data em loop.
-5. WHILE `MediaQuery.disableAnimations` é true the system SHALL mostrar o check completo sem traçado, o bloco de data sem pulso e abrir e fechar o formulário sem transição.
-6. The system SHALL manter no formulário em tela cheia as mesmas regras do formulário atual: janela de datas da previsão, observação de até 200 caracteres e preenchimento na edição.
+5. WHILE `MediaQuery.disableAnimations` é true the system SHALL mostrar o check completo sem traçado, o bloco de data sem pulso e abrir o formulário sem animação.
+6. The system SHALL manter no formulário as mesmas regras do formulário anterior: janela de datas da previsão, observação de até 200 caracteres e preenchimento na edição.
+7. The system SHALL exibir na Agenda o menu lateral com o item "Agenda" selecionado.
+8. WHEN o usuário usa o voltar do sistema na Agenda, sem sheet nem menu abertos, THEN the system SHALL levar ao Painel; WHEN o sheet ou o menu estão abertos THEN the system SHALL fechar só eles.
+9. WHEN o formulário de edição abre THEN the system SHALL mostrar no topo o bloco de data do agendamento com a cor do status, crescendo e aparecendo enquanto o sheet sobe; WHEN o usuário escolhe outra data THEN the system SHALL mostrá-la no bloco em cor neutra (a data nova ainda não tem status).
+10. WHILE `MediaQuery.disableAnimations` é false the system SHALL abrir o sheet em `AppMotion.slow` e fechá-lo em `AppMotion.medium`, com a curva `AppMotion.emphasized`.
 
-**Independent Test**: Tocar num card e ver a expansão; concluir e ver o check sendo desenhado; ligar "remover animações" e ver tudo trocar sem movimento.
+**Independent Test**: Tocar num card e ver o formulário subir; concluir e ver o check sendo desenhado; ligar "remover animações" e ver tudo trocar sem movimento.
 
 ---
 
@@ -161,16 +166,20 @@ A Agenda funciona, mas o item da lista ainda é um `ListTile` simples com a data
 | SCHEDUI-14 | P1: Swipe: falha ao restaurar | Tasks | ✅ Verified |
 | SCHEDUI-15 | P1: Swipe: ação de acessibilidade | Tasks | ✅ Verified |
 | SCHEDUI-16 | P1: Swipe: snackbar some ao sair | Tasks | ✅ Verified |
-| SCHEDUI-17 | P2: Container transform no card | Tasks | ✅ Verified |
-| SCHEDUI-18 | P2: Container transform no botão | Tasks | ✅ Verified |
+| SCHEDUI-17 | P2: Edição em bottom sheet (revisado; antes container transform) | Tasks | ✅ Verified |
+| SCHEDUI-18 | P2: Criação em bottom sheet (revisado; antes container transform) | Tasks | ✅ Verified |
 | SCHEDUI-19 | P2: Check desenhado | Tasks | ✅ Verified |
 | SCHEDUI-20 | P2: Alerta pulsando | Tasks | ✅ Verified |
-| SCHEDUI-21 | P2: Redução de movimento | Tasks | ✅ Verified |
+| SCHEDUI-21 | P2: Redução de movimento (revisado: sheet sem animação) | Tasks | ✅ Verified |
 | SCHEDUI-22 | P2: Regras do formulário mantidas | Tasks | ✅ Verified |
+| SCHEDUI-23 | P2: Menu lateral na Agenda | Tasks | ✅ Verified |
+| SCHEDUI-24 | P2: Voltar na Agenda leva ao Painel | Tasks | ✅ Verified |
+| SCHEDUI-25 | P2: Bloco de data no formulário de edição | Tasks | ✅ Verified |
+| SCHEDUI-26 | P2: Animação do sheet no ritmo do app | Tasks | ✅ Verified |
 
-SCHEDUI-05..09 = ACs 1–5 do card; SCHEDUI-10..16 = ACs 1–7 do swipe; SCHEDUI-17..22 = ACs 1–6 das animações.
+SCHEDUI-05..09 = ACs 1–5 do card; SCHEDUI-10..16 = ACs 1–7 do swipe; SCHEDUI-17..22 = ACs 1–6 das animações; SCHEDUI-23..26 = ACs 7–10.
 
-**Coverage:** 22 total, 4 implemented, 18 mapped to tasks (T5–T12)
+**Coverage:** 26 total; 17..18, 21..26 revisados ou criados após o teste no aparelho (bottom sheet, menu, voltar, bloco de data e ritmo do sheet)
 
 ---
 

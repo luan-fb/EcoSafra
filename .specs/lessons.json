@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 16,
+  "next_id": 19,
   "lessons": [
     {
       "id": "L-001",
@@ -274,6 +274,60 @@
       ],
       "created": "2026-09-24T19:32:52Z",
       "last_seen": "2026-09-24T19:32:52Z"
+    },
+    {
+      "id": "L-016",
+      "key": "surviving_mutant::quando um ac de navegacao lista varios estados abertos testar o voltar em cada estado citado nao so em um deles",
+      "text": "Quando um AC de navegação lista vários estados abertos, testar o voltar em cada estado citado, não só em um deles",
+      "signal": "surviving_mutant",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M6 schedule_page.dart:113 (SCHEDUI-24) (presentation)"
+      ],
+      "created": "2026-09-24T23:40:03Z",
+      "last_seen": "2026-09-24T23:40:03Z"
+    },
+    {
+      "id": "L-017",
+      "key": "surviving_mutant::para duracao duracao reversa e curva definidas na spec afirmar os valores configurados na rota ou no controller nao so que a animacao esta em andamento",
+      "text": "Para duração, duração reversa e curva definidas na spec, afirmar os valores configurados na rota ou no controller, não só que a animação está em andamento",
+      "signal": "surviving_mutant",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M8 schedule_form_sheet.dart:54 (SCHEDUI-26) (presentation)"
+      ],
+      "created": "2026-09-24T23:40:03Z",
+      "last_seen": "2026-09-24T23:40:03Z"
+    },
+    {
+      "id": "L-018",
+      "key": "surviving_mutant::para um estado visual pedido na spec afirmar o estado no widget renderizado nao o parametro repassado ao componente",
+      "text": "Para um estado visual pedido na spec, afirmar o estado no widget renderizado, não o parâmetro repassado ao componente",
+      "signal": "surviving_mutant",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M5 app_drawer.dart:78 (SCHEDUI-23) (presentation)"
+      ],
+      "created": "2026-09-24T23:40:03Z",
+      "last_seen": "2026-09-24T23:40:03Z"
     }
   ]
 }

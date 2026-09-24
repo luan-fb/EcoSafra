@@ -104,6 +104,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: SCHEDUI-04 schedule_page.dart:188-192 (spec)
 - last seen: 2026-09-24T19:32:52Z
 
+### L-016 - Quando um AC de navegação lista vários estados abertos, testar o voltar em cada estado citado, não só em um deles
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `presentation` · harmful: 0
+- features: schedule-redesign
+- evidence: M6 schedule_page.dart:113 (SCHEDUI-24) (presentation)
+- last seen: 2026-09-24T23:40:03Z
+
+### L-017 - Para duração, duração reversa e curva definidas na spec, afirmar os valores configurados na rota ou no controller, não só que a animação está em andamento
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `presentation` · harmful: 0
+- features: schedule-redesign
+- evidence: M8 schedule_form_sheet.dart:54 (SCHEDUI-26) (presentation)
+- last seen: 2026-09-24T23:40:03Z
+
+### L-018 - Para um estado visual pedido na spec, afirmar o estado no widget renderizado, não o parâmetro repassado ao componente
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `presentation` · harmful: 0
+- features: schedule-redesign
+- evidence: M5 app_drawer.dart:78 (SCHEDUI-23) (presentation)
+- last seen: 2026-09-24T23:40:03Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
