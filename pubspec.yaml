@@ -93,6 +93,9 @@ dev_dependencies:
   # --- Testes ---
   bloc_test: ^10.0.0
   mocktail: ^1.0.5
+  # Só para montar um GoRouter real nos testes de navegação: o
+  # go_router_modular reexporta o go_router, mas esconde a classe GoRouter.
+  go_router: ^17.5.0
 
 flutter:
   uses-material-design: true

@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_cubit.dart';
@@ -14,6 +15,7 @@ import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockDashboardCubit extends MockCubit<DashboardState>
@@ -173,4 +175,51 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     },
   );
+
+  testWidgets('AGD-19: tocar no aviso abre a Agenda', (tester) async {
+    stubDashboard(const DashboardState.loading());
+    stubScheduleAlert(
+      const ScheduleAlertState(alert: ScheduleTodayReminder()),
+    );
+    // Roteador real com a rota da Agenda pelo mesmo nome do app: prova o
+    // destino da navegação, e não só que o callback do banner foi chamado.
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => MultiBlocProvider(
+            providers: [
+              BlocProvider<AuthCubit>.value(value: authCubit),
+              BlocProvider<DashboardCubit>.value(value: dashboardCubit),
+              BlocProvider<ScheduleAlertCubit>.value(
+                value: scheduleAlertCubit,
+              ),
+            ],
+            child: const DashboardView(),
+          ),
+        ),
+        GoRoute(
+          path: AppRoute.schedule.path,
+          name: AppRoute.schedule.name,
+          builder: (_, _) => const Text('agenda-aberta'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        locale: const Locale('pt'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Aplicação de adubo planejada para hoje'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('agenda-aberta'), findsOneWidget);
+  });
 }
