@@ -69,7 +69,7 @@ class ScheduleView extends StatelessWidget {
     final cubit = context.read<ScheduleCubit>();
     final result = await ScheduleFormSheet.show(
       context,
-      window: cubit.state.window,
+      window: cubit.currentWindow(),
     );
     if (result != null) {
       await cubit.addSchedule(result.date, note: result.note);
@@ -150,7 +150,7 @@ class _ScheduleSections extends StatelessWidget {
     final cubit = context.read<ScheduleCubit>();
     final result = await ScheduleFormSheet.show(
       context,
-      window: cubit.state.window,
+      window: cubit.currentWindow(),
       initial: item.schedule,
     );
     if (result != null) {

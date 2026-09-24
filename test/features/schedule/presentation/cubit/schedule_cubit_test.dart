@@ -468,6 +468,27 @@ void main() {
     );
   });
 
+  test(
+    'currentWindow acompanha o relógio mesmo sem nova emissão (virada do dia '
+    'com a tela aberta)',
+    () async {
+      var current = now;
+      final cubit = buildCubit(clock: Clock(() => current));
+      schedulesController.add([schedule('today', today)]);
+      await flush();
+
+      current = DateTime(2026, 9, 24, 0, 5);
+
+      expect(
+        cubit.currentWindow(),
+        SchedulingWindow.startingAt(DateTime(2026, 9, 24)),
+      );
+      // O estado ainda é o da última emissão; o formulário não pode usá-lo.
+      expect(cubit.state.window, window);
+      await cubit.close();
+    },
+  );
+
   group('falha do stream', () {
     blocTest<ScheduleCubit, ScheduleState>(
       'antes de carregar vira error, e a previsão depois não inventa lista',

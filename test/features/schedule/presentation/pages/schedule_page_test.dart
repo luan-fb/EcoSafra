@@ -36,6 +36,7 @@ void main() {
       () => cubit.setCompleted(any(), completed: any(named: 'completed')),
     ).thenAnswer((_) async {});
     when(() => cubit.removeSchedule(any())).thenAnswer((_) async {});
+    when(() => cubit.currentWindow()).thenReturn(window);
   });
 
   FertilizationSchedule schedule(
@@ -186,6 +187,35 @@ void main() {
       },
     );
 
+    testWidgets(
+      'edge case: virada do dia com a tela aberta, o seletor usa a janela '
+      'atual e não a do estado',
+      (tester) async {
+        final yesterdayWindow = SchedulingWindow.startingAt(
+          today.subtract(const Duration(days: 1)),
+        );
+        stubState(
+          ScheduleState.loaded(
+            upcoming: const [],
+            completed: const [],
+            window: yesterdayWindow,
+          ),
+        );
+        await pumpPage(tester);
+
+        await tester.tap(find.text('Agendar'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Data da aplicação'));
+        await tester.pumpAndSettle();
+
+        final picker = tester.widget<DatePickerDialog>(
+          find.byType(DatePickerDialog),
+        );
+        expect(picker.firstDate, window.first);
+        expect(picker.lastDate, window.last);
+      },
+    );
+
     testWidgets('FAB ausente em erro', (tester) async {
       stubState(ScheduleState.error(const CacheFailure('falhou'), window));
       await pumpPage(tester);
@@ -196,6 +226,36 @@ void main() {
   });
 
   group('editar', () {
+    testWidgets(
+      'edge case: virada do dia com a tela aberta, a edição também usa a '
+      'janela atual e não a do estado',
+      (tester) async {
+        final yesterdayWindow = SchedulingWindow.startingAt(
+          today.subtract(const Duration(days: 1)),
+        );
+        final target = schedule('s1', window.first);
+        stubState(
+          ScheduleState.loaded(
+            upcoming: [upcomingItem(target)],
+            completed: const [],
+            window: yesterdayWindow,
+          ),
+        );
+        await pumpPage(tester);
+
+        await tester.tap(find.byType(ListTile));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Data da aplicação'));
+        await tester.pumpAndSettle();
+
+        final picker = tester.widget<DatePickerDialog>(
+          find.byType(DatePickerDialog),
+        );
+        expect(picker.firstDate, window.first);
+        expect(picker.lastDate, window.last);
+      },
+    );
+
     testWidgets(
       'AGD-24: tocar num agendamento não concluído abre o formulário preenchido',
       (tester) async {
