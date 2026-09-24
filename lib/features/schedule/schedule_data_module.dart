@@ -5,7 +5,10 @@ import 'package:ecosafra/features/schedule/data/datasources/drift_schedule_local
 import 'package:ecosafra/features/schedule/data/datasources/schedule_local_data_source.dart';
 import 'package:ecosafra/features/schedule/data/repositories/schedule_repository_impl.dart';
 import 'package:ecosafra/features/schedule/domain/repositories/schedule_repository.dart';
+import 'package:ecosafra/features/schedule/domain/usecases/create_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/delete_schedule.dart';
+import 'package:ecosafra/features/schedule/domain/usecases/set_schedule_completed.dart';
+import 'package:ecosafra/features/schedule/domain/usecases/update_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/watch_schedules.dart';
 import 'package:go_router_modular/go_router_modular.dart';
 import 'package:uuid/uuid.dart';
@@ -29,6 +32,15 @@ class ScheduleDataModule extends Module {
       )
       ..addSingleton<WatchSchedules>(
         (i) => WatchSchedules(i.get<ScheduleRepository>()),
+      )
+      ..addSingleton<CreateSchedule>(
+        (i) => CreateSchedule(i.get<ScheduleRepository>(), i.get<Clock>()),
+      )
+      ..addSingleton<UpdateSchedule>(
+        (i) => UpdateSchedule(i.get<ScheduleRepository>(), i.get<Clock>()),
+      )
+      ..addSingleton<SetScheduleCompleted>(
+        (i) => SetScheduleCompleted(i.get<ScheduleRepository>()),
       )
       ..addSingleton<DeleteSchedule>(
         (i) => DeleteSchedule(i.get<ScheduleRepository>()),

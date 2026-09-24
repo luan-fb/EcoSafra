@@ -375,7 +375,7 @@ T15 → T16
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(schedule): valida data e observação ao criar e editar`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
