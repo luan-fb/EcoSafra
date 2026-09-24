@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 5,
+  "next_id": 8,
   "lessons": [
     {
       "id": "L-001",
@@ -76,6 +76,60 @@
       ],
       "created": "2026-09-18T23:37:11Z",
       "last_seen": "2026-09-18T23:37:11Z"
+    },
+    {
+      "id": "L-005",
+      "key": "surviving_mutant::quando um widget recebe ontap por parametro testar tambem na pagina hospedeira que o toque abre a rota certa o teste do widget so prova o callback",
+      "text": "Quando um widget recebe onTap por parâmetro, testar também na página hospedeira que o toque abre a rota certa; o teste do widget só prova o callback.",
+      "signal": "surviving_mutant",
+      "scope": "presentation/pages",
+      "status": "candidate",
+      "features": [
+        "schedule"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M9 lib/features/dashboard/presentation/pages/dashboard_page.dart (ScheduleAlertBanner.onTap) (presentation/pages)"
+      ],
+      "created": "2026-09-24T11:52:45Z",
+      "last_seen": "2026-09-24T11:52:45Z"
+    },
+    {
+      "id": "L-006",
+      "key": "ac_gap::valor derivado do relogio janela hoje deve ser recalculado no momento do uso nao lido de um estado que so muda quando outro stream emite testar avancando o clock sem nova emissao",
+      "text": "Valor derivado do relógio (janela, hoje) deve ser recalculado no momento do uso, não lido de um estado que só muda quando outro stream emite; testar avançando o Clock sem nova emissão.",
+      "signal": "ac_gap",
+      "scope": "presentation/cubit",
+      "status": "candidate",
+      "features": [
+        "schedule"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "Edge case 'dia vira com a Agenda aberta' - lib/features/schedule/presentation/pages/schedule_page.dart:72 (presentation/cubit)"
+      ],
+      "created": "2026-09-24T11:52:45Z",
+      "last_seen": "2026-09-24T11:52:45Z"
+    },
+    {
+      "id": "L-007",
+      "key": "ac_gap::quando a mesma correcao entra em mais de um ponto de chamada cada ponto precisa de um teste em que o valor antigo e o novo sejam diferentes",
+      "text": "Quando a mesma correção entra em mais de um ponto de chamada, cada ponto precisa de um teste em que o valor antigo e o novo sejam diferentes",
+      "signal": "ac_gap",
+      "scope": "presentation/pages",
+      "status": "candidate",
+      "features": [
+        "schedule"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md iteração 2, edge case virada do dia: schedule_page.dart:153 (edição) sem teste que discrimine (presentation/pages)"
+      ],
+      "created": "2026-09-24T11:59:09Z",
+      "last_seen": "2026-09-24T11:59:09Z"
     }
   ]
 }

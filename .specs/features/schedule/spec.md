@@ -159,37 +159,37 @@ O produtor decide hoje se pode adubar, mas não tem onde planejar a próxima apl
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| AGD-01 | P1 Criar: gravar com uid | T7, T8, T11, T14 | In Tasks |
-| AGD-02 | P1 Criar: janela de datas | T2, T4, T9, T12 | In Tasks |
-| AGD-03 | P1 Criar: observação normalizada | T5, T9, T12 | In Tasks |
-| AGD-04 | P1 Criar: observação vazia | T5, T9 | In Tasks |
-| AGD-05 | P1 Criar: persistir entre execuções | T6, T7 | In Tasks |
-| AGD-06 | P1 Criar: offline | T8 | In Tasks |
-| AGD-07 | P1 Criar: só do usuário | T7, T8 | In Tasks |
-| AGD-08 | P1 Criar: seções e ordem | T7, T11, T14 | In Tasks |
-| AGD-09 | P1 Criar: risco por item | T11, T13 | In Tasks |
-| AGD-10 | P1 Criar: data passada | T3, T11, T13 | In Tasks |
-| AGD-11 | P1 Criar: sem login recusa | T8 | In Tasks |
-| AGD-12 | P1 Criar: falha de escrita | T7, T8, T11, T14 | In Tasks |
-| AGD-13 | P1 Criar: migração v1 → v2 | T1, T6 | In Tasks |
-| AGD-14 | P1 Criar: sem Firestore | T8 | In Tasks |
-| AGD-15 | P1 Aviso: alerta de risco com contagem | T10, T15, T16 | In Tasks |
-| AGD-16 | P1 Aviso: lembrete de hoje | T3, T10, T16 | In Tasks |
-| AGD-17 | P1 Aviso: lembrete de amanhã | T3, T10, T16 | In Tasks |
-| AGD-18 | P1 Aviso: sem aviso | T10, T16 | In Tasks |
-| AGD-19 | P1 Aviso: toque abre a Agenda | T16 | In Tasks |
-| AGD-20 | P1 Aviso: ignora concluídos e passados | T10 | In Tasks |
-| AGD-21 | P1 Aviso: atualiza ao voltar | T15, T16 | In Tasks |
-| AGD-22 | P1 Aviso: falha não quebra o painel | T15 | In Tasks |
-| AGD-23 | P1 Aviso: relógio injetável | T2, T10, T15 | In Tasks |
-| AGD-24 | P2 Editar: grava e reavalia | T9, T11, T14 | In Tasks |
-| AGD-25 | P2 Editar: mesmas regras | T4, T9, T12 | In Tasks |
-| AGD-26 | P2 Editar: data fora da janela | T4, T12 | In Tasks |
-| AGD-27 | P2 Editar: concluído não edita | T13 | In Tasks |
-| AGD-28 | P2 Concluir: marcar | T5, T7, T9, T11, T13 | In Tasks |
-| AGD-29 | P2 Concluir: desfazer | T7, T9, T11, T13 | In Tasks |
-| AGD-30 | P1 Excluir: confirmar | T7, T11, T14 | In Tasks |
-| AGD-31 | P1 Excluir: cancelar | T14 | In Tasks |
+| AGD-01 | P1 Criar: gravar com uid | T7, T8, T11, T14 | ✅ Verified |
+| AGD-02 | P1 Criar: janela de datas | T2, T4, T9, T12 | ✅ Verified |
+| AGD-03 | P1 Criar: observação normalizada | T5, T9, T12 | ✅ Verified |
+| AGD-04 | P1 Criar: observação vazia | T5, T9 | ✅ Verified |
+| AGD-05 | P1 Criar: persistir entre execuções | T6, T7 | ✅ Verified |
+| AGD-06 | P1 Criar: offline | T8 | ✅ Verified |
+| AGD-07 | P1 Criar: só do usuário | T7, T8 | ✅ Verified |
+| AGD-08 | P1 Criar: seções e ordem | T7, T11, T14 | ✅ Verified |
+| AGD-09 | P1 Criar: risco por item | T11, T13 | ✅ Verified |
+| AGD-10 | P1 Criar: data passada | T3, T11, T13 | ✅ Verified |
+| AGD-11 | P1 Criar: sem login recusa | T8 | ✅ Verified |
+| AGD-12 | P1 Criar: falha de escrita | T7, T8, T11, T14 | ✅ Verified |
+| AGD-13 | P1 Criar: migração v1 → v2 | T1, T6 | ✅ Verified |
+| AGD-14 | P1 Criar: sem Firestore | T8 | ✅ Verified |
+| AGD-15 | P1 Aviso: alerta de risco com contagem | T10, T15, T16 | ✅ Verified |
+| AGD-16 | P1 Aviso: lembrete de hoje | T3, T10, T16 | ✅ Verified |
+| AGD-17 | P1 Aviso: lembrete de amanhã | T3, T10, T16 | ✅ Verified |
+| AGD-18 | P1 Aviso: sem aviso | T10, T16 | ✅ Verified |
+| AGD-19 | P1 Aviso: toque abre a Agenda | T16 | ✅ Verified |
+| AGD-20 | P1 Aviso: ignora concluídos e passados | T10 | ✅ Verified |
+| AGD-21 | P1 Aviso: atualiza ao voltar | T15, T16 | ✅ Verified |
+| AGD-22 | P1 Aviso: falha não quebra o painel | T15 | ✅ Verified |
+| AGD-23 | P1 Aviso: relógio injetável | T2, T10, T15 | ✅ Verified |
+| AGD-24 | P2 Editar: grava e reavalia | T9, T11, T14 | ✅ Verified |
+| AGD-25 | P2 Editar: mesmas regras | T4, T9, T12 | ✅ Verified |
+| AGD-26 | P2 Editar: data fora da janela | T4, T12 | ✅ Verified |
+| AGD-27 | P2 Editar: concluído não edita | T13 | ✅ Verified |
+| AGD-28 | P2 Concluir: marcar | T5, T7, T9, T11, T13 | ✅ Verified |
+| AGD-29 | P2 Concluir: desfazer | T7, T9, T11, T13 | ✅ Verified |
+| AGD-30 | P1 Excluir: confirmar | T7, T11, T14 | ✅ Verified |
+| AGD-31 | P1 Excluir: cancelar | T14 | ✅ Verified |
 
 Mapeamento: AGD-01..14 = ACs 1–14 de "Criar"; AGD-15..23 = ACs 1–9 de "Aviso"; AGD-24..27 = "Editar"; AGD-28..29 = "Concluir"; AGD-30..31 = "Excluir".
 

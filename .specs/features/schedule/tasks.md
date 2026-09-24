@@ -10,7 +10,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 **Spec**: `.specs/features/schedule/spec.md`
 **Design**: `.specs/features/schedule/design.md`
-**Status**: In Progress
+**Status**: Done
 **Branch**: `feat/schedule`
 
 ---
