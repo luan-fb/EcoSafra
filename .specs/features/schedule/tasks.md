@@ -582,7 +582,7 @@ T15 → T16
 **Tests**: widget
 **Gate**: build
 **Commit**: `feat(dashboard): avisa no painel sobre agendamentos em risco ou do dia`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

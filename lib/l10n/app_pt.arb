@@ -243,5 +243,19 @@
   "@scheduleSectionUpcoming": {"description": "Título da seção de agendamentos não concluídos"},
 
   "scheduleSectionCompleted": "Concluídos",
-  "@scheduleSectionCompleted": {"description": "Título da seção de agendamentos concluídos"}
+  "@scheduleSectionCompleted": {"description": "Título da seção de agendamentos concluídos"},
+
+  "scheduleAlertRiskCount": "{count, plural, one{1 aplicação planejada em dia de chuva forte} other{{count} aplicações planejadas em dias de chuva forte}}",
+  "@scheduleAlertRiskCount": {
+    "description": "Aviso no painel com a quantidade de agendamentos em risco de chuva forte",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scheduleAlertTodayReminder": "Aplicação de adubo planejada para hoje",
+  "@scheduleAlertTodayReminder": {"description": "Aviso no painel lembrando de uma aplicação agendada para hoje"},
+
+  "scheduleAlertTomorrowReminder": "Aplicação de adubo planejada para amanhã",
+  "@scheduleAlertTomorrowReminder": {"description": "Aviso no painel lembrando de uma aplicação agendada para amanhã"}
 }
