@@ -305,7 +305,7 @@ T11 → T12
 
 **Tests**: widget
 **Gate**: quick
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
