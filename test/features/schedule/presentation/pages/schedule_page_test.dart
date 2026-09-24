@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:animations/animations.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:ecosafra/core/error/failure.dart';
+import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
@@ -25,6 +28,13 @@ class MockScheduleCubit extends MockCubit<ScheduleState>
 
 void main() {
   setUpAll(() async {
+    registerFallbackValue(
+      FertilizationSchedule(
+        id: 'fallback',
+        scheduledDate: DateTime(2026),
+        createdAt: DateTime(2026),
+      ),
+    );
     await initializeDateFormatting('pt_BR');
     // Tema real do app: o bug de largura infinita dos botões só aparecia
     // com ele.
@@ -48,6 +58,7 @@ void main() {
       () => cubit.setCompleted(any(), completed: any(named: 'completed')),
     ).thenAnswer((_) async {});
     when(() => cubit.removeSchedule(any())).thenAnswer((_) async {});
+    when(() => cubit.restoreSchedule(any())).thenAnswer((_) async {});
     when(() => cubit.currentWindow()).thenReturn(window);
   });
 
@@ -508,50 +519,291 @@ void main() {
     );
   });
 
-  group('excluir', () {
-    testWidgets(
-      'AGD-31: cancelar o diálogo de exclusão mantém o agendamento',
-      (tester) async {
-        stubState(
-          ScheduleState.loaded(
-            upcoming: [upcomingItem(schedule('s1', today))],
-            completed: const [],
-            window: window,
-          ),
+  group('excluir com swipe e Desfazer', () {
+    final upcomingTarget = schedule('s1', window.first, note: 'ureia');
+    final completedTarget = schedule('s2', today, completed: true);
+
+    /// Estado com um próximo e um concluído. `removeSchedule` emite o estado
+    /// sem o item, como a remoção otimista do cubit real: o `Dismissible`
+    /// exige o item fora da árvore depois de dispensado.
+    void stubRemovable() {
+      var current = ScheduleState.loaded(
+        upcoming: [upcomingItem(upcomingTarget)],
+        completed: [completedItem(completedTarget)],
+        window: window,
+      );
+      final states = StreamController<ScheduleState>();
+      addTearDown(states.close);
+      whenListen(cubit, states.stream, initialState: current);
+      when(() => cubit.removeSchedule(any())).thenAnswer((invocation) async {
+        final id = invocation.positionalArguments.single as String;
+        current = ScheduleState.loaded(
+          upcoming: [
+            for (final item in current.upcoming)
+              if (item.schedule.id != id) item,
+          ],
+          completed: [
+            for (final item in current.completed)
+              if (item.schedule.id != id) item,
+          ],
+          window: window,
         );
+        states.add(current);
+      });
+    }
+
+    Finder cardOf(FertilizationSchedule target) => find.byWidgetPredicate(
+      (widget) => widget is ScheduleTile && widget.item.schedule == target,
+    );
+
+    Future<void> swipeLeft(WidgetTester tester, Finder card) async {
+      await tester.drag(card, const Offset(-600, 0));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'SCHEDUI-10, 11: swipe completo para a esquerda tira o card, chama '
+      'removeSchedule e mostra o snackbar com Desfazer',
+      (tester) async {
+        stubRemovable();
         await pumpPage(tester);
 
-        tester.widget<ScheduleTile>(find.byType(ScheduleTile)).onDelete();
-        await tester.pumpAndSettle();
+        await swipeLeft(tester, cardOf(upcomingTarget));
 
-        expect(find.text('Excluir agendamento?'), findsOneWidget);
-
-        await tester.tap(find.text('Cancelar'));
-        await tester.pumpAndSettle();
-
-        verifyNever(() => cubit.removeSchedule(any()));
+        verify(() => cubit.removeSchedule('s1')).called(1);
+        expect(cardOf(upcomingTarget), findsNothing);
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+        expect(find.widgetWithText(SnackBarAction, 'Desfazer'), findsOneWidget);
+        verifyNever(() => cubit.restoreSchedule(any()));
       },
     );
 
     testWidgets(
-      'AGD-30: confirmar o diálogo de exclusão chama removeSchedule',
+      'SCHEDUI-10: o fundo do swipe é AppColors.danger com a lixeira',
       (tester) async {
-        stubState(
-          ScheduleState.loaded(
-            upcoming: [upcomingItem(schedule('s1', today))],
-            completed: const [],
-            window: window,
-          ),
-        );
+        stubRemovable();
         await pumpPage(tester);
 
-        tester.widget<ScheduleTile>(find.byType(ScheduleTile)).onDelete();
+        final dismissible = tester.widget<Dismissible>(
+          find.byKey(const ValueKey('s1')),
+        );
+        expect(dismissible.direction, DismissDirection.endToStart);
+
+        await tester.drag(cardOf(upcomingTarget), const Offset(-80, 0));
+        await tester.pump();
+
+        expect(find.byIcon(Icons.delete_rounded), findsOneWidget);
+        final background = tester.widget<DecoratedBox>(
+          find
+              .ancestor(
+                of: find.byIcon(Icons.delete_rounded),
+                matching: find.byType(DecoratedBox),
+              )
+              .first,
+        );
+        expect(
+          (background.decoration as BoxDecoration).color,
+          AppColors.danger,
+        );
+        await tester.pumpAndSettle();
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-12: tocar em "Desfazer" chama restoreSchedule com o '
+      'agendamento exato',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        await swipeLeft(tester, cardOf(upcomingTarget));
+        await tester.tap(find.text('Desfazer'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Excluir').last);
+        final restored =
+            verify(() => cubit.restoreSchedule(captureAny())).captured.single
+                as FertilizationSchedule;
+        expect(restored, same(upcomingTarget));
+        expect(restored.note, 'ureia');
+        expect(find.text('Agendamento excluído'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'edge case: swipe num concluído exclui com o mesmo Desfazer',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        await swipeLeft(tester, cardOf(completedTarget));
+
+        verify(() => cubit.removeSchedule('s2')).called(1);
+        expect(cardOf(completedTarget), findsNothing);
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+
+        await tester.tap(find.text('Desfazer'));
+        await tester.pumpAndSettle();
+
+        verify(() => cubit.restoreSchedule(completedTarget)).called(1);
+      },
+    );
+
+    testWidgets(
+      'edge case: arrasto abaixo do limiar devolve o card sem excluir',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        await tester.drag(cardOf(upcomingTarget), const Offset(-60, 0));
+        await tester.pumpAndSettle();
+
+        verifyNever(() => cubit.removeSchedule(any()));
+        expect(cardOf(upcomingTarget), findsOneWidget);
+        expect(find.text('Agendamento excluído'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'edge case: arrasto para a direita não exclui',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        await tester.drag(cardOf(upcomingTarget), const Offset(600, 0));
+        await tester.pumpAndSettle();
+
+        verifyNever(() => cubit.removeSchedule(any()));
+        expect(cardOf(upcomingTarget), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-15: a ação de acessibilidade "Excluir" faz o mesmo fluxo, '
+      'sem gesto',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        tester.widget<ScheduleTile>(cardOf(upcomingTarget)).onDelete();
         await tester.pumpAndSettle();
 
         verify(() => cubit.removeSchedule('s1')).called(1);
+        expect(cardOf(upcomingTarget), findsNothing);
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+        expect(find.byType(AlertDialog), findsNothing);
+
+        await tester.tap(find.text('Desfazer'));
+        await tester.pumpAndSettle();
+
+        final restored =
+            verify(() => cubit.restoreSchedule(captureAny())).captured.single
+                as FertilizationSchedule;
+        expect(restored, same(upcomingTarget));
+      },
+    );
+
+    testWidgets(
+      'edge case: duas exclusões seguidas deixam só o snackbar da última',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        await swipeLeft(tester, cardOf(upcomingTarget));
+        await swipeLeft(tester, cardOf(completedTarget));
+
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+
+        await tester.tap(find.text('Desfazer'));
+        await tester.pumpAndSettle();
+
+        verify(() => cubit.restoreSchedule(completedTarget)).called(1);
+        verifyNever(() => cubit.restoreSchedule(upcomingTarget));
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-11: o snackbar some sozinho depois de 4 segundos',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        await swipeLeft(tester, cardOf(upcomingTarget));
+        final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
+        expect(snackBar.duration, const Duration(seconds: 4));
+
+        await tester.pump(const Duration(seconds: 3));
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle();
+        expect(find.text('Agendamento excluído'), findsNothing);
+        verifyNever(() => cubit.restoreSchedule(any()));
+      },
+    );
+
+    Future<void> pumpPageAsRoute(WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light,
+          locale: const Locale('pt'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: SizedBox.shrink()),
+        ),
+      );
+      unawaited(
+        Navigator.of(tester.element(find.byType(Scaffold))).push(
+          MaterialPageRoute<void>(
+            builder: (_) => MediaQuery(
+              data: const MediaQueryData(disableAnimations: true),
+              child: BlocProvider<ScheduleCubit>.value(
+                value: cubit,
+                child: const ScheduleView(),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'SCHEDUI-16: fechar a tela com o snackbar visível esconde o snackbar',
+      (tester) async {
+        stubRemovable();
+        await pumpPageAsRoute(tester);
+
+        await swipeLeft(tester, cardOf(upcomingTarget));
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+
+        Navigator.of(tester.element(find.byType(ScheduleView))).pop();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ScheduleView), findsNothing);
+        expect(find.text('Agendamento excluído'), findsNothing);
+        expect(find.text('Desfazer'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-16: com navegação acessível (snackbar sem timeout), fechar a '
+      'tela também esconde o snackbar',
+      (tester) async {
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            const FakeAccessibilityFeatures(accessibleNavigation: true);
+        addTearDown(
+          tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+        );
+        stubRemovable();
+        await pumpPageAsRoute(tester);
+
+        await swipeLeft(tester, cardOf(upcomingTarget));
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+
+        Navigator.of(tester.element(find.byType(ScheduleView))).pop();
+        await tester.pumpAndSettle();
+
+        expect(find.text('Agendamento excluído'), findsNothing);
       },
     );
   });

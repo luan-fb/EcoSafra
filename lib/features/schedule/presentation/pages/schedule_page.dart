@@ -2,15 +2,17 @@ import 'dart:async';
 
 import 'package:animations/animations.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
+import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:ecosafra/features/schedule/presentation/pages/schedule_form_page.dart';
-import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // Mesmo motivo do painel: `Modular.get<T>()` colide com o `context.read<T>()`
 // reativo do flutter_bloc.
@@ -35,8 +37,67 @@ class SchedulePage extends StatelessWidget {
 /// `Modular.get` nos testes de widget: um `BlocProvider<ScheduleCubit>.value`
 /// com um cubit mockado já é o suficiente para montar esta árvore.
 @visibleForTesting
-class ScheduleView extends StatelessWidget {
+class ScheduleView extends StatefulWidget {
   const ScheduleView({super.key});
+
+  @override
+  State<ScheduleView> createState() => _ScheduleViewState();
+}
+
+class _ScheduleViewState extends State<ScheduleView> {
+  static const Duration _undoSnackBarDuration = Duration(seconds: 4);
+
+  // Guardado em `didChangeDependencies` porque o `dispose` não pode mais
+  // procurar ancestrais pelo `context`.
+  late ScaffoldMessengerState _messenger;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.of(context);
+  }
+
+  @override
+  void dispose() {
+    // O messenger é do app e sobrevive à tela: um "Desfazer" ainda visível
+    // (ou na fila) chamaria um cubit já fechado (SCHEDUI-16). A remoção é
+    // imediata, sem a animação de saída em que o botão ainda aceitaria
+    // toque. Fica para o fim do quadro porque, durante o `dispose`, a árvore
+    // está travada e o messenger não pode se reconstruir; e só se ele ainda
+    // existir, pois o app inteiro pode estar sendo desmontado.
+    final messenger = _messenger;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!messenger.mounted) return;
+      messenger
+        ..clearSnackBars()
+        ..removeCurrentSnackBar();
+    });
+    super.dispose();
+  }
+
+  /// Mesmo fluxo para o swipe e para a ação de acessibilidade
+  /// (SCHEDUI-10, 11, 15): o cubit tira o item da lista antes de ir ao banco,
+  /// e o snackbar anterior sai, de modo que só o último Desfazer vale.
+  void _delete(ScheduleItem item) {
+    final cubit = context.read<ScheduleCubit>();
+    final schedule = item.schedule;
+
+    _messenger.hideCurrentSnackBar();
+    unawaited(cubit.removeSchedule(schedule.id));
+    _messenger.showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.scheduleDeletedMessage),
+        duration: _undoSnackBarDuration,
+        // Com ação, o `SnackBar` fica aberto até ser fechado; a spec pede
+        // que suma sozinho em 4 s.
+        persist: false,
+        action: SnackBarAction(
+          label: context.l10n.scheduleDeletedUndo,
+          onPressed: () => unawaited(cubit.restoreSchedule(schedule)),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +113,10 @@ class ScheduleView extends StatelessWidget {
           ScheduleStatus.error => _ErrorView(
             message: state.failure?.message ?? context.l10n.scheduleErrorTitle,
           ),
-          ScheduleStatus.loaded => _ScheduleSections(state: state),
+          ScheduleStatus.loaded => _ScheduleSections(
+            state: state,
+            onDelete: _delete,
+          ),
         },
       ),
       // No estado de erro, a falha de uma ação substituiria a mensagem de
@@ -68,9 +132,10 @@ class ScheduleView extends StatelessWidget {
 }
 
 class _ScheduleSections extends StatelessWidget {
-  const _ScheduleSections({required this.state});
+  const _ScheduleSections({required this.state, required this.onDelete});
 
   final ScheduleState state;
+  final ValueChanged<ScheduleItem> onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -120,93 +185,50 @@ class _ScheduleSections extends StatelessWidget {
           final item = items[index];
           // Itens saem (excluir) e trocam de seção (concluir): a chave pelo
           // id impede que o estado de um item vá parar no vizinho.
-          return _AnimatedScheduleTile(
+          return Dismissible(
             key: ValueKey(item.schedule.id),
-            index: index,
-            item: item,
-            confirmDelete: () => _askDelete(context),
-            performDelete: () => context
-                .read<ScheduleCubit>()
-                .removeSchedule(item.schedule.id),
+            direction: DismissDirection.endToStart,
+            background: const _DeleteBackground(),
+            onDismissed: (_) => onDelete(item),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: FadeSlideIn.staggered(
+                index: index,
+                child: _ScheduleCard(
+                  item: item,
+                  onDelete: () => onDelete(item),
+                ),
+              ),
+            ),
           );
         },
       ),
     ),
   ];
-
-  Future<bool> _askDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.scheduleDeleteConfirmTitle),
-        content: Text(context.l10n.scheduleDeleteConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.scheduleDeleteConfirmCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(context.l10n.scheduleDeleteConfirmConfirm),
-          ),
-        ],
-      ),
-    );
-    return confirmed ?? false;
-  }
 }
 
-class _AnimatedScheduleTile extends StatefulWidget {
-  const _AnimatedScheduleTile({
-    required this.index,
-    required this.item,
-    required this.confirmDelete,
-    required this.performDelete,
-    super.key,
-  });
-
-  final int index;
-  final ScheduleItem item;
-  final Future<bool> Function() confirmDelete;
-  final VoidCallback performDelete;
-
-  @override
-  State<_AnimatedScheduleTile> createState() => _AnimatedScheduleTileState();
-}
-
-class _AnimatedScheduleTileState extends State<_AnimatedScheduleTile> {
-  bool _isExiting = false;
-
-  void _handleDelete() async {
-    final confirmed = await widget.confirmDelete();
-    if (!mounted) return;
-    
-    if (confirmed) {
-      setState(() => _isExiting = true);
-      await Future.delayed(const Duration(milliseconds: 300));
-      if (!mounted) return;
-      widget.performDelete();
-    }
-  }
+/// Fundo revelado pelo arrasto para a esquerda. O espaço entre os cards fica
+/// de fora, para o fundo ter o mesmo tamanho do card.
+class _DeleteBackground extends StatelessWidget {
+  const _DeleteBackground();
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      alignment: Alignment.topCenter,
-      child: _isExiting
-          ? const SizedBox(width: double.infinity, height: 0)
-          : Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: FadeSlideIn.staggered(
-                index: widget.index,
-                child: _ScheduleCard(
-                  item: widget.item,
-                  onDelete: _handleDelete,
-                ),
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: AppColors.danger,
+          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusLg)),
+        ),
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+            child: Icon(Icons.delete_rounded, color: context.colors.onError),
+          ),
+        ),
+      ),
     );
   }
 }

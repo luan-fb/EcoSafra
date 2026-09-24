@@ -393,7 +393,7 @@ T11 → T12
 
 **Tests**: widget
 **Gate**: build
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

@@ -203,17 +203,11 @@
   "scheduleRiskUnknown": "Sem previsão para este dia ainda",
   "@scheduleRiskUnknown": {"description": "Rótulo quando o dia agendado está fora da janela de previsão"},
 
-  "scheduleDeleteConfirmTitle": "Excluir agendamento?",
-  "@scheduleDeleteConfirmTitle": {"description": "Título do diálogo de confirmação de exclusão"},
+  "scheduleDeletedMessage": "Agendamento excluído",
+  "@scheduleDeletedMessage": {"description": "Snackbar exibido logo após excluir um agendamento pelo swipe ou pela ação de acessibilidade"},
 
-  "scheduleDeleteConfirmMessage": "Essa ação não pode ser desfeita.",
-  "@scheduleDeleteConfirmMessage": {"description": "Corpo do diálogo de confirmação de exclusão"},
-
-  "scheduleDeleteConfirmCancel": "Cancelar",
-  "@scheduleDeleteConfirmCancel": {"description": "Botão de cancelar no diálogo de confirmação"},
-
-  "scheduleDeleteConfirmConfirm": "Excluir",
-  "@scheduleDeleteConfirmConfirm": {"description": "Botão de confirmar exclusão no diálogo"},
+  "scheduleDeletedUndo": "Desfazer",
+  "@scheduleDeletedUndo": {"description": "Ação do snackbar de exclusão que restaura o agendamento excluído"},
 
   "scheduleFormCreateTitle": "Novo agendamento",
   "@scheduleFormCreateTitle": {"description": "Título do formulário ao criar um agendamento"},
