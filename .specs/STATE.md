@@ -13,10 +13,10 @@
 ## Handoff
 
 - **Feature**: `.specs/features/schedule-redesign`
-- **Phase / Task**: Fase 3 concluída (T5–T6); próxima é a Fase 4, T7
-- **Completed**: T1–T6
+- **Phase / Task**: Fase 4 concluída (T7); próxima é a Fase 5, T8
+- **Completed**: T1–T7
 - **In-progress** (file:line): none
-- **Next step**: Executar T7 (remoção otimista, restauração e chuva do dia no cubit, complexidade Alta)
+- **Next step**: Executar T8 (bloco de data com pulso, complexidade Média); depois T9 e T10
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: `feat/schedule`

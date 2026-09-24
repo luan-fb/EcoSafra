@@ -5,6 +5,7 @@ import 'package:ecosafra/features/auth/presentation/guards/auth_guards.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/create_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/delete_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/evaluate_schedule_risk.dart';
+import 'package:ecosafra/features/schedule/domain/usecases/restore_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/set_schedule_completed.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/update_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/watch_schedules.dart';
@@ -32,6 +33,7 @@ class ScheduleModule extends Module {
         updateSchedule: i.get<UpdateSchedule>(),
         setScheduleCompleted: i.get<SetScheduleCompleted>(),
         deleteSchedule: i.get<DeleteSchedule>(),
+        restoreSchedule: i.get<RestoreSchedule>(),
         getCurrentLocation: i.get<GetCurrentLocation>(),
         getForecast: i.get<GetForecast>(),
         evaluateScheduleRisk: i.get<EvaluateScheduleRisk>(),

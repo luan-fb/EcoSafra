@@ -10,6 +10,7 @@ import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dar
 import 'package:ecosafra/features/schedule/domain/usecases/create_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/delete_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/evaluate_schedule_risk.dart';
+import 'package:ecosafra/features/schedule/domain/usecases/restore_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/set_schedule_completed.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/update_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/usecases/watch_schedules.dart';
@@ -34,6 +35,8 @@ class MockSetScheduleCompleted extends Mock implements SetScheduleCompleted {}
 
 class MockDeleteSchedule extends Mock implements DeleteSchedule {}
 
+class MockRestoreSchedule extends Mock implements RestoreSchedule {}
+
 class MockGetCurrentLocation extends Mock implements GetCurrentLocation {}
 
 class MockGetForecast extends Mock implements GetForecast {}
@@ -44,6 +47,7 @@ void main() {
   late MockUpdateSchedule updateSchedule;
   late MockSetScheduleCompleted setScheduleCompleted;
   late MockDeleteSchedule deleteSchedule;
+  late MockRestoreSchedule restoreSchedule;
   late MockGetCurrentLocation getCurrentLocation;
   late MockGetForecast getForecast;
   late StreamController<List<FertilizationSchedule>> schedulesController;
@@ -100,7 +104,13 @@ void main() {
     FertilizationSchedule schedule, {
     ScheduleRiskLevel risk = ScheduleRiskLevel.unknown,
     bool isPastDue = false,
-  }) => ScheduleItem(schedule: schedule, risk: risk, isPastDue: isPastDue);
+    double? rainMm,
+  }) => ScheduleItem(
+    schedule: schedule,
+    risk: risk,
+    isPastDue: isPastDue,
+    expectedRainMm: rainMm,
+  );
 
   Future<void> flush() => Future<void>.delayed(Duration.zero);
 
@@ -112,6 +122,7 @@ void main() {
     updateSchedule = MockUpdateSchedule();
     setScheduleCompleted = MockSetScheduleCompleted();
     deleteSchedule = MockDeleteSchedule();
+    restoreSchedule = MockRestoreSchedule();
     getCurrentLocation = MockGetCurrentLocation();
     getForecast = MockGetForecast();
     schedulesController = StreamController();
@@ -141,6 +152,7 @@ void main() {
     updateSchedule: updateSchedule,
     setScheduleCompleted: setScheduleCompleted,
     deleteSchedule: deleteSchedule,
+    restoreSchedule: restoreSchedule,
     getCurrentLocation: getCurrentLocation,
     getForecast: getForecast,
     evaluateScheduleRisk: const EvaluateScheduleRisk(),
@@ -279,8 +291,8 @@ void main() {
         ScheduleState.loaded(
           upcoming: [
             item(pastDue, isPastDue: true),
-            item(forToday, risk: ScheduleRiskLevel.atRisk),
-            item(later, risk: ScheduleRiskLevel.ok),
+            item(forToday, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
+            item(later, risk: ScheduleRiskLevel.ok, rainMm: lightRain),
           ],
           completed: [item(doneToday)],
           window: window,
@@ -336,8 +348,8 @@ void main() {
       expect: () => [
         ScheduleState.loaded(
           upcoming: [
-            item(forToday, risk: ScheduleRiskLevel.ok),
-            item(later, risk: ScheduleRiskLevel.atRisk),
+            item(forToday, risk: ScheduleRiskLevel.ok, rainMm: lightRain),
+            item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
           ],
           completed: const [],
           window: window,
@@ -362,12 +374,16 @@ void main() {
           window: window,
         ),
         ScheduleState.loaded(
-          upcoming: [item(later, risk: ScheduleRiskLevel.ok)],
+          upcoming: [
+            item(later, risk: ScheduleRiskLevel.ok, rainMm: lightRain),
+          ],
           completed: const [],
           window: window,
         ),
         ScheduleState.loaded(
-          upcoming: [item(later, risk: ScheduleRiskLevel.atRisk)],
+          upcoming: [
+            item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
+          ],
           completed: const [],
           window: window,
         ),
@@ -386,7 +402,9 @@ void main() {
       },
       expect: () => [
         ScheduleState.loaded(
-          upcoming: [item(later, risk: ScheduleRiskLevel.atRisk)],
+          upcoming: [
+            item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
+          ],
           completed: const [],
           window: window,
         ),
@@ -395,6 +413,7 @@ void main() {
             item(
               schedule('later', DateTime(2026, 9, 27)),
               risk: ScheduleRiskLevel.ok,
+              rainMm: lightRain,
             ),
           ],
           completed: const [],
@@ -544,6 +563,11 @@ void main() {
       completed: const [],
       window: window,
     );
+    final removed = ScheduleState.loaded(
+      upcoming: const [],
+      completed: const [],
+      window: window,
+    );
     final createParams = CreateScheduleParams(
       scheduledDate: inThreeDays,
       note: 'talhão 3',
@@ -568,7 +592,8 @@ void main() {
     }
 
     blocTest<ScheduleCubit, ScheduleState>(
-      'sucesso de cada ação não emite estado; a lista vem do stream',
+      'sucesso de cada ação não emite estado além da remoção otimista; a '
+      'lista vem do stream',
       setUp: () {
         when(
           () => createSchedule(createParams),
@@ -595,7 +620,7 @@ void main() {
         await cubit.setCompleted('today', completed: false);
         await cubit.removeSchedule('today');
       },
-      expect: () => [loaded],
+      expect: () => [loaded, removed],
       verify: (_) {
         verify(() => createSchedule(createParams)).called(1);
         verify(() => updateSchedule(updateParams)).called(1);
@@ -648,7 +673,7 @@ void main() {
     );
 
     blocTest<ScheduleCubit, ScheduleState>(
-      'falha ao excluir expõe a falha e mantém a lista',
+      'falha ao excluir devolve o item à lista e expõe a falha',
       setUp: () => when(() => deleteSchedule('today')).thenAnswer(
         (_) async => const Left(AuthFailure('É preciso estar logado.')),
       ),
@@ -659,12 +684,33 @@ void main() {
       },
       expect: () => [
         loaded,
+        removed,
+        loaded,
         loaded.withActionFailure(const AuthFailure('É preciso estar logado.')),
       ],
     );
 
     blocTest<ScheduleCubit, ScheduleState>(
       'a mesma falha duas vezes limpa antes para o snackbar reaparecer',
+      setUp: () => when(
+        () => createSchedule(createParams),
+      ).thenAnswer((_) async => const Left(writeFailure)),
+      build: buildCubit,
+      act: (cubit) async {
+        await loadList();
+        await cubit.addSchedule(inThreeDays, note: 'talhão 3');
+        await cubit.addSchedule(inThreeDays, note: 'talhão 3');
+      },
+      expect: () => [
+        loaded,
+        loaded.withActionFailure(writeFailure),
+        loaded,
+        loaded.withActionFailure(writeFailure),
+      ],
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'a mesma falha ao excluir duas vezes expõe a falha nas duas',
       setUp: () => when(
         () => deleteSchedule('today'),
       ).thenAnswer((_) async => const Left(writeFailure)),
@@ -676,7 +722,10 @@ void main() {
       },
       expect: () => [
         loaded,
+        removed,
+        loaded,
         loaded.withActionFailure(writeFailure),
+        removed,
         loaded,
         loaded.withActionFailure(writeFailure),
       ],
@@ -693,7 +742,375 @@ void main() {
         await cubit.removeSchedule('today');
         schedulesController.add([forToday]);
       },
-      expect: () => [loaded, loaded.withActionFailure(writeFailure), loaded],
+      expect: () => [
+        loaded,
+        removed,
+        loaded,
+        loaded.withActionFailure(writeFailure),
+        loaded,
+      ],
+    );
+  });
+
+  group('chuva prevista (SCHEDUI-07)', () {
+    final forToday = schedule('today', today);
+    final later = schedule('later', inThreeDays);
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'favorável e em risco recebem a chuva do dia',
+      build: buildCubit,
+      act: (_) async {
+        schedulesController.add([forToday, later]);
+        await flush();
+        forecastController.add(Right(weekForecast(heavyOn: {inThreeDays})));
+      },
+      expect: () => [
+        ScheduleState.loaded(
+          upcoming: [item(forToday), item(later)],
+          completed: const [],
+          window: window,
+        ),
+        ScheduleState.loaded(
+          upcoming: [
+            item(forToday, risk: ScheduleRiskLevel.ok, rainMm: lightRain),
+            item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
+          ],
+          completed: const [],
+          window: window,
+        ),
+      ],
+    );
+
+    final pastDue = schedule('past', yesterday);
+    final doneToday = schedule('done', today, completed: true);
+    final outOfForecast = schedule('out', DateTime(2026, 9, 30));
+
+    DailyForecastPoint day(DateTime date, double rain) => DailyForecastPoint(
+      date: date,
+      precipitationSum: rain,
+      precipitationProbabilityMax: 90,
+      temperatureMax: 27,
+      temperatureMin: 19,
+      windSpeedMax: 10,
+      weatherCode: 65,
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'concluído, data passada e dia fora da previsão ficam sem chuva',
+      build: buildCubit,
+      act: (_) async {
+        forecastController.add(
+          Right(
+            WeatherForecast(
+              coordinates: coordinates,
+              hourly: const [],
+              fetchedAt: DateTime(2026, 9, 22, 6),
+              daily: [
+                day(yesterday, heavyRain),
+                day(today, heavyRain),
+                day(inThreeDays, lightRain),
+              ],
+            ),
+          ),
+        );
+        await flush();
+        schedulesController.add([pastDue, doneToday, later, outOfForecast]);
+      },
+      expect: () => [
+        ScheduleState.loaded(
+          upcoming: [
+            item(pastDue, isPastDue: true),
+            item(later, risk: ScheduleRiskLevel.ok, rainMm: lightRain),
+            item(outOfForecast),
+          ],
+          completed: [item(doneToday)],
+          window: window,
+        ),
+      ],
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'antes de a previsão chegar, nenhum item tem chuva',
+      build: buildCubit,
+      act: (_) => schedulesController.add([forToday, later]),
+      expect: () => [
+        ScheduleState.loaded(
+          upcoming: [item(forToday), item(later)],
+          completed: const [],
+          window: window,
+        ),
+      ],
+    );
+  });
+
+  group('remoção otimista (SCHEDUI-10, SCHEDUI-13)', () {
+    final forToday = schedule('today', today);
+    final later = schedule('later', inThreeDays);
+    final both = ScheduleState.loaded(
+      upcoming: [item(forToday), item(later)],
+      completed: const [],
+      window: window,
+    );
+    final onlyLater = ScheduleState.loaded(
+      upcoming: [item(later)],
+      completed: const [],
+      window: window,
+    );
+
+    Future<void> loadBoth() async {
+      schedulesController.add([forToday, later]);
+      await flush();
+    }
+
+    late ScheduleCubit cubit;
+    late Completer<Either<Failure, void>> deleteResult;
+    ScheduleState? stateWhenDeleteCalled;
+    ScheduleState? stateBeforeDeleteCompleted;
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'emite a lista sem o item antes de chamar o use case',
+      setUp: () {
+        stateWhenDeleteCalled = null;
+        stateBeforeDeleteCompleted = null;
+        deleteResult = Completer();
+        when(() => deleteSchedule('today')).thenAnswer((_) {
+          stateWhenDeleteCalled = cubit.state;
+          return deleteResult.future;
+        });
+      },
+      build: () => cubit = buildCubit(),
+      act: (cubit) async {
+        await loadBoth();
+        final pending = cubit.removeSchedule('today');
+        await flush();
+        stateBeforeDeleteCompleted = cubit.state;
+        deleteResult.complete(const Right(null));
+        await pending;
+      },
+      expect: () => [both, onlyLater],
+      verify: (_) {
+        expect(stateWhenDeleteCalled, onlyLater);
+        expect(stateBeforeDeleteCompleted, onlyLater);
+        verify(() => deleteSchedule('today')).called(1);
+      },
+    );
+
+    test(
+      'Desfazer durante a exclusão espera ela terminar antes de restaurar',
+      () async {
+        final deletion = Completer<Either<Failure, void>>();
+        when(() => deleteSchedule('today')).thenAnswer((_) => deletion.future);
+        when(
+          () => restoreSchedule(forToday),
+        ).thenAnswer((_) async => const Right(null));
+        final cubit = buildCubit();
+        await loadBoth();
+
+        final removing = cubit.removeSchedule('today');
+        final restoring = cubit.restoreSchedule(forToday);
+        await flush();
+        verifyNever(() => restoreSchedule(forToday));
+
+        deletion.complete(const Right(null));
+        await removing;
+        await restoring;
+        verify(() => restoreSchedule(forToday)).called(1);
+        await cubit.close();
+      },
+    );
+
+    test(
+      'Desfazer depois de uma exclusão que falhou não restaura: o item nem '
+      'saiu do banco',
+      () async {
+        when(
+          () => deleteSchedule('today'),
+        ).thenAnswer((_) async => const Left(CacheFailure('falhou')));
+        final cubit = buildCubit();
+        await loadBoth();
+
+        final removing = cubit.removeSchedule('today');
+        final restoring = cubit.restoreSchedule(forToday);
+        await removing;
+        await restoring;
+
+        verifyNever(() => restoreSchedule(forToday));
+        await cubit.close();
+      },
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'sucesso não emite nada além da remoção, nem quando o stream confirma',
+      setUp: () => when(
+        () => deleteSchedule('today'),
+      ).thenAnswer((_) async => const Right(null)),
+      build: buildCubit,
+      act: (cubit) async {
+        await loadBoth();
+        await cubit.removeSchedule('today');
+        schedulesController.add([later]);
+      },
+      expect: () => [both, onlyLater],
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'falha devolve o item à lista e expõe a falha',
+      setUp: () => when(
+        () => deleteSchedule('today'),
+      ).thenAnswer((_) async => const Left(writeFailure)),
+      build: buildCubit,
+      act: (cubit) async {
+        await loadBoth();
+        await cubit.removeSchedule('today');
+      },
+      expect: () => [
+        both,
+        onlyLater,
+        both,
+        both.withActionFailure(writeFailure),
+      ],
+    );
+
+    final laterEdited = schedule('later', DateTime(2026, 9, 27));
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'enquanto o stream traz o id, o item segue oculto',
+      setUp: () => when(
+        () => deleteSchedule('today'),
+      ).thenAnswer((_) async => const Right(null)),
+      build: buildCubit,
+      act: (cubit) async {
+        await loadBoth();
+        await cubit.removeSchedule('today');
+        schedulesController.add([forToday, laterEdited]);
+      },
+      expect: () => [
+        both,
+        onlyLater,
+        ScheduleState.loaded(
+          upcoming: [item(laterEdited)],
+          completed: const [],
+          window: window,
+        ),
+      ],
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'o id é esquecido quando o stream deixa de trazê-lo',
+      setUp: () => when(
+        () => deleteSchedule('today'),
+      ).thenAnswer((_) async => const Right(null)),
+      build: buildCubit,
+      act: (cubit) async {
+        await loadBoth();
+        await cubit.removeSchedule('today');
+        schedulesController.add([later]);
+        await flush();
+        schedulesController.add([forToday, later]);
+      },
+      expect: () => [both, onlyLater, both],
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'excluir e restaurar o mesmo item em seguida faz ele reaparecer',
+      setUp: () {
+        when(
+          () => deleteSchedule('today'),
+        ).thenAnswer((_) async => const Right(null));
+        when(
+          () => restoreSchedule(forToday),
+        ).thenAnswer((_) async => const Right(null));
+      },
+      build: buildCubit,
+      act: (cubit) async {
+        await loadBoth();
+        await cubit.removeSchedule('today');
+        schedulesController.add([later]);
+        await flush();
+        await cubit.restoreSchedule(forToday);
+        schedulesController.add([forToday, later]);
+      },
+      expect: () => [both, onlyLater, both],
+      verify: (_) => verify(() => restoreSchedule(forToday)).called(1),
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'restaurar antes de o stream deixar de trazer o id também faz o item '
+      'reaparecer',
+      setUp: () {
+        when(
+          () => deleteSchedule('today'),
+        ).thenAnswer((_) async => const Right(null));
+        when(
+          () => restoreSchedule(forToday),
+        ).thenAnswer((_) async => const Right(null));
+      },
+      build: buildCubit,
+      act: (cubit) async {
+        await loadBoth();
+        await cubit.removeSchedule('today');
+        await cubit.restoreSchedule(forToday);
+        schedulesController.add([forToday, later]);
+      },
+      expect: () => [both, onlyLater, both],
+    );
+  });
+
+  group('restauração (SCHEDUI-12, SCHEDUI-14)', () {
+    final later = schedule('later', inThreeDays);
+    final loaded = ScheduleState.loaded(
+      upcoming: [item(later)],
+      completed: const [],
+      window: window,
+    );
+    final deleted = FertilizationSchedule(
+      id: 'done',
+      scheduledDate: yesterday,
+      createdAt: DateTime(2026, 9, 20, 8),
+      note: 'ureia no talhão 2',
+      completedAt: DateTime(2026, 9, 22, 17),
+    );
+
+    Future<void> loadList() async {
+      schedulesController.add([later]);
+      await flush();
+    }
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'chama o use case com o agendamento exato e não emite; o item volta '
+      'pelo stream na posição da ordenação',
+      setUp: () => when(
+        () => restoreSchedule(deleted),
+      ).thenAnswer((_) async => const Right(null)),
+      build: buildCubit,
+      act: (cubit) async {
+        await loadList();
+        await cubit.restoreSchedule(deleted);
+        await flush();
+        schedulesController.add([deleted, later]);
+      },
+      expect: () => [
+        loaded,
+        ScheduleState.loaded(
+          upcoming: [item(later)],
+          completed: [item(deleted)],
+          window: window,
+        ),
+      ],
+      verify: (_) => verify(() => restoreSchedule(deleted)).called(1),
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'falha expõe a falha e mantém a lista',
+      setUp: () => when(
+        () => restoreSchedule(deleted),
+      ).thenAnswer((_) async => const Left(writeFailure)),
+      build: buildCubit,
+      act: (cubit) async {
+        await loadList();
+        await cubit.restoreSchedule(deleted);
+      },
+      expect: () => [loaded, loaded.withActionFailure(writeFailure)],
     );
   });
 

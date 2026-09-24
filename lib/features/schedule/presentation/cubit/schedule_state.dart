@@ -13,6 +13,7 @@ final class ScheduleItem extends Equatable {
     required this.schedule,
     required this.risk,
     required this.isPastDue,
+    this.expectedRainMm,
   });
 
   final FertilizationSchedule schedule;
@@ -21,8 +22,12 @@ final class ScheduleItem extends Equatable {
   /// Não concluído com data anterior a hoje.
   final bool isPastDue;
 
+  /// Chuva prevista para o dia, em mm. `null` para concluídos, datas
+  /// passadas e dias fora da previsão (ou antes de ela chegar).
+  final double? expectedRainMm;
+
   @override
-  List<Object?> get props => [schedule, risk, isPastDue];
+  List<Object?> get props => [schedule, risk, isPastDue, expectedRainMm];
 }
 
 final class ScheduleState extends Equatable {
