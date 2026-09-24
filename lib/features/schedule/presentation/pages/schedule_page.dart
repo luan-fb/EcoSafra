@@ -131,20 +131,18 @@ class _ScheduleSections extends StatelessWidget {
           final item = items[index];
           // Itens saem (excluir) e trocam de seção (concluir): a chave pelo
           // id impede que o estado de um item vá parar no vizinho.
-          return Padding(
+          return _AnimatedScheduleTile(
             key: ValueKey(item.schedule.id),
-            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: FadeSlideIn.staggered(
-              index: index,
-              child: ScheduleTile(
-                item: item,
-                onEdit: () => _editSchedule(context, item),
-                onToggleCompleted: (completed) => context
-                    .read<ScheduleCubit>()
-                    .setCompleted(item.schedule.id, completed: completed),
-                onDelete: () => _confirmDelete(context, item.schedule.id),
-              ),
-            ),
+            index: index,
+            item: item,
+            onEdit: () => _editSchedule(context, item),
+            onToggleCompleted: (completed) => context
+                .read<ScheduleCubit>()
+                .setCompleted(item.schedule.id, completed: completed),
+            confirmDelete: () => _askDelete(context),
+            performDelete: () => context
+                .read<ScheduleCubit>()
+                .removeSchedule(item.schedule.id),
           );
         },
       ),
@@ -167,8 +165,7 @@ class _ScheduleSections extends StatelessWidget {
     }
   }
 
-  Future<void> _confirmDelete(BuildContext context, String scheduleId) async {
-    final cubit = context.read<ScheduleCubit>();
+  Future<bool> _askDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -186,9 +183,68 @@ class _ScheduleSections extends StatelessWidget {
         ],
       ),
     );
-    if (confirmed ?? false) {
-      await cubit.removeSchedule(scheduleId);
+    return confirmed ?? false;
+  }
+}
+
+class _AnimatedScheduleTile extends StatefulWidget {
+  const _AnimatedScheduleTile({
+    required this.index,
+    required this.item,
+    required this.onEdit,
+    required this.onToggleCompleted,
+    required this.confirmDelete,
+    required this.performDelete,
+    super.key,
+  });
+
+  final int index;
+  final ScheduleItem item;
+  final VoidCallback onEdit;
+  final ValueChanged<bool> onToggleCompleted;
+  final Future<bool> Function() confirmDelete;
+  final VoidCallback performDelete;
+
+  @override
+  State<_AnimatedScheduleTile> createState() => _AnimatedScheduleTileState();
+}
+
+class _AnimatedScheduleTileState extends State<_AnimatedScheduleTile> {
+  bool _isExiting = false;
+
+  void _handleDelete() async {
+    final confirmed = await widget.confirmDelete();
+    if (!mounted) return;
+    
+    if (confirmed) {
+      setState(() => _isExiting = true);
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (!mounted) return;
+      widget.performDelete();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: _isExiting
+          ? const SizedBox(width: double.infinity, height: 0)
+          : Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: FadeSlideIn.staggered(
+                index: widget.index,
+                child: ScheduleTile(
+                  item: widget.item,
+                  onEdit: widget.onEdit,
+                  onToggleCompleted: widget.onToggleCompleted,
+                  onDelete: _handleDelete,
+                ),
+              ),
+            ),
+    );
   }
 }
 
