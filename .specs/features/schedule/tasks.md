@@ -21,7 +21,7 @@ Este arquivo é o checkpoint da feature. Qualquer agente, humano ou outra IA con
 
 1. Leia `.specs/STATE.md` (decisões e handoff), depois este arquivo.
 2. Rode `git log --oneline --grep "Refs: T" main..feat/schedule` e `git status --short`. A **evidência do git vence** o que estiver escrito: task com commit `Refs: T<n>` na branch está feita, mesmo sem `[x]` aqui.
-3. Pegue a primeira task sem `[x]` em **Status**, na ordem das fases.
+3. Pegue a primeira task sem `[x]` em **Status**, na ordem das fases. Se o Handoff do `STATE.md` diz que ela está **EM ANDAMENTO**, há trabalho parcial dela no working tree: preserve, rode o gate da task e termine o ciclo, em vez de recomeçar.
 4. Ao terminar uma task: gate verde → marque o `Status` como `[x] feito` → commit único com código, testes e esta atualização, com o rodapé `Refs: T<n>`. Nunca pule o gate, nunca apague ou enfraqueça teste.
 
 **Estado do working tree no início**: existe um **rascunho não commitado** da Agenda feito sobre Firestore, que nunca funcionou. Ele é matéria-prima: cada task diz quais arquivos do rascunho **adota** (inclui no seu commit, já ajustados), **reescreve** ou **apaga**.
@@ -262,7 +262,7 @@ T15 → T16
 
 ### T6: Tabela de agendamentos e migração v1 → v2
 
-**What**: Criar a tabela `FertilizationSchedules` (`@DataClassName('ScheduleRow')`, índice por usuário e data), subir o `AppDatabase` para `schemaVersion 2` com `stepByStep(from1To2: createTable)`, rodar `make-migrations` de novo e completar o teste de migração gerado.
+**What**: Criar a tabela `FertilizationSchedules` (`@DataClassName('ScheduleRow')`, índice por usuário e data), subir o `AppDatabase` para `schemaVersion 2` com `stepByStep(from1To2: createTable + createIndex)`, rodar `make-migrations` de novo e completar o teste de migração gerado.
 **Where**: `lib/core/database/tables/fertilization_schedules_table.dart`
 **Depends on**: None (fase anterior concluída)
 **Reuses**: `lib/core/database/tables/cached_forecasts_table.dart` (estilo); `app_database.dart`; snapshot v1 do T1
@@ -277,7 +277,7 @@ T15 → T16
 **Done when**:
 
 - [ ] Colunas exatamente como no `design.md` (Data Models); PK `id`; índice `schedules_user_date`
-- [ ] `AppDatabase`: `tables: [CachedForecasts, FertilizationSchedules]`, `schemaVersion => 2`, `MigrationStrategy(onUpgrade: stepByStep(...))` usando o arquivo de steps gerado
+- [ ] `AppDatabase`: `tables: [CachedForecasts, FertilizationSchedules]`, `schemaVersion => 2`, `MigrationStrategy(onUpgrade: stepByStep(...))` usando o arquivo de steps gerado; o passo `from1To2` cria a tabela **e** o índice
 - [ ] `dart run build_runner build -d` e `dart run drift_dev make-migrations` rodados; existe `drift_schemas/app_database/drift_schema_v2.json`
 - [ ] Teste de migração (gerado + adaptado): v1 → v2 passa na verificação de schema **e** uma linha de `cached_forecasts` inserida na v1 continua igual na v2
 - [ ] `test/core/database/app_database_test.dart` continua passando
@@ -286,7 +286,7 @@ T15 → T16
 **Tests**: unit
 **Gate**: full
 **Commit**: `feat(database): cria a tabela de agendamentos com migração para a v2`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

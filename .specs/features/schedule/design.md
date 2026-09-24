@@ -109,7 +109,7 @@ graph TD
 - **Tabela `FertilizationSchedules`** (`lib/core/database/tables/fertilization_schedules_table.dart`), `@DataClassName('ScheduleRow')` para não colidir com a entidade:
   - `id` TEXT PK (UUID v4), `userId` TEXT, `scheduledDate` DATETIME, `note` TEXT NULL, `createdAt` DATETIME, `completedAt` DATETIME NULL.
   - Índice `@TableIndex(name: 'schedules_user_date', columns: {#userId, #scheduledDate})`.
-- **`AppDatabase`** v2: `tables: [CachedForecasts, FertilizationSchedules]`, `schemaVersion => 2`, `migration` com `onUpgrade: stepByStep(from1To2: (m, schema) async => m.createTable(schema.fertilizationSchedules))`.
+- **`AppDatabase`** v2: `tables: [CachedForecasts, FertilizationSchedules]`, `schemaVersion => 2`, `migration` com `onUpgrade: stepByStep(from1To2: ...)` fazendo `m.createTable(schema.fertilizationSchedules)` **e** `m.createIndex(schema.schedulesUserDate)`. O `createTable` do drift não cria os índices da tabela; sem o `createIndex`, o banco migrado ficaria diferente do instalado do zero (corrigido no T6 por `SPEC_DEVIATION` aprovado).
 - **`ScheduleLocalDataSource`** (interface) e **`DriftScheduleLocalDataSource`**:
   - `Stream<List<ScheduleRow>> watchByUser(String userId)`: `scheduledDate` crescente, `createdAt` crescente como desempate.
   - `Future<void> insert(ScheduleRow row)`
