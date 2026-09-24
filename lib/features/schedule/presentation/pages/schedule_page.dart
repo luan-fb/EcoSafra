@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
+import 'package:ecosafra/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
@@ -48,6 +50,14 @@ class _ScheduleViewState extends State<ScheduleView> {
   // Guardado em `didChangeDependencies` porque o `dispose` não pode mais
   // procurar ancestrais pelo `context`.
   late ScaffoldMessengerState _messenger;
+
+  // Com `goNamed`, a Agenda é a única rota da pilha: sem isto, o voltar do
+  // Android fecharia o app em vez de levar ao Painel. `_isDrawerOpen`
+  // libera o `canPop` enquanto o drawer está aberto — do contrário o
+  // `PopScope` bloquearia até a entrada de histórico local que o fecha
+  // (o drawer não é uma rota separada, e `ModalRoute.popDisposition`
+  // confere o `PopScope` antes desse histórico).
+  bool _isDrawerOpen = false;
 
   @override
   void didChangeDependencies() {
@@ -99,31 +109,40 @@ class _ScheduleViewState extends State<ScheduleView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.scheduleTitle)),
-      body: BlocConsumer<ScheduleCubit, ScheduleState>(
-        listenWhen: (previous, current) =>
-            previous.failure != current.failure && current.failure != null,
-        listener: (context, state) =>
-            context.showSnack(state.failure!.message, isError: true),
-        builder: (context, state) => switch (state.status) {
-          ScheduleStatus.loading => const _LoadingView(),
-          ScheduleStatus.error => _ErrorView(
-            message: state.failure?.message ?? context.l10n.scheduleErrorTitle,
-          ),
-          ScheduleStatus.loaded => _ScheduleSections(
-            state: state,
-            onDelete: _delete,
-          ),
-        },
-      ),
-      // No estado de erro, a falha de uma ação substituiria a mensagem de
-      // erro exibida na tela.
-      floatingActionButton: BlocBuilder<ScheduleCubit, ScheduleState>(
-        buildWhen: (previous, current) => previous.status != current.status,
-        builder: (context, state) => state.status == ScheduleStatus.error
-            ? const SizedBox.shrink()
-            : const _CreateScheduleButton(),
+    return PopScope(
+      canPop: _isDrawerOpen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) context.goNamed(AppRoute.dashboard.name);
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text(context.l10n.scheduleTitle)),
+        drawer: const AppDrawer(currentRoute: AppRoute.schedule),
+        onDrawerChanged: (isOpen) => setState(() => _isDrawerOpen = isOpen),
+        body: BlocConsumer<ScheduleCubit, ScheduleState>(
+          listenWhen: (previous, current) =>
+              previous.failure != current.failure && current.failure != null,
+          listener: (context, state) =>
+              context.showSnack(state.failure!.message, isError: true),
+          builder: (context, state) => switch (state.status) {
+            ScheduleStatus.loading => const _LoadingView(),
+            ScheduleStatus.error => _ErrorView(
+              message:
+                  state.failure?.message ?? context.l10n.scheduleErrorTitle,
+            ),
+            ScheduleStatus.loaded => _ScheduleSections(
+              state: state,
+              onDelete: _delete,
+            ),
+          },
+        ),
+        // No estado de erro, a falha de uma ação substituiria a mensagem de
+        // erro exibida na tela.
+        floatingActionButton: BlocBuilder<ScheduleCubit, ScheduleState>(
+          buildWhen: (previous, current) => previous.status != current.status,
+          builder: (context, state) => state.status == ScheduleStatus.error
+              ? const SizedBox.shrink()
+              : const _CreateScheduleButton(),
+        ),
       ),
     );
   }

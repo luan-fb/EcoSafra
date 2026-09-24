@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
+import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
+import 'package:ecosafra/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
 import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dart';
@@ -18,12 +22,15 @@ import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockScheduleCubit extends MockCubit<ScheduleState>
     implements ScheduleCubit {}
+
+class MockAuthCubit extends MockCubit<AuthState> implements AuthCubit {}
 
 void main() {
   setUpAll(() async {
@@ -44,9 +51,14 @@ void main() {
   final window = SchedulingWindow.startingAt(today);
 
   late MockScheduleCubit cubit;
+  late MockAuthCubit authCubit;
 
   setUp(() {
     cubit = MockScheduleCubit();
+    authCubit = MockAuthCubit();
+    // O `AppDrawer` lê o usuário logado; sem sessão nos testes, cai no
+    // nome padrão (mesmo estado usado nos testes do painel).
+    when(() => authCubit.state).thenReturn(const AuthState.unauthenticated());
     when(
       () => cubit.addSchedule(any(), note: any(named: 'note')),
     ).thenAnswer((_) async {});
@@ -103,8 +115,11 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         home: MediaQuery(
           data: MediaQueryData(disableAnimations: disableAnimations),
-          child: BlocProvider<ScheduleCubit>.value(
-            value: cubit,
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider<ScheduleCubit>.value(value: cubit),
+              BlocProvider<AuthCubit>.value(value: authCubit),
+            ],
             child: const ScheduleView(),
           ),
         ),
@@ -439,6 +454,35 @@ void main() {
     );
   });
 
+  testWidgets(
+    'a Agenda mostra o AppDrawer com o item "Agenda" selecionado',
+    (tester) async {
+      stubState(
+        ScheduleState.loaded(
+          upcoming: const [],
+          completed: const [],
+          window: window,
+        ),
+      );
+      await pumpPage(tester);
+
+      // Fechado, o `DrawerController` nem constrói o conteúdo do drawer
+      // (só a faixa de arrasto da borda): é preciso abri-lo pra achar o
+      // `AppDrawer`.
+      await tester.tap(find.byType(DrawerButton));
+      await tester.pumpAndSettle();
+
+      ListTile tileOf(String label) => tester.widget<ListTile>(
+        find.descendant(
+          of: find.byType(AppDrawer),
+          matching: find.widgetWithText(ListTile, label),
+        ),
+      );
+      expect(tileOf('Agenda').selected, isTrue);
+      expect(tileOf('Painel').selected, isFalse);
+    },
+  );
+
   group('excluir com swipe e Desfazer', () {
     final upcomingTarget = schedule('s1', window.first, note: 'ureia');
     final completedTarget = schedule('s2', today, completed: true);
@@ -676,8 +720,11 @@ void main() {
           MaterialPageRoute<void>(
             builder: (_) => MediaQuery(
               data: const MediaQueryData(disableAnimations: true),
-              child: BlocProvider<ScheduleCubit>.value(
-                value: cubit,
+              child: MultiBlocProvider(
+                providers: [
+                  BlocProvider<ScheduleCubit>.value(value: cubit),
+                  BlocProvider<AuthCubit>.value(value: authCubit),
+                ],
                 child: const ScheduleView(),
               ),
             ),
@@ -724,6 +771,107 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Agendamento excluído'), findsNothing);
+      },
+    );
+  });
+
+  group('voltar do sistema', () {
+    // Com `goNamed`, a Agenda é a única rota da pilha: sem o `PopScope`,
+    // este voltar fecharia o app em vez de ir ao Painel. Roteador real,
+    // como no AGD-19 do painel: prova o destino da navegação.
+    Future<void> pumpWithRouter(WidgetTester tester) async {
+      final router = GoRouter(
+        initialLocation: AppRoute.schedule.path,
+        routes: [
+          GoRoute(
+            path: AppRoute.dashboard.path,
+            name: AppRoute.dashboard.name,
+            builder: (_, _) => const Text('painel-aberto'),
+          ),
+          GoRoute(
+            path: AppRoute.schedule.path,
+            name: AppRoute.schedule.name,
+            builder: (_, _) => MultiBlocProvider(
+              providers: [
+                BlocProvider<ScheduleCubit>.value(value: cubit),
+                BlocProvider<AuthCubit>.value(value: authCubit),
+              ],
+              child: const ScheduleView(),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: AppTheme.light,
+          locale: const Locale('pt'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // Com um item, e não vazia: a animação do estado vazio roda em loop e
+    // nunca deixaria o `pumpAndSettle` assentar.
+    ScheduleState loadedWithOneUpcoming() => ScheduleState.loaded(
+      upcoming: [upcomingItem(schedule('s1', window.first))],
+      completed: const [],
+      window: window,
+    );
+
+    testWidgets(
+      'o voltar na Agenda (sem sheet) navega para o Painel',
+      (tester) async {
+        stubState(loadedWithOneUpcoming());
+        await pumpWithRouter(tester);
+
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+
+        expect(find.text('painel-aberto'), findsOneWidget);
+        expect(find.byType(ScheduleView), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'com o sheet aberto, o voltar fecha só o sheet',
+      (tester) async {
+        stubState(loadedWithOneUpcoming());
+        await pumpWithRouter(tester);
+
+        await tester.tap(find.text('Agendar'));
+        await tester.pumpAndSettle();
+        expect(find.byType(ScheduleFormSheet), findsOneWidget);
+
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ScheduleFormSheet), findsNothing);
+        expect(find.byType(ScheduleView), findsOneWidget);
+        expect(find.text('painel-aberto'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'com o menu aberto, o voltar fecha só o menu',
+      (tester) async {
+        stubState(loadedWithOneUpcoming());
+        await pumpWithRouter(tester);
+
+        await tester.tap(find.byType(DrawerButton));
+        await tester.pumpAndSettle();
+        expect(find.byType(AppDrawer), findsOneWidget);
+
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AppDrawer), findsNothing);
+        expect(find.byType(ScheduleView), findsOneWidget);
+        expect(find.text('painel-aberto'), findsNothing);
       },
     );
   });

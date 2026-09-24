@@ -16,7 +16,9 @@ import 'package:go_router_modular/go_router_modular.dart'
 /// Menu lateral do app: Painel e Agenda (caderno de agendamento), com o
 /// item atual destacado.
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  const AppDrawer({super.key, this.currentRoute = AppRoute.dashboard});
+
+  final AppRoute currentRoute;
 
   @override
   Widget build(BuildContext context) {
@@ -61,16 +63,25 @@ class AppDrawer extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.dashboard_rounded),
               title: Text(context.l10n.drawerMenuDashboard),
-              selected: true,
+              selected: currentRoute == AppRoute.dashboard,
               selectedTileColor: context.colors.primaryContainer,
-              onTap: () => Navigator.of(context).pop(),
+              onTap: () {
+                Navigator.of(context).pop();
+                if (currentRoute != AppRoute.dashboard) {
+                  context.goNamed(AppRoute.dashboard.name);
+                }
+              },
             ),
             ListTile(
               leading: const Icon(Icons.event_note_rounded),
               title: Text(context.l10n.drawerMenuSchedule),
+              selected: currentRoute == AppRoute.schedule,
+              selectedTileColor: context.colors.primaryContainer,
               onTap: () {
                 Navigator.of(context).pop();
-                unawaited(context.pushNamed(AppRoute.schedule.name));
+                if (currentRoute != AppRoute.schedule) {
+                  context.goNamed(AppRoute.schedule.name);
+                }
               },
             ),
             const Spacer(),

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
@@ -104,8 +102,7 @@ class DashboardView extends StatelessWidget {
                 ),
                 sliver: SliverToBoxAdapter(
                   child: ScheduleAlertBanner(
-                    onTap: () =>
-                        unawaited(context.pushNamed(AppRoute.schedule.name)),
+                    onTap: () => context.goNamed(AppRoute.schedule.name),
                   ),
                 ),
               ),
