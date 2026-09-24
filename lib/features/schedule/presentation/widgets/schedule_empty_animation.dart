@@ -1,13 +1,11 @@
+import 'dart:async';
+
+import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
-import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
-/// Uma animação nativa explícita (Explicit Animation) para o estado vazio da agenda.
-/// 
-/// O widget usa um [AnimationController] em loop contínuo para criar um
-/// efeito de 'pulso/rotação' suave num ícone de calendário. 
-/// Respeita a regra de acessibilidade: caso o sistema esteja com "Reduzir Movimento"
-/// ativado, a animação não entra em loop.
+/// Ícone de calendário que "respira" e balança em loop no estado vazio da
+/// agenda. Com "remover animações", fica parado na posição inicial.
 class ScheduleEmptyAnimation extends StatefulWidget {
   const ScheduleEmptyAnimation({super.key});
 
@@ -17,45 +15,50 @@ class ScheduleEmptyAnimation extends StatefulWidget {
 
 class _ScheduleEmptyAnimationState extends State<ScheduleEmptyAnimation>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scaleAnimation;
-  late final Animation<double> _rotationAnimation;
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  );
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
+  static final _ease = CurveTween(curve: Curves.easeInOut);
 
-    // Efeito de respiração (aumenta e volta)
-    _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.1).chain(CurveTween(curve: Curves.easeInOut)), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: 1.1, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 50),
-    ]).animate(_controller);
+  late final Animation<double> _scale = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween<double>(begin: 1, end: 1.1).chain(_ease),
+      weight: 50,
+    ),
+    TweenSequenceItem(
+      tween: Tween<double>(begin: 1.1, end: 1).chain(_ease),
+      weight: 50,
+    ),
+  ]).animate(_controller);
 
-    // Balanço suave (tilt)
-    _rotationAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.05).chain(CurveTween(curve: Curves.easeInOut)), weight: 25),
-      TweenSequenceItem(tween: Tween(begin: 0.05, end: -0.05).chain(CurveTween(curve: Curves.easeInOut)), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: -0.05, end: 0.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 25),
-    ]).animate(_controller);
-  }
+  late final Animation<double> _tilt = TweenSequence<double>([
+    TweenSequenceItem(
+      tween: Tween<double>(begin: 0, end: 0.05).chain(_ease),
+      weight: 25,
+    ),
+    TweenSequenceItem(
+      tween: Tween<double>(begin: 0.05, end: -0.05).chain(_ease),
+      weight: 50,
+    ),
+    TweenSequenceItem(
+      tween: Tween<double>(begin: -0.05, end: 0).chain(_ease),
+      weight: 25,
+    ),
+  ]).animate(_controller);
 
+  // Em `didChangeDependencies`, e não no `initState`: a opção de
+  // acessibilidade pode mudar com a tela aberta.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
-    // SCHEDUI-01: Respeita acessibilidade.
-    final disableAnimations = MediaQuery.disableAnimationsOf(context);
-    if (disableAnimations) {
-      _controller.stop();
-      _controller.value = 0.0;
-    } else {
-      if (!_controller.isAnimating) {
-        _controller.repeat();
-      }
+    if (context.reduceMotion) {
+      _controller
+        ..stop()
+        ..value = 0;
+    } else if (!_controller.isAnimating) {
+      unawaited(_controller.repeat());
     }
   }
 
@@ -67,21 +70,18 @@ class _ScheduleEmptyAnimationState extends State<ScheduleEmptyAnimation>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Transform.rotate(
-            angle: _rotationAnimation.value,
-            child: child,
-          ),
-        );
-      },
-      child: const Icon(
-        Icons.event_available_rounded,
-        size: 80,
-        color: AppColors.inkMuted,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) => Transform.scale(
+          scale: _scale.value,
+          child: Transform.rotate(angle: _tilt.value, child: child),
+        ),
+        child: const Icon(
+          Icons.event_available_rounded,
+          size: 80,
+          color: AppColors.inkMuted,
+        ),
       ),
     );
   }
