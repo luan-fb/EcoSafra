@@ -402,7 +402,7 @@ T15 → T16
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(schedule): decide o aviso de risco ou lembrete do painel`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
