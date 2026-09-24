@@ -102,7 +102,10 @@ abstract final class AppTheme {
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.lg,
         ),
-        border: const OutlineInputBorder(
+        // Campo preenchido pede `UnderlineInputBorder`: com
+        // `OutlineInputBorder`, o rótulo flutuante é desenhado sobre a linha
+        // da borda de cima, metade para fora da caixa preenchida.
+        border: const UnderlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusMd)),
           borderSide: BorderSide.none,
         ),
