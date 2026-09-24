@@ -433,7 +433,7 @@ T15 → T16
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(schedule): organiza a agenda em próximos e concluídos`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
