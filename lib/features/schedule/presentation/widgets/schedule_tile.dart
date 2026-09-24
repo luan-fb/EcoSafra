@@ -118,13 +118,17 @@ class ScheduleTile extends StatelessWidget {
   }
 
   _TilePalette _paletteFor(BuildContext context, ScheduleItem item) {
-    final neutralBackground = context.colors.surfaceContainerHigh;
+    // Cor do bloco de data: mesma regra do topo do formulário de edição
+    // (`scheduleDateBlockPalette`). `accentColor` (ícone e rótulo de
+    // status) segue o bloco quando há risco ou atraso, e o neutro
+    // "apagado" quando não há status a destacar.
+    final blockPalette = scheduleDateBlockPalette(context, item);
     final neutralForeground = context.colors.onSurfaceVariant;
 
     if (item.schedule.isCompleted) {
       return _TilePalette(
-        blockBackground: neutralBackground,
-        blockForeground: neutralForeground,
+        blockBackground: blockPalette.background,
+        blockForeground: blockPalette.foreground,
         accentColor: neutralForeground,
         statusIcon: Icons.check_circle_rounded,
         statusLabel: context.l10n.scheduleStatusCompleted,
@@ -132,8 +136,8 @@ class ScheduleTile extends StatelessWidget {
     }
     if (item.isPastDue) {
       return _TilePalette(
-        blockBackground: AppColors.caution,
-        blockForeground: Colors.white,
+        blockBackground: blockPalette.background,
+        blockForeground: blockPalette.foreground,
         accentColor: AppColors.caution,
         statusIcon: Icons.event_busy_rounded,
         statusLabel: context.l10n.scheduleStatusPastDue,
@@ -141,22 +145,22 @@ class ScheduleTile extends StatelessWidget {
     }
     return switch (item.risk) {
       ScheduleRiskLevel.ok => _TilePalette(
-        blockBackground: AppColors.safe,
-        blockForeground: Colors.white,
+        blockBackground: blockPalette.background,
+        blockForeground: blockPalette.foreground,
         accentColor: AppColors.safe,
         statusIcon: Icons.check_circle_rounded,
         statusLabel: context.l10n.scheduleRiskOk,
       ),
       ScheduleRiskLevel.atRisk => _TilePalette(
-        blockBackground: AppColors.danger,
-        blockForeground: Colors.white,
+        blockBackground: blockPalette.background,
+        blockForeground: blockPalette.foreground,
         accentColor: AppColors.danger,
         statusIcon: Icons.warning_rounded,
         statusLabel: context.l10n.scheduleRiskAtRisk,
       ),
       ScheduleRiskLevel.unknown => _TilePalette(
-        blockBackground: neutralBackground,
-        blockForeground: neutralForeground,
+        blockBackground: blockPalette.background,
+        blockForeground: blockPalette.foreground,
         accentColor: neutralForeground,
         statusIcon: Icons.help_outline_rounded,
         statusLabel: context.l10n.scheduleRiskUnknown,

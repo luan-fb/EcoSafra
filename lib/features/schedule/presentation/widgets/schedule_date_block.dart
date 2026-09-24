@@ -1,10 +1,46 @@
 import 'dart:async';
 
 import 'package:ecosafra/core/extensions/context_extensions.dart';
+import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
+import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
+import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+/// Cores do `ScheduleDateBlock` pelo status do agendamento: regra única,
+/// usada pelo card da lista (`ScheduleTile`) e pelo bloco de data do
+/// formulário de edição, para as duas telas nunca discordarem sobre a cor
+/// de um mesmo status.
+({Color background, Color foreground}) scheduleDateBlockPalette(
+  BuildContext context,
+  ScheduleItem item,
+) {
+  final neutralBackground = context.colors.surfaceContainerHigh;
+  final neutralForeground = context.colors.onSurfaceVariant;
+
+  if (item.schedule.isCompleted) {
+    return (background: neutralBackground, foreground: neutralForeground);
+  }
+  if (item.isPastDue) {
+    return (background: AppColors.caution, foreground: Colors.white);
+  }
+  return switch (item.risk) {
+    ScheduleRiskLevel.ok => (
+      background: AppColors.safe,
+      foreground: Colors.white,
+    ),
+    ScheduleRiskLevel.atRisk => (
+      background: AppColors.danger,
+      foreground: Colors.white,
+    ),
+    ScheduleRiskLevel.unknown => (
+      background: neutralBackground,
+      foreground: neutralForeground,
+    ),
+  };
+}
 
 /// Bloco de data à esquerda do card da agenda: dia do mês em destaque e mês
 /// abreviado, coloridos pelo status do agendamento (SCHEDUI-05, SCHEDUI-06).
