@@ -14,6 +14,7 @@ import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dar
 import 'package:ecosafra/features/schedule/presentation/pages/schedule_form_page.dart';
 import 'package:ecosafra/features/schedule/presentation/pages/schedule_page.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/animated_check.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -186,6 +187,7 @@ void main() {
       );
       expect(find.text('Próximos'), findsNothing);
       expect(find.text('Concluídos'), findsNothing);
+      expect(find.byType(ScheduleEmptyAnimation), findsOneWidget);
     },
   );
 

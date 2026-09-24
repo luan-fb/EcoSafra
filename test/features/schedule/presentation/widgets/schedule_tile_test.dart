@@ -1,4 +1,5 @@
 import 'package:ecosafra/core/theme/app_colors.dart';
+import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
@@ -61,6 +62,20 @@ void main() {
 
   ScheduleDateBlock dateBlockOf(WidgetTester tester) =>
       tester.widget<ScheduleDateBlock>(find.byType(ScheduleDateBlock));
+
+  // O estilo é aplicado por um `DefaultTextStyle` interno do
+  // `AnimatedDefaultTextStyle`, que envolve só o `Text` do dia da semana: é
+  // o ancestral mais próximo desse tipo.
+  TextStyle weekdayStyleOf(WidgetTester tester) => tester
+      .widget<DefaultTextStyle>(
+        find
+            .ancestor(
+              of: find.text('Quarta-feira'),
+              matching: find.byType(DefaultTextStyle),
+            )
+            .first,
+      )
+      .style;
 
   group('rótulos e cores', () {
     testWidgets(
@@ -149,7 +164,12 @@ void main() {
         );
 
         expect(find.text('Sem previsão para este dia ainda'), findsOneWidget);
-        expect(dateBlockOf(tester).pulse, isFalse);
+        final block = dateBlockOf(tester);
+        final context = tester.element(find.byType(ScheduleTile));
+        final colors = Theme.of(context).colorScheme;
+        expect(block.background, colors.surfaceContainerHigh);
+        expect(block.foreground, colors.onSurfaceVariant);
+        expect(block.pulse, isFalse);
       },
     );
 
@@ -230,6 +250,21 @@ void main() {
         expect(find.text('Risco de chuva forte no dia'), findsNothing);
         expect(find.text('Data passada'), findsNothing);
         expect(find.textContaining('mm previstos'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-20: concluído em risco não pulsa mais (histórico, não alerta)',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(completed: true),
+            risk: ScheduleRiskLevel.atRisk,
+            isPastDue: false,
+          ),
+        );
+        expect(dateBlockOf(tester).pulse, isFalse);
       },
     );
 
@@ -344,6 +379,50 @@ void main() {
         await tester.tap(find.byType(AnimatedCheck));
         await tester.pumpAndSettle();
         expect(toggledTo, isFalse);
+      },
+    );
+  });
+
+  group('transições', () {
+    testWidgets(
+      'SCHEDUI-03: concluir anima o estilo do texto com animação implícita',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(),
+            risk: ScheduleRiskLevel.ok,
+            isPastDue: false,
+          ),
+        );
+
+        final context = tester.element(find.byType(ScheduleTile));
+        final colors = Theme.of(context).colorScheme;
+        expect(weekdayStyleOf(tester).color, colors.onSurface);
+        expect(
+          weekdayStyleOf(tester).decoration,
+          isNot(TextDecoration.lineThrough),
+        );
+
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(completed: true),
+            risk: ScheduleRiskLevel.ok,
+            isPastDue: false,
+          ),
+        );
+        await tester.pump(AppMotion.medium ~/ 2);
+
+        // Quadro intermediário: nem a cor inicial nem a final ainda, prova
+        // que é uma transição e não uma troca seca.
+        final midColor = weekdayStyleOf(tester).color;
+        expect(midColor, isNot(colors.onSurface));
+        expect(midColor, isNot(colors.onSurfaceVariant));
+
+        await tester.pumpAndSettle();
+        expect(weekdayStyleOf(tester).color, colors.onSurfaceVariant);
+        expect(weekdayStyleOf(tester).decoration, TextDecoration.lineThrough);
       },
     );
   });
