@@ -23,6 +23,7 @@ class ScheduleFormSheet extends StatefulWidget {
     return showModalBottomSheet<ScheduleFormResult>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (_) => ScheduleFormSheet(window: window, initial: initial),
     );
   }
@@ -55,12 +56,15 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.lg,
         right: AppSpacing.lg,
         top: AppSpacing.lg,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.lg,
+        bottom: (bottomInset > 0 ? bottomInset : bottomPadding) + AppSpacing.lg,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

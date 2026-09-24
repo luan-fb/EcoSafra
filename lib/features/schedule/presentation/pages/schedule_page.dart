@@ -88,6 +88,8 @@ class _ScheduleSections extends StatelessWidget {
       return _EmptyView(message: context.l10n.scheduleEmptyState);
     }
 
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+
     return CustomScrollView(
       slivers: [
         if (state.upcoming.isNotEmpty)
@@ -100,7 +102,9 @@ class _ScheduleSections extends StatelessWidget {
             title: context.l10n.scheduleSectionCompleted,
             items: state.completed,
           ),
-        const SliverPadding(padding: EdgeInsets.only(bottom: AppSpacing.xxxl)),
+        SliverPadding(
+          padding: EdgeInsets.only(bottom: bottomPadding + 88),
+        ),
       ],
     );
   }

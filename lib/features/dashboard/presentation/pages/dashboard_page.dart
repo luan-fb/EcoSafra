@@ -129,6 +129,14 @@ class DashboardView extends StatelessWidget {
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: Builder(
+                  builder: (context) {
+                    final bottom = MediaQuery.paddingOf(context).bottom;
+                    return SizedBox(height: bottom + AppSpacing.md);
+                  },
+                ),
+              ),
             ],
           ),
         ),
