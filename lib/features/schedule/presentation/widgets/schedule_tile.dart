@@ -45,23 +45,37 @@ class ScheduleTile extends StatelessWidget {
         ),
         // Concluído é histórico: para mudar, desfaz a conclusão antes (AGD-27).
         onTap: isCompleted ? null : onEdit,
-        title: Text(
-          DateFormat.yMMMEd('pt_BR').format(schedule.scheduledDate),
-          style: context.texts.titleSmall?.copyWith(
-            color: isCompleted ? mutedColor : null,
+        title: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          style: context.texts.titleSmall!.copyWith(
+            color: isCompleted ? mutedColor : context.colors.onSurface,
             decoration: isCompleted ? TextDecoration.lineThrough : null,
           ),
+          child: Text(DateFormat.yMMMEd('pt_BR').format(schedule.scheduledDate)),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             if (note != null)
-              Text(
-                note,
-                style: context.texts.bodySmall?.copyWith(color: mutedColor),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                style: context.texts.bodySmall!.copyWith(
+                  color: mutedColor,
+                  decoration: isCompleted ? TextDecoration.lineThrough : null,
+                ),
+                child: Text(note),
               ),
-            if (!isCompleted) _StatusLabel(item: item),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topLeft,
+              child: isCompleted
+                  ? const SizedBox(width: double.infinity, height: 0)
+                  : _StatusLabel(item: item),
+            ),
           ],
         ),
         trailing: PopupMenuButton<_ScheduleTileAction>(

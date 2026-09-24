@@ -127,10 +127,10 @@ T3 → T4
 
 **Done when**:
 
-- [ ] A mudança de estado (concluído para não concluído) ocorre de forma animada (cross-fade, encolhimento de label).
-- [ ] Testes de widget garantem que a marcação/desmarcação ainda emite os eventos no `onToggleCompleted` corretamente e reflete a UI.
-- [ ] Gate check passes: `flutter test`
-- [ ] Test count: Testes de widget validam que as animações iniciam ou estão presentes na árvore.
+- [x] A mudança de estado (concluído para não concluído) ocorre de forma animada (cross-fade, encolhimento de label).
+- [x] Testes de widget garantem que a marcação/desmarcação ainda emite os eventos no `onToggleCompleted` corretamente e reflete a UI.
+- [x] Gate check passes: `flutter test`
+- [x] Test count: Testes de widget validam que as animações iniciam ou estão presentes na árvore.
 
 **Tests**: unit
 **Gate**: Quick
@@ -154,11 +154,11 @@ T3 → T4
 
 **Done when**:
 
-- [ ] Ao remover um agendamento, ele colapsa suavemente (ou faz fade-out) ao invés de sumir bruscamente.
-- [ ] A entrada de novos agendamentos faz fade/slide in (pode reutilizar `FadeSlideIn` já existente ou ajustar para listas dinâmicas).
-- [ ] Testes de widget atestam que itens aparecem/desaparecem corretamente na árvore sem quebrar o layout.
-- [ ] Gate check passes: `flutter test`
-- [ ] Test count: Atualização de testes para assegurar integridade da lista.
+- [x] Ao remover um agendamento, ele colapsa suavemente (ou faz fade-out) ao invés de sumir bruscamente.
+- [x] A entrada de novos agendamentos faz fade/slide in (pode reutilizar `FadeSlideIn` já existente ou ajustar para listas dinâmicas).
+- [x] Testes de widget atestam que itens aparecem/desaparecem corretamente na árvore sem quebrar o layout.
+- [x] Gate check passes: `flutter test`
+- [x] Test count: Atualização de testes para assegurar integridade da lista.
 
 **Tests**: unit
 **Gate**: Quick
