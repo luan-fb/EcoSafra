@@ -379,7 +379,7 @@ void main() {
         final form = tester.widget<ScheduleFormSheet>(
           find.byType(ScheduleFormSheet),
         );
-        expect(form.initial, target);
+        expect(form.initial, upcomingItem(target));
         expect(form.window, window);
         expect(
           ModalRoute.of(tester.element(find.byType(ScheduleFormSheet))),

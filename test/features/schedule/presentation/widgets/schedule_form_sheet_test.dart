@@ -1,9 +1,14 @@
 import 'dart:async';
 
+import 'package:ecosafra/core/theme/app_colors.dart';
+import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_note.dart';
+import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
 import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dart';
+import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_date_block.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_form_sheet.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +27,12 @@ void main() {
   final today = DateTime(2026, 9, 23);
   final window = SchedulingWindow.startingAt(today);
 
+  ScheduleItem itemFor(FertilizationSchedule schedule) => ScheduleItem(
+    schedule: schedule,
+    risk: ScheduleRiskLevel.ok,
+    isPastDue: false,
+  );
+
   Widget app({required Widget home, bool reduceMotion = false}) => MaterialApp(
     theme: AppTheme.light,
     locale: const Locale('pt'),
@@ -38,7 +49,7 @@ void main() {
   /// então aguarda o `Future` do resultado, já pendente.
   Future<Future<ScheduleFormResult?>> pumpAndOpen(
     WidgetTester tester, {
-    FertilizationSchedule? initial,
+    ScheduleItem? initial,
   }) async {
     await tester.pumpWidget(
       app(reduceMotion: true, home: const Scaffold(body: SizedBox.shrink())),
@@ -93,7 +104,7 @@ void main() {
           scheduledDate: today.subtract(const Duration(days: 10)),
           createdAt: today,
         );
-        await pumpAndOpen(tester, initial: outOfWindow);
+        await pumpAndOpen(tester, initial: itemFor(outOfWindow));
 
         await tester.tap(find.byIcon(Icons.calendar_today_rounded));
         await tester.pumpAndSettle();
@@ -113,7 +124,7 @@ void main() {
           scheduledDate: window.last,
           createdAt: today,
         );
-        await pumpAndOpen(tester, initial: inWindow);
+        await pumpAndOpen(tester, initial: itemFor(inWindow));
 
         await tester.tap(find.byIcon(Icons.calendar_today_rounded));
         await tester.pumpAndSettle();
@@ -229,7 +240,7 @@ void main() {
           createdAt: today,
           note: 'ureia',
         );
-        final future = await pumpAndOpen(tester, initial: scheduled);
+        final future = await pumpAndOpen(tester, initial: itemFor(scheduled));
 
         expect(find.text('Editar agendamento'), findsOneWidget);
         expect(find.text('ureia'), findsOneWidget);
@@ -240,6 +251,108 @@ void main() {
         final result = await future;
         expect(result!.date, window.last);
         expect(result.note, 'ureia');
+      },
+    );
+  });
+
+  group('bloco de data na edição (sem Hero: o sheet é PopupRoute)', () {
+    testWidgets(
+      'aparece na edição com a data do agendamento',
+      (tester) async {
+        final scheduled = FertilizationSchedule(
+          id: 's1',
+          scheduledDate: window.last,
+          createdAt: today,
+        );
+        await pumpAndOpen(tester, initial: itemFor(scheduled));
+
+        final block = tester.widget<ScheduleDateBlock>(
+          find.byType(ScheduleDateBlock),
+        );
+        expect(block.date, window.last);
+        expect(block.background, AppColors.safe);
+      },
+    );
+
+    testWidgets(
+      'não aparece na criação: ainda não há status pra colorir o bloco',
+      (tester) async {
+        await pumpAndOpen(tester);
+
+        expect(find.byType(ScheduleDateBlock), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'acompanha a data escolhida no seletor, em cor neutra',
+      (tester) async {
+        final scheduled = FertilizationSchedule(
+          id: 's1',
+          scheduledDate: window.first,
+          createdAt: today,
+        );
+        await pumpAndOpen(tester, initial: itemFor(scheduled));
+        final target = window.first.add(const Duration(days: 2));
+
+        await tester.tap(find.byIcon(Icons.calendar_today_rounded));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('${target.day}'));
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+
+        final block = tester.widget<ScheduleDateBlock>(
+          find.byType(ScheduleDateBlock),
+        );
+        expect(block.date, target);
+        // O risco "ok" era da data salva; a nova ainda não tem status.
+        final context = tester.element(find.byType(ScheduleDateBlock));
+        expect(
+          block.background,
+          Theme.of(context).colorScheme.surfaceContainerHigh,
+        );
+      },
+    );
+
+    testWidgets(
+      'no meio da animação de abertura, fica em escala e opacidade '
+      'intermediárias',
+      (tester) async {
+        final scheduled = FertilizationSchedule(
+          id: 's1',
+          scheduledDate: window.first,
+          createdAt: today,
+        );
+        await tester.pumpWidget(
+          app(home: const Scaffold(body: SizedBox.shrink())),
+        );
+        final context = tester.element(find.byType(Scaffold));
+        unawaited(
+          ScheduleFormSheet.show(
+            context,
+            window: window,
+            initial: itemFor(scheduled),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(AppMotion.slow ~/ 2);
+
+        final scale = tester.widget<ScaleTransition>(
+          find.ancestor(
+            of: find.byType(ScheduleDateBlock),
+            matching: find.byType(ScaleTransition),
+          ),
+        );
+        expect(scale.scale.value, inExclusiveRange(0, 1));
+
+        final fade = tester.widget<FadeTransition>(
+          find.ancestor(
+            of: find.byType(ScheduleDateBlock),
+            matching: find.byType(FadeTransition),
+          ),
+        );
+        expect(fade.opacity.value, inExclusiveRange(0, 1));
+
+        await tester.pumpAndSettle();
       },
     );
   });

@@ -314,7 +314,7 @@ class _ScheduleCard extends StatelessWidget {
           final result = await ScheduleFormSheet.show(
             context,
             window: cubit.currentWindow(),
-            initial: schedule,
+            initial: item,
           );
 
           if (result != null && context.mounted) {
