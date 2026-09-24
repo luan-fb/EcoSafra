@@ -380,5 +380,50 @@ void main() {
         await tester.pumpAndSettle();
       },
     );
+
+    testWidgets(
+      'sem redução de movimento, no meio de AppMotion.slow o sheet ainda '
+      'não terminou de abrir, e em AppMotion.slow está aberto',
+      (tester) async {
+        await tester.pumpWidget(
+          app(home: const Scaffold(body: SizedBox.shrink())),
+        );
+        final context = tester.element(find.byType(Scaffold));
+        unawaited(ScheduleFormSheet.show(context, window: window));
+        await tester.pump();
+        await tester.pump(AppMotion.slow ~/ 2);
+
+        final route = ModalRoute.of(
+          tester.element(find.byType(ScheduleFormSheet)),
+        )!;
+        expect(route.animation!.value, inExclusiveRange(0, 1));
+
+        await tester.pump(AppMotion.slow ~/ 2);
+        expect(route.animation!.value, 1);
+
+        await tester.pumpAndSettle();
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-26: abre em AppMotion.slow, fecha em AppMotion.medium, com '
+      'a curva AppMotion.emphasized',
+      (tester) async {
+        await tester.pumpWidget(
+          app(home: const Scaffold(body: SizedBox.shrink())),
+        );
+        final context = tester.element(find.byType(Scaffold));
+        unawaited(ScheduleFormSheet.show(context, window: window));
+        await tester.pumpAndSettle();
+
+        final route =
+            ModalRoute.of(tester.element(find.byType(ScheduleFormSheet)))!
+                as ModalBottomSheetRoute<ScheduleFormResult>;
+        final style = route.sheetAnimationStyle!;
+        expect(style.duration, AppMotion.slow);
+        expect(style.reverseDuration, AppMotion.medium);
+        expect(style.curve, AppMotion.emphasized);
+      },
+    );
   });
 }

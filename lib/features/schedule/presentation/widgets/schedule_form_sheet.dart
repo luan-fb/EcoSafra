@@ -34,8 +34,9 @@ class ScheduleFormSheet extends StatefulWidget {
   /// Abre o formulário como bottom sheet modal e devolve o resultado do
   /// `Future` (`null` se fechado sem salvar).
   ///
-  /// Com redução de movimento, o sheet abre e fecha sem animação
-  /// (SCHEDUI-21).
+  /// A animação do sheet segue o ritmo do app (`AppMotion.slow` na
+  /// abertura, `AppMotion.medium` ao fechar) e some com redução de
+  /// movimento (SCHEDUI-21).
   static Future<ScheduleFormResult?> show(
     BuildContext context, {
     required SchedulingWindow window,
@@ -48,7 +49,11 @@ class ScheduleFormSheet extends StatefulWidget {
       showDragHandle: true,
       sheetAnimationStyle: context.reduceMotion
           ? AnimationStyle.noAnimation
-          : null,
+          : const AnimationStyle(
+              duration: AppMotion.slow,
+              reverseDuration: AppMotion.medium,
+              curve: AppMotion.emphasized,
+            ),
       builder: (_) => ScheduleFormSheet(window: window, initial: initial),
     );
   }
