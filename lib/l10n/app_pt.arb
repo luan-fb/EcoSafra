@@ -179,11 +179,20 @@
   "drawerMenuSchedule": "Agenda",
   "@drawerMenuSchedule": {"description": "Item do menu lateral para o caderno de agendamento"},
 
-  "drawerMenuComingSoon": "Em breve",
-  "@drawerMenuComingSoon": {"description": "Selo indicando uma seção do menu ainda não disponível"},
-
   "drawerMenuSignOut": "Sair",
   "@drawerMenuSignOut": {"description": "Item do menu lateral para encerrar a sessão"},
+
+  "scheduleTitle": "Agenda",
+  "@scheduleTitle": {"description": "Título da tela do caderno de agendamento"},
+
+  "scheduleEmptyState": "Nenhum agendamento ainda. Toque em \"Agendar\" para planejar sua próxima aplicação.",
+  "@scheduleEmptyState": {"description": "Texto exibido quando a lista de agendamentos está vazia"},
+
+  "scheduleAddButton": "Agendar",
+  "@scheduleAddButton": {"description": "Botão flutuante para criar um novo agendamento"},
+
+  "scheduleErrorTitle": "Não foi possível carregar seus agendamentos.",
+  "@scheduleErrorTitle": {"description": "Título exibido quando a lista de agendamentos falha ao carregar"},
 
   "scheduleRiskOk": "Previsão favorável",
   "@scheduleRiskOk": {"description": "Rótulo quando o dia agendado não tem chuva de risco prevista"},
@@ -193,6 +202,15 @@
 
   "scheduleRiskUnknown": "Sem previsão para este dia ainda",
   "@scheduleRiskUnknown": {"description": "Rótulo quando o dia agendado está fora da janela de previsão"},
+
+  "scheduleDeleteConfirmTitle": "Excluir agendamento?",
+  "@scheduleDeleteConfirmTitle": {"description": "Título do diálogo de confirmação de exclusão"},
+
+  "scheduleDeleteConfirmMessage": "Essa ação não pode ser desfeita.",
+  "@scheduleDeleteConfirmMessage": {"description": "Corpo do diálogo de confirmação de exclusão"},
+
+  "scheduleDeleteConfirmCancel": "Cancelar",
+  "@scheduleDeleteConfirmCancel": {"description": "Botão de cancelar no diálogo de confirmação"},
 
   "scheduleDeleteConfirmConfirm": "Excluir",
   "@scheduleDeleteConfirmConfirm": {"description": "Botão de confirmar exclusão no diálogo"},
@@ -219,5 +237,11 @@
   "@scheduleFormCancel": {"description": "Botão de cancelar o formulário de agendamento"},
 
   "scheduleStatusPastDue": "Data passada",
-  "@scheduleStatusPastDue": {"description": "Rótulo de um agendamento não concluído cuja data já passou"}
+  "@scheduleStatusPastDue": {"description": "Rótulo de um agendamento não concluído cuja data já passou"},
+
+  "scheduleSectionUpcoming": "Próximos",
+  "@scheduleSectionUpcoming": {"description": "Título da seção de agendamentos não concluídos"},
+
+  "scheduleSectionCompleted": "Concluídos",
+  "@scheduleSectionCompleted": {"description": "Título da seção de agendamentos concluídos"}
 }

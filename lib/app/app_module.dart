@@ -16,6 +16,7 @@ import 'package:ecosafra/features/auth/domain/usecases/sign_out.dart';
 import 'package:ecosafra/features/auth/domain/usecases/watch_auth_state.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/dashboard/dashboard_module.dart';
+import 'package:ecosafra/features/schedule/schedule_module.dart';
 import 'package:ecosafra/features/splash/splash_module.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -111,5 +112,6 @@ class AppModule extends Module {
         ModuleRoute(AppRoute.splash.path, module: SplashModule()),
         ModuleRoute(AppRoute.signIn.path, module: AuthModule()),
         ModuleRoute(AppRoute.dashboard.path, module: DashboardModule()),
+        ModuleRoute(AppRoute.schedule.path, module: ScheduleModule()),
       ];
 }

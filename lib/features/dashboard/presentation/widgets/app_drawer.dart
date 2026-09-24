@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
@@ -7,11 +8,13 @@ import 'package:ecosafra/core/widgets/user_avatar.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+// `hide BindContextExtension`: mesmo motivo do painel — o go_router_modular
+// também define `context.read<T>()`, que colide com o do flutter_bloc.
+import 'package:go_router_modular/go_router_modular.dart'
+    hide BindContextExtension;
 
-/// Menu lateral do app. Só uma seção de verdade por enquanto (Painel) — o
-/// item "Agenda" já aparece desabilitado, com um selo "Em breve": é o
-/// lugar reservado pro Caderno de Agendamento (Firestore) que vem a seguir,
-/// então o menu não vai precisar de retrabalho quando essa tela existir.
+/// Menu lateral do app: Painel e Agenda (caderno de agendamento), com o
+/// item atual destacado.
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
@@ -63,23 +66,12 @@ class AppDrawer extends StatelessWidget {
               onTap: () => Navigator.of(context).pop(),
             ),
             ListTile(
-              enabled: false,
               leading: const Icon(Icons.event_note_rounded),
               title: Text(context.l10n.drawerMenuSchedule),
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xxs,
-                ),
-                decoration: BoxDecoration(
-                  color: context.colors.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-                ),
-                child: Text(
-                  context.l10n.drawerMenuComingSoon,
-                  style: context.texts.labelSmall,
-                ),
-              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                unawaited(context.pushNamed(AppRoute.schedule.name));
+              },
             ),
             const Spacer(),
             const Divider(height: 1),

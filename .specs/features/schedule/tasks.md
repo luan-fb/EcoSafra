@@ -522,7 +522,7 @@ T15 → T16
 **Tests**: widget
 **Gate**: build
 **Commit**: `feat(schedule): liga a tela da agenda ao menu do painel`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
