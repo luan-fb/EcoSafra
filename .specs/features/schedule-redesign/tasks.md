@@ -193,7 +193,7 @@ T11 → T12
 
 **Tests**: unit
 **Gate**: quick
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

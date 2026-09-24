@@ -28,22 +28,11 @@ class EvaluateScheduleRisk
 
   @override
   Either<Failure, ScheduleRiskLevel> call(EvaluateScheduleRiskParams params) {
-    final match = _findDay(params.forecast, params.schedule.scheduledDate);
+    final match = params.forecast.dayOf(params.schedule.scheduledDate);
     if (match == null) return const Right(ScheduleRiskLevel.unknown);
 
     final isRisky =
         match.precipitationSum > EvaluateApplicationSafety.dangerThresholdMm;
     return Right(isRisky ? ScheduleRiskLevel.atRisk : ScheduleRiskLevel.ok);
-  }
-
-  DailyForecastPoint? _findDay(WeatherForecast forecast, DateTime date) {
-    for (final day in forecast.daily) {
-      if (day.date.year == date.year &&
-          day.date.month == date.month &&
-          day.date.day == date.day) {
-        return day;
-      }
-    }
-    return null;
   }
 }
