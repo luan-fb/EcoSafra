@@ -111,12 +111,12 @@ graph TD
   - Índice `@TableIndex(name: 'schedules_user_date', columns: {#userId, #scheduledDate})`.
 - **`AppDatabase`** v2: `tables: [CachedForecasts, FertilizationSchedules]`, `schemaVersion => 2`, `migration` com `onUpgrade: stepByStep(from1To2: ...)` fazendo `m.createTable(schema.fertilizationSchedules)` **e** `m.createIndex(schema.schedulesUserDate)`. O `createTable` do drift não cria os índices da tabela; sem o `createIndex`, o banco migrado ficaria diferente do instalado do zero (corrigido no T6 por `SPEC_DEVIATION` aprovado).
 - **`ScheduleLocalDataSource`** (interface) e **`DriftScheduleLocalDataSource`**:
-  - `Stream<List<ScheduleRow>> watchByUser(String userId)`: `scheduledDate` crescente, `createdAt` crescente como desempate.
+  - `Stream<List<ScheduleRow>> watchByUser(String userId)`: `scheduledDate` crescente, `createdAt` crescente como desempate e `id` como desempate final. O drift grava data e hora em segundos, então dois agendamentos criados no mesmo segundo empatariam em `createdAt`; o `id` deixa a ordem sempre a mesma.
   - `Future<void> insert(ScheduleRow row)`
   - `Future<void> updateDateAndNote({required String id, required String userId, required DateTime scheduledDate, required String? note})`
   - `Future<void> setCompletedAt({required String id, required String userId, required DateTime? completedAt})`
   - `Future<void> delete({required String id, required String userId})`
-  - Toda escrita filtra por `id` **e** `userId`. Zero linhas afetadas → `CacheException('Agendamento não encontrado.')`. `SqliteException` (de `package:drift/native.dart`) → `CacheException('Não foi possível salvar o agendamento.')`.
+  - Toda escrita filtra por `id` **e** `userId`. Zero linhas afetadas → `CacheException('Agendamento não encontrado.')`. `SqliteException` (de `package:drift/native.dart`) **ou** `DriftRemoteException` com `remoteCause is SqliteException` (de `package:drift/isolate.dart`) → `CacheException('Não foi possível salvar o agendamento.')`. No app, o `drift_flutter` roda o SQLite em outro isolate e todo erro chega embrulhado em `DriftRemoteException`; o `SqliteException` puro só aparece no banco em memória dos testes (corrigido no T7 por `SPEC_DEVIATION` aprovado).
 - **Mapper** `ScheduleRow.toEntity()` em `lib/features/schedule/data/models/schedule_row_mapper.dart`.
 - **`ScheduleRepositoryImpl(local, authRepository, clock, uuid)`**:
   - Sem usuário logado: escritas → `Left(AuthFailure('É preciso estar logado para usar a agenda.'))`, sem tocar no banco; `watchSchedules()` → `Stream.value(const [])`.
@@ -188,7 +188,7 @@ final class ScheduleTomorrowReminder extends ScheduleAlert {}
 | -------------- | -------- | ----------- |
 | Sem usuário logado ao escrever | Repositório devolve `AuthFailure` sem tocar no banco | Snackbar "É preciso estar logado para usar a agenda." |
 | Data fora da janela ou nota > 200 | Use case devolve `ValidationFailure` sem chamar o repositório | Snackbar com a mensagem; a UI já impede os dois casos, então é defesa em profundidade |
-| `SqliteException` na escrita | Data source → `CacheException` → `CacheFailure` | Snackbar; lista mantida |
+| `SqliteException` na escrita (direta nos testes, embrulhada em `DriftRemoteException` no app) | Data source → `CacheException` → `CacheFailure` | Snackbar; lista mantida |
 | Editar/concluir/excluir id inexistente ou de outro usuário | Zero linhas afetadas → `CacheException('Agendamento não encontrado.')` | Snackbar |
 | Stream falha antes do primeiro carregamento | `ScheduleCubit` → `status: error` | Tela de erro da Agenda |
 | Stream falha depois de carregado | Mantém a lista | Nada visível |
@@ -206,6 +206,7 @@ final class ScheduleTomorrowReminder extends ScheduleAlert {}
 | `DateTime.now()` espalhado | `schedule_page.dart` (`_pickAndAddSchedule`), `schedule_repository_impl.dart` (`createdAt`) | Testes de "hoje/amanhã/data passada" não determinísticos | `Clock` injetado em use cases, cubits e repositório (AGD-23) |
 | Rascunho acoplado ao Firebase | `firestore_schedule_data_source.dart` (`FirebaseAuth.currentUser`) | Agenda dependente do Firestore | Removido no T6; o dono vem de `AuthRepository`, que já é abstração do domínio |
 | Descarte de módulos importados por dois módulos | `ScheduleDataModule` importado pela Agenda e pelo painel | Voltar da Agenda descartar binds ainda usados pelo painel | Cubits resolvem tudo no construtor (nenhum `Modular.get` tardio); T13 inclui teste manual de ida e volta Agenda ↔ painel no aparelho. Mesmo desenho já usado com o `WeatherModule` |
+| Cache da previsão sem tratamento de erro de escrita (pré-existente) | `lib/features/weather/data/datasources/drift_weather_local_data_source.dart` | Falha ao gravar o cache escapa sem virar `Failure` | Fora do escopo; backlog |
 | `FadeSlideIn` remonta o filho na entrada | `lib/core/widgets/fade_slide_in.dart:49` | Lista da Agenda anima duas vezes | Fora do escopo (backlog do PR #1); não usar `FadeSlideIn` no banner |
 | `daily.first` sem guarda de lista vazia | `lib/features/dashboard/presentation/widgets/forecast_section.dart:31` | Pré-existente | Fora do escopo; o banner não depende disso |
 

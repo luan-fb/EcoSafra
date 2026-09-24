@@ -307,16 +307,17 @@ T15 → T16
 **Done when**:
 
 - [ ] Interface em `schedule_local_data_source.dart`; mapper em `data/models/schedule_row_mapper.dart`
-- [ ] `watchByUser` só devolve linhas do usuário, ordenadas por `scheduledDate` e depois `createdAt`, e reemite após cada escrita
+- [ ] `watchByUser` só devolve linhas do usuário, ordenadas por `scheduledDate`, depois `createdAt` e por fim `id` (o drift grava em segundos: empate em `createdAt` é possível), e reemite após cada escrita
+- [ ] Teste de ordenação com dois agendamentos no mesmo dia e mesmo `createdAt`: a ordem segue o `id`
 - [ ] `updateDateAndNote`, `setCompletedAt` e `delete` filtram por `id` **e** `userId`; zero linhas afetadas → `CacheException('Agendamento não encontrado.')`
-- [ ] `SqliteException` na escrita → `CacheException('Não foi possível salvar o agendamento.')` (testar com `id` duplicado no `insert`)
+- [ ] `SqliteException` na escrita, direta ou embrulhada em `DriftRemoteException` (banco em outro isolate, como no app) → `CacheException('Não foi possível salvar o agendamento.')`; testar com `id` duplicado no `insert` no banco em memória **e** num banco em background (`NativeDatabase.createInBackground`)
 - [ ] Testes em `test/features/schedule/data/datasources/drift_schedule_local_data_source_test.dart` com `AppDatabase.withExecutor(NativeDatabase.memory())`, cobrindo: isolamento entre dois usuários, ordenação, cada escrita, id inexistente, id de outro usuário, reemissão do stream, mapper
 - [ ] Gate check passes: `flutter test test/features/schedule/data/datasources`
 
 **Tests**: unit
 **Gate**: quick
 **Commit**: `feat(schedule): grava agendamentos no banco local`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
