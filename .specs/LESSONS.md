@@ -56,6 +56,54 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: validation.md iteração 2, edge case virada do dia: schedule_page.dart:153 (edição) sem teste que discrimine (presentation/pages)
 - last seen: 2026-09-24T11:59:09Z
 
+### L-008 - Animação implícita exigida por um AC precisa de teste que capture um quadro intermediário, não só o estado final
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `presentation` · harmful: 0
+- features: schedule-redesign
+- evidence: SCHEDUI-03 schedule_tile.dart:190-216 (presentation)
+- last seen: 2026-09-24T19:32:51Z
+
+### L-009 - Quando um widget novo substitui outro numa página, testar a página e verificar que o widget novo está no lugar do antigo
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `presentation` · harmful: 0
+- features: schedule-redesign
+- evidence: SCHEDUI-01 schedule_page.dart:390 (presentation)
+- last seen: 2026-09-24T19:32:51Z
+
+### L-010 - Em CustomPainter, testar o que é desenhado (paints ou medida do path), não só o parâmetro recebido pelo painter
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `presentation/widgets` · harmful: 0
+- features: schedule-redesign
+- evidence: M7 animated_check.dart:140 (presentation/widgets)
+- last seen: 2026-09-24T19:32:51Z
+
+### L-011 - Em mapeamentos de status para cor, asserir a cor de cada ramo, inclusive o neutro
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `presentation/widgets` · harmful: 0
+- features: schedule-redesign
+- evidence: M8 schedule_tile.dart:157-158 (presentation/widgets)
+- last seen: 2026-09-24T19:32:51Z
+
+### L-012 - Condição composta do tipo A e não B precisa de um teste com A e B verdadeiros para provar a exclusão
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `presentation/widgets` · harmful: 0
+- features: schedule-redesign
+- evidence: M6 schedule_tile.dart:79-81 (presentation/widgets)
+- last seen: 2026-09-24T19:32:52Z
+
+### L-013 - Semântica binária como checked deve ser asserida nos dois valores
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `presentation/widgets` · harmful: 0
+- features: schedule-redesign
+- evidence: SCHEDUI-09 animated_check.dart:67 (presentation/widgets)
+- last seen: 2026-09-24T19:32:52Z
+
+### L-014 - Quando a spec fixa a duração de uma animação, conferir o estado final exatamente nessa duração, sem pumpAndSettle
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `presentation/widgets` · harmful: 0
+- features: schedule-redesign
+- evidence: SCHEDUI-19 animated_check.dart:35 (presentation/widgets)
+- last seen: 2026-09-24T19:32:52Z
+
+### L-015 - Critério de animação vago como sem pulo brusco deve nomear na spec o efeito observável e a duração esperada
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `spec` · harmful: 0
+- features: schedule-redesign
+- evidence: SCHEDUI-04 schedule_page.dart:188-192 (spec)
+- last seen: 2026-09-24T19:32:52Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

@@ -145,28 +145,28 @@ A Agenda funciona, mas o item da lista ainda é um `ListTile` simples com a data
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| SCHEDUI-01 | P1: Estado vazio animado | Execute | Implemented (b46700f) |
-| SCHEDUI-02 | P1: Estado vazio animado | Execute | Implemented (b46700f) |
-| SCHEDUI-03 | P1: Transições da lista | Execute | Implemented (f1b0106) |
-| SCHEDUI-04 | P1: Transições da lista | Execute | Implemented (54b7c48); substituído pelo swipe em SCHEDUI-10 |
-| SCHEDUI-05 | P1: Card: layout | Tasks | In Tasks |
-| SCHEDUI-06 | P1: Card: cores | Tasks | In Tasks |
-| SCHEDUI-07 | P1: Card: chuva em mm | Tasks | In Tasks |
-| SCHEDUI-08 | P1: Card: controle de conclusão | Tasks | In Tasks |
-| SCHEDUI-09 | P1: Card: semântica | Tasks | In Tasks |
-| SCHEDUI-10 | P1: Swipe: remove e exclui | Tasks | In Tasks |
-| SCHEDUI-11 | P1: Swipe: snackbar Desfazer | Tasks | In Tasks |
-| SCHEDUI-12 | P1: Swipe: restaura igual | Tasks | In Tasks |
-| SCHEDUI-13 | P1: Swipe: falha ao excluir | Tasks | In Tasks |
-| SCHEDUI-14 | P1: Swipe: falha ao restaurar | Tasks | In Tasks |
-| SCHEDUI-15 | P1: Swipe: ação de acessibilidade | Tasks | In Tasks |
-| SCHEDUI-16 | P1: Swipe: snackbar some ao sair | Tasks | In Tasks |
-| SCHEDUI-17 | P2: Container transform no card | Tasks | In Tasks |
-| SCHEDUI-18 | P2: Container transform no botão | Tasks | In Tasks |
-| SCHEDUI-19 | P2: Check desenhado | Tasks | In Tasks |
-| SCHEDUI-20 | P2: Alerta pulsando | Tasks | In Tasks |
-| SCHEDUI-21 | P2: Redução de movimento | Tasks | In Tasks |
-| SCHEDUI-22 | P2: Regras do formulário mantidas | Tasks | In Tasks |
+| SCHEDUI-01 | P1: Estado vazio animado | Execute | ✅ Verified |
+| SCHEDUI-02 | P1: Estado vazio animado | Execute | ✅ Verified |
+| SCHEDUI-03 | P1: Transições da lista | Execute | ✅ Verified |
+| SCHEDUI-04 | P1: Transições da lista | Execute | ✅ Verified |
+| SCHEDUI-05 | P1: Card: layout | Tasks | ✅ Verified |
+| SCHEDUI-06 | P1: Card: cores | Tasks | ✅ Verified |
+| SCHEDUI-07 | P1: Card: chuva em mm | Tasks | ✅ Verified |
+| SCHEDUI-08 | P1: Card: controle de conclusão | Tasks | ✅ Verified |
+| SCHEDUI-09 | P1: Card: semântica | Tasks | ✅ Verified |
+| SCHEDUI-10 | P1: Swipe: remove e exclui | Tasks | ✅ Verified |
+| SCHEDUI-11 | P1: Swipe: snackbar Desfazer | Tasks | ✅ Verified |
+| SCHEDUI-12 | P1: Swipe: restaura igual | Tasks | ✅ Verified |
+| SCHEDUI-13 | P1: Swipe: falha ao excluir | Tasks | ✅ Verified |
+| SCHEDUI-14 | P1: Swipe: falha ao restaurar | Tasks | ✅ Verified |
+| SCHEDUI-15 | P1: Swipe: ação de acessibilidade | Tasks | ✅ Verified |
+| SCHEDUI-16 | P1: Swipe: snackbar some ao sair | Tasks | ✅ Verified |
+| SCHEDUI-17 | P2: Container transform no card | Tasks | ✅ Verified |
+| SCHEDUI-18 | P2: Container transform no botão | Tasks | ✅ Verified |
+| SCHEDUI-19 | P2: Check desenhado | Tasks | ✅ Verified |
+| SCHEDUI-20 | P2: Alerta pulsando | Tasks | ✅ Verified |
+| SCHEDUI-21 | P2: Redução de movimento | Tasks | ✅ Verified |
+| SCHEDUI-22 | P2: Regras do formulário mantidas | Tasks | ✅ Verified |
 
 SCHEDUI-05..09 = ACs 1–5 do card; SCHEDUI-10..16 = ACs 1–7 do swipe; SCHEDUI-17..22 = ACs 1–6 das animações.
 

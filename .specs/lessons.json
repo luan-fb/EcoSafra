@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 8,
+  "next_id": 16,
   "lessons": [
     {
       "id": "L-001",
@@ -130,6 +130,150 @@
       ],
       "created": "2026-09-24T11:59:09Z",
       "last_seen": "2026-09-24T11:59:09Z"
+    },
+    {
+      "id": "L-008",
+      "key": "ac_gap::animacao implicita exigida por um ac precisa de teste que capture um quadro intermediario nao so o estado final",
+      "text": "Animação implícita exigida por um AC precisa de teste que capture um quadro intermediário, não só o estado final",
+      "signal": "ac_gap",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SCHEDUI-03 schedule_tile.dart:190-216 (presentation)"
+      ],
+      "created": "2026-09-24T19:32:51Z",
+      "last_seen": "2026-09-24T19:32:51Z"
+    },
+    {
+      "id": "L-009",
+      "key": "ac_gap::quando um widget novo substitui outro numa pagina testar a pagina e verificar que o widget novo esta no lugar do antigo",
+      "text": "Quando um widget novo substitui outro numa página, testar a página e verificar que o widget novo está no lugar do antigo",
+      "signal": "ac_gap",
+      "scope": "presentation",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SCHEDUI-01 schedule_page.dart:390 (presentation)"
+      ],
+      "created": "2026-09-24T19:32:51Z",
+      "last_seen": "2026-09-24T19:32:51Z"
+    },
+    {
+      "id": "L-010",
+      "key": "surviving_mutant::em custompainter testar o que e desenhado paints ou medida do path nao so o parametro recebido pelo painter",
+      "text": "Em CustomPainter, testar o que é desenhado (paints ou medida do path), não só o parâmetro recebido pelo painter",
+      "signal": "surviving_mutant",
+      "scope": "presentation/widgets",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M7 animated_check.dart:140 (presentation/widgets)"
+      ],
+      "created": "2026-09-24T19:32:51Z",
+      "last_seen": "2026-09-24T19:32:51Z"
+    },
+    {
+      "id": "L-011",
+      "key": "surviving_mutant::em mapeamentos de status para cor asserir a cor de cada ramo inclusive o neutro",
+      "text": "Em mapeamentos de status para cor, asserir a cor de cada ramo, inclusive o neutro",
+      "signal": "surviving_mutant",
+      "scope": "presentation/widgets",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M8 schedule_tile.dart:157-158 (presentation/widgets)"
+      ],
+      "created": "2026-09-24T19:32:51Z",
+      "last_seen": "2026-09-24T19:32:51Z"
+    },
+    {
+      "id": "L-012",
+      "key": "surviving_mutant::condicao composta do tipo a e nao b precisa de um teste com a e b verdadeiros para provar a exclusao",
+      "text": "Condição composta do tipo A e não B precisa de um teste com A e B verdadeiros para provar a exclusão",
+      "signal": "surviving_mutant",
+      "scope": "presentation/widgets",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M6 schedule_tile.dart:79-81 (presentation/widgets)"
+      ],
+      "created": "2026-09-24T19:32:52Z",
+      "last_seen": "2026-09-24T19:32:52Z"
+    },
+    {
+      "id": "L-013",
+      "key": "ac_gap::semantica binaria como checked deve ser asserida nos dois valores",
+      "text": "Semântica binária como checked deve ser asserida nos dois valores",
+      "signal": "ac_gap",
+      "scope": "presentation/widgets",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SCHEDUI-09 animated_check.dart:67 (presentation/widgets)"
+      ],
+      "created": "2026-09-24T19:32:52Z",
+      "last_seen": "2026-09-24T19:32:52Z"
+    },
+    {
+      "id": "L-014",
+      "key": "ac_gap::quando a spec fixa a duracao de uma animacao conferir o estado final exatamente nessa duracao sem pumpandsettle",
+      "text": "Quando a spec fixa a duração de uma animação, conferir o estado final exatamente nessa duração, sem pumpAndSettle",
+      "signal": "ac_gap",
+      "scope": "presentation/widgets",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SCHEDUI-19 animated_check.dart:35 (presentation/widgets)"
+      ],
+      "created": "2026-09-24T19:32:52Z",
+      "last_seen": "2026-09-24T19:32:52Z"
+    },
+    {
+      "id": "L-015",
+      "key": "spec_precision_gap::criterio de animacao vago como sem pulo brusco deve nomear na spec o efeito observavel e a duracao esperada",
+      "text": "Critério de animação vago como sem pulo brusco deve nomear na spec o efeito observável e a duração esperada",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "schedule-redesign"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SCHEDUI-04 schedule_page.dart:188-192 (spec)"
+      ],
+      "created": "2026-09-24T19:32:52Z",
+      "last_seen": "2026-09-24T19:32:52Z"
     }
   ]
 }

@@ -13,10 +13,10 @@
 ## Handoff
 
 - **Feature**: `.specs/features/schedule-redesign`
-- **Phase / Task**: Fase 5 concluída (T8–T10); próxima é a Fase 6, T11
-- **Completed**: T1–T10
+- **Phase / Task**: Concluída: T1–T12 commitados e verificação independente PASS (iteração 2, `validation.md`)
+- **Completed**: T1–T12, verificação
 - **In-progress** (file:line): none
-- **Next step**: Executar T11 (formulário em tela cheia com container transform, complexidade Alta); depois T12
+- **Next step**: O usuário vai fazer mudanças próprias; depois: revisar o diff dele, rodar `flutter analyze && flutter test`, commitar, push de `feat/schedule` e PR para a `main` com `flutter-review`
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: `feat/schedule`
