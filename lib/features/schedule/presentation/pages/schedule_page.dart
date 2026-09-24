@@ -1,15 +1,13 @@
 import 'dart:async';
 
-import 'package:animations/animations.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
-import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
-import 'package:ecosafra/features/schedule/presentation/pages/schedule_form_page.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_form_sheet.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -233,62 +231,27 @@ class _DeleteBackground extends StatelessWidget {
   }
 }
 
-/// Duração do container transform: `Duration.zero` com redução de movimento
-/// faz a rota abrir e fechar sem desenhar quadros intermediários
-/// (SCHEDUI-21).
-Duration _containerTransitionDuration(BuildContext context) =>
-    context.reduceMotion ? Duration.zero : AppMotion.slow;
-
 /// Botão "Agendar" que se expande no formulário de criação (SCHEDUI-18).
 class _CreateScheduleButton extends StatelessWidget {
   const _CreateScheduleButton();
 
-  // Elevação de repouso do FAB no Material 3 (nível 3). A sombra fica no
-  // `OpenContainer`: o recorte dele cortaria a sombra do próprio botão.
-  static const double _restingElevation = 6;
-
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<ScheduleCubit>();
-    final colors = context.colors;
-    // Forma padrão do FAB no Material 3, repetida no botão e no container
-    // para o recorte coincidir com o botão.
-    final shape =
-        context.theme.floatingActionButtonTheme.shape ??
-        const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusMd)),
+
+    return FloatingActionButton.extended(
+      onPressed: () async {
+        final result = await ScheduleFormSheet.show(
+          context,
+          window: cubit.currentWindow(),
         );
 
-    return OpenContainer<ScheduleFormResult>(
-      transitionDuration: _containerTransitionDuration(context),
-      closedColor: colors.primaryContainer,
-      openColor: colors.surface,
-      middleColor: colors.surface,
-      closedElevation: _restingElevation,
-      openElevation: 0,
-      closedShape: shape,
-      tappable: false,
-      closedBuilder: (context, openContainer) => FloatingActionButton.extended(
-        onPressed: openContainer,
-        shape: shape,
-        elevation: 0,
-        focusElevation: 0,
-        hoverElevation: 0,
-        highlightElevation: 0,
-        icon: const Icon(Icons.add_rounded),
-        label: Text(context.l10n.scheduleAddButton),
-      ),
-      // A rota nova fica fora do `BlocProvider`: o cubit vem do contexto da
-      // lista. A janela é lida ao abrir, e não a do estado, por causa da
-      // virada do dia com a tela aberta.
-      openBuilder: (context, _) => ScheduleFormPage(
-        window: cubit.currentWindow(),
-      ),
-      onClosed: (result) {
-        if (result != null) {
+        if (result != null && context.mounted) {
           unawaited(cubit.addSchedule(result.date, note: result.note));
         }
       },
+      icon: const Icon(Icons.add_rounded),
+      label: Text(context.l10n.scheduleAddButton),
     );
   }
 }
@@ -319,37 +282,31 @@ class _ScheduleCard extends StatelessWidget {
       );
     }
 
-    return OpenContainer<ScheduleFormResult>(
-      transitionDuration: _containerTransitionDuration(context),
-      closedColor: context.colors.surfaceContainerLow,
-      openColor: context.colors.surface,
-      middleColor: context.colors.surface,
-      closedElevation: 0,
-      openElevation: 0,
-      // Mesmo raio do `CardThemeData` (`AppTheme`).
-      closedShape: const RoundedRectangleBorder(
+    return Card(
+      elevation: 0,
+      color: context.colors.surfaceContainerLow,
+      margin: EdgeInsets.zero,
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusLg)),
       ),
-      // O toque vem do `onEdit` do card, para o check à direita não abrir o
-      // formulário.
-      tappable: false,
-      closedBuilder: (context, openContainer) => ScheduleTile(
+      child: ScheduleTile(
         item: item,
-        onEdit: openContainer,
+        onEdit: () async {
+          final result = await ScheduleFormSheet.show(
+            context,
+            window: cubit.currentWindow(),
+            initial: schedule,
+          );
+
+          if (result != null && context.mounted) {
+            unawaited(
+              cubit.editSchedule(schedule.id, result.date, note: result.note),
+            );
+          }
+        },
         onToggleCompleted: _toggleCompleted(cubit),
         onDelete: onDelete,
       ),
-      openBuilder: (context, _) => ScheduleFormPage(
-        window: cubit.currentWindow(),
-        initial: schedule,
-      ),
-      onClosed: (result) {
-        if (result != null) {
-          unawaited(
-            cubit.editSchedule(schedule.id, result.date, note: result.note),
-          );
-        }
-      },
     );
   }
 }

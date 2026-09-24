@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_note.dart';
 import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dart';
-import 'package:ecosafra/features/schedule/presentation/pages/schedule_form_page.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_form_sheet.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,27 +22,32 @@ void main() {
   final today = DateTime(2026, 9, 23);
   final window = SchedulingWindow.startingAt(today);
 
-  /// Monta o app, abre o formulário como rota e devolve o `Future` (ainda
-  /// pendente) do resultado: o teste interage com a tela e só então aguarda
-  /// por ele.
+  Widget app({required Widget home, bool reduceMotion = false}) => MaterialApp(
+    theme: AppTheme.light,
+    locale: const Locale('pt'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: MediaQuery(
+      data: MediaQueryData(disableAnimations: reduceMotion),
+      child: home,
+    ),
+  );
+
+  /// Abre o sheet direto por `ScheduleFormSheet.show`, com redução de
+  /// movimento (abertura instantânea): o teste interage com a tela e só
+  /// então aguarda o `Future` do resultado, já pendente.
   Future<Future<ScheduleFormResult?>> pumpAndOpen(
     WidgetTester tester, {
     FertilizationSchedule? initial,
   }) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light,
-        locale: const Locale('pt'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(body: SizedBox.shrink()),
-      ),
+      app(reduceMotion: true, home: const Scaffold(body: SizedBox.shrink())),
     );
     final context = tester.element(find.byType(Scaffold));
-    final future = Navigator.of(context).push<ScheduleFormResult>(
-      MaterialPageRoute(
-        builder: (_) => ScheduleFormPage(window: window, initial: initial),
-      ),
+    final future = ScheduleFormSheet.show(
+      context,
+      window: window,
+      initial: initial,
     );
     await tester.pumpAndSettle();
     return future;
@@ -188,7 +195,7 @@ void main() {
       await tester.tap(find.byTooltip('Cancelar'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(ScheduleFormPage), findsNothing);
+      expect(find.byType(ScheduleFormSheet), findsNothing);
       expect(await future, isNull);
     });
 
@@ -198,7 +205,7 @@ void main() {
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
 
-      expect(find.byType(ScheduleFormPage), findsNothing);
+      expect(find.byType(ScheduleFormSheet), findsNothing);
       expect(await future, isNull);
     });
 
@@ -233,6 +240,31 @@ void main() {
         final result = await future;
         expect(result!.date, window.last);
         expect(result.note, 'ureia');
+      },
+    );
+  });
+
+  group('animação do sheet', () {
+    testWidgets(
+      'SCHEDUI-21: com redução de movimento, abre sem quadros '
+      'intermediários',
+      (tester) async {
+        await tester.pumpWidget(
+          app(
+            reduceMotion: true,
+            home: const Scaffold(body: SizedBox.shrink()),
+          ),
+        );
+        final context = tester.element(find.byType(Scaffold));
+        unawaited(ScheduleFormSheet.show(context, window: window));
+        await tester.pump();
+
+        final route = ModalRoute.of(
+          tester.element(find.byType(ScheduleFormSheet)),
+        )!;
+        expect(route.animation!.status, AnimationStatus.completed);
+
+        await tester.pumpAndSettle();
       },
     );
   });

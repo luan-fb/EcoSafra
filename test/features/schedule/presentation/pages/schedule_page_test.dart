@@ -1,20 +1,18 @@
 import 'dart:async';
 
-import 'package:animations/animations.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
-import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
 import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
-import 'package:ecosafra/features/schedule/presentation/pages/schedule_form_page.dart';
 import 'package:ecosafra/features/schedule/presentation/pages/schedule_page.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/animated_check.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_form_sheet.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -317,7 +315,10 @@ void main() {
     );
   });
 
-  group('container transform', () {
+  // A duração e a curva do bottom sheet (`AppMotion.slow`/`noAnimation`) são
+  // do `ScheduleFormSheet.show` e ficam testadas junto dele
+  // (`schedule_form_sheet_test.dart`); aqui só o fluxo de abrir e salvar.
+  group('formulário em bottom sheet', () {
     ScheduleState loadedWith({
       List<ScheduleItem> upcoming = const [],
       List<ScheduleItem> completed = const [],
@@ -336,12 +337,16 @@ void main() {
 
         await tester.tap(find.text('Agendar'));
         await tester.pumpAndSettle();
-        expect(find.byType(ScheduleFormPage), findsOneWidget);
+        expect(find.byType(ScheduleFormSheet), findsOneWidget);
+        expect(
+          ModalRoute.of(tester.element(find.byType(ScheduleFormSheet))),
+          isA<ModalBottomSheetRoute<ScheduleFormResult>>(),
+        );
 
         await tester.tap(find.byTooltip('Cancelar'));
         await tester.pumpAndSettle();
 
-        expect(find.byType(ScheduleFormPage), findsNothing);
+        expect(find.byType(ScheduleFormSheet), findsNothing);
         verifyNever(() => cubit.addSchedule(any(), note: any(named: 'note')));
       },
     );
@@ -356,11 +361,15 @@ void main() {
         await tester.tap(find.byType(ScheduleTile));
         await tester.pumpAndSettle();
 
-        final form = tester.widget<ScheduleFormPage>(
-          find.byType(ScheduleFormPage),
+        final form = tester.widget<ScheduleFormSheet>(
+          find.byType(ScheduleFormSheet),
         );
         expect(form.initial, target);
         expect(form.window, window);
+        expect(
+          ModalRoute.of(tester.element(find.byType(ScheduleFormSheet))),
+          isA<ModalBottomSheetRoute<ScheduleFormResult>>(),
+        );
 
         await tester.enterText(find.byType(TextField), 'NPK');
         await tester.tap(find.text('Salvar'));
@@ -385,7 +394,7 @@ void main() {
         await tester.tap(find.byTooltip('Cancelar'));
         await tester.pumpAndSettle();
 
-        expect(find.byType(ScheduleFormPage), findsNothing);
+        expect(find.byType(ScheduleFormSheet), findsNothing);
         verifyNever(
           () => cubit.editSchedule(any(), any(), note: any(named: 'note')),
         );
@@ -404,7 +413,7 @@ void main() {
         await tester.tap(find.byType(AnimatedCheck));
         await tester.pumpAndSettle();
 
-        expect(find.byType(ScheduleFormPage), findsNothing);
+        expect(find.byType(ScheduleFormSheet), findsNothing);
         verify(() => cubit.setCompleted('s1', completed: true)).called(1);
       },
     );
@@ -424,99 +433,8 @@ void main() {
         await tester.tap(find.byType(ScheduleTile));
         await tester.pumpAndSettle();
 
-        expect(find.byType(ScheduleFormPage), findsNothing);
+        expect(find.byType(ScheduleFormSheet), findsNothing);
         expect(find.text('Editar agendamento'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'SCHEDUI-17: sem redução de movimento, o card se expande em '
-      'AppMotion.slow, com quadros intermediários',
-      (tester) async {
-        final target = schedule('s1', window.first);
-        stubState(loadedWith(upcoming: [upcomingItem(target)]));
-        await pumpPage(tester, disableAnimations: false);
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byType(ScheduleTile));
-        await tester.pump();
-        await tester.pump(AppMotion.slow ~/ 2);
-
-        final route = ModalRoute.of(
-          tester.element(find.byType(ScheduleFormPage)),
-        )!;
-        final screen =
-            Offset.zero &
-            tester.view.physicalSize / tester.view.devicePixelRatio;
-        expect(route.transitionDuration, AppMotion.slow);
-        expect(route.animation!.value, inExclusiveRange(0, 1));
-        // O formulário é desenhado escalado dentro do retângulo do card.
-        expect(tester.getRect(find.byType(ScheduleFormPage)), isNot(screen));
-
-        await tester.pumpAndSettle();
-        expect(route.animation!.status, AnimationStatus.completed);
-        expect(tester.getRect(find.byType(ScheduleFormPage)), screen);
-      },
-    );
-
-    testWidgets(
-      'SCHEDUI-18: sem redução de movimento, o botão "Agendar" se expande em '
-      'AppMotion.slow',
-      (tester) async {
-        // Com um item, e não vazia: a animação do estado vazio roda em loop.
-        stubState(
-          loadedWith(upcoming: [upcomingItem(schedule('s1', window.first))]),
-        );
-        await pumpPage(tester, disableAnimations: false);
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Agendar'));
-        await tester.pump();
-        await tester.pump(AppMotion.slow ~/ 2);
-
-        final route = ModalRoute.of(
-          tester.element(find.byType(ScheduleFormPage)),
-        )!;
-        expect(route.transitionDuration, AppMotion.slow);
-        expect(route.animation!.value, inExclusiveRange(0, 1));
-        await tester.pumpAndSettle();
-      },
-    );
-
-    testWidgets(
-      'SCHEDUI-21: com redução de movimento, o formulário abre e fecha sem '
-      'quadros intermediários',
-      (tester) async {
-        final target = schedule('s1', window.first);
-        stubState(loadedWith(upcoming: [upcomingItem(target)]));
-        await pumpPage(tester);
-
-        final containers = tester.widgetList<OpenContainer<ScheduleFormResult>>(
-          find.byType(OpenContainer<ScheduleFormResult>),
-        );
-        expect(containers, isNotEmpty);
-        for (final container in containers) {
-          expect(container.transitionDuration, Duration.zero);
-        }
-
-        await tester.tap(find.byType(ScheduleTile));
-        await tester.pump();
-
-        final route = ModalRoute.of(
-          tester.element(find.byType(ScheduleFormPage)),
-        )!;
-        final screen =
-            Offset.zero &
-            tester.view.physicalSize / tester.view.devicePixelRatio;
-        expect(route.animation!.status, AnimationStatus.completed);
-        expect(tester.getRect(find.byType(ScheduleFormPage)), screen);
-
-        await tester.tap(find.byTooltip('Cancelar'));
-        await tester.pump();
-
-        expect(route.animation!.status, AnimationStatus.dismissed);
-        await tester.pump();
-        expect(find.byType(ScheduleFormPage), findsNothing);
       },
     );
   });
