@@ -463,7 +463,7 @@ T15 → T16
 **Tests**: widget
 **Gate**: quick
 **Commit**: `feat(schedule): adiciona o formulário de criar e editar agendamento`
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 

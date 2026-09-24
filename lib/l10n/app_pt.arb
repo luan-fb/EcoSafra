@@ -183,5 +183,26 @@
   "@drawerMenuComingSoon": {"description": "Selo indicando uma seção do menu ainda não disponível"},
 
   "drawerMenuSignOut": "Sair",
-  "@drawerMenuSignOut": {"description": "Item do menu lateral para encerrar a sessão"}
+  "@drawerMenuSignOut": {"description": "Item do menu lateral para encerrar a sessão"},
+
+  "scheduleFormCreateTitle": "Novo agendamento",
+  "@scheduleFormCreateTitle": {"description": "Título do formulário ao criar um agendamento"},
+
+  "scheduleFormEditTitle": "Editar agendamento",
+  "@scheduleFormEditTitle": {"description": "Título do formulário ao editar um agendamento"},
+
+  "scheduleFormDateLabel": "Data da aplicação",
+  "@scheduleFormDateLabel": {"description": "Rótulo do campo de data no formulário de agendamento"},
+
+  "scheduleFormNoteLabel": "Observação",
+  "@scheduleFormNoteLabel": {"description": "Rótulo do campo de observação no formulário de agendamento"},
+
+  "scheduleFormNoteHint": "Ex.: talhão 3, ureia",
+  "@scheduleFormNoteHint": {"description": "Dica do campo de observação no formulário de agendamento"},
+
+  "scheduleFormSave": "Salvar",
+  "@scheduleFormSave": {"description": "Botão de confirmar o formulário de agendamento"},
+
+  "scheduleFormCancel": "Cancelar",
+  "@scheduleFormCancel": {"description": "Botão de cancelar o formulário de agendamento"}
 }
