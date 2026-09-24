@@ -1,15 +1,25 @@
+import 'package:ecosafra/core/theme/app_colors.dart';
+import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/animated_check.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_date_block.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  setUpAll(() => initializeDateFormatting('pt_BR'));
+  setUpAll(() async {
+    await initializeDateFormatting('pt_BR');
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
 
+  // 23/09/2026 é uma quarta-feira.
   final today = DateTime(2026, 9, 23);
 
   FertilizationSchedule schedule({
@@ -33,6 +43,7 @@ void main() {
   }) {
     return tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.light,
         locale: const Locale('pt'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -48,57 +59,120 @@ void main() {
     );
   }
 
-  group('rótulos', () {
-    testWidgets('AGD-09: previsão favorável', (tester) async {
-      await pumpTile(
-        tester,
-        ScheduleItem(
-          schedule: schedule(),
-          risk: ScheduleRiskLevel.ok,
-          isPastDue: false,
-        ),
-      );
-      expect(find.text('Previsão favorável'), findsOneWidget);
-    });
+  ScheduleDateBlock dateBlockOf(WidgetTester tester) =>
+      tester.widget<ScheduleDateBlock>(find.byType(ScheduleDateBlock));
 
-    testWidgets('AGD-09: risco de chuva forte no dia', (tester) async {
-      await pumpTile(
-        tester,
-        ScheduleItem(
-          schedule: schedule(),
-          risk: ScheduleRiskLevel.atRisk,
-          isPastDue: false,
-        ),
-      );
-      expect(find.text('Risco de chuva forte no dia'), findsOneWidget);
-    });
-
-    testWidgets('AGD-09: sem previsão para este dia ainda', (tester) async {
-      await pumpTile(
-        tester,
-        ScheduleItem(
-          schedule: schedule(),
-          risk: ScheduleRiskLevel.unknown,
-          isPastDue: false,
-        ),
-      );
-      expect(find.text('Sem previsão para este dia ainda'), findsOneWidget);
-    });
-
-    testWidgets('AGD-10: data passada no lugar do risco', (tester) async {
-      await pumpTile(
-        tester,
-        ScheduleItem(
-          schedule: schedule(
-            scheduledDate: today.subtract(const Duration(days: 1)),
+  group('rótulos e cores', () {
+    testWidgets(
+      'SCHEDUI-05/06: previsão favorável usa o verde e o rótulo certo',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(),
+            risk: ScheduleRiskLevel.ok,
+            isPastDue: false,
           ),
-          risk: ScheduleRiskLevel.unknown,
-          isPastDue: true,
-        ),
-      );
-      expect(find.text('Data passada'), findsOneWidget);
-      expect(find.text('Sem previsão para este dia ainda'), findsNothing);
-    });
+        );
+
+        expect(find.text('Previsão favorável'), findsOneWidget);
+        expect(dateBlockOf(tester).background, AppColors.safe);
+        expect(dateBlockOf(tester).foreground, Colors.white);
+        expect(dateBlockOf(tester).pulse, isFalse);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-05/06: risco usa o vermelho, pulsa e mostra a chuva em mm',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(),
+            risk: ScheduleRiskLevel.atRisk,
+            isPastDue: false,
+            expectedRainMm: 12.34,
+          ),
+        );
+
+        expect(find.text('Risco de chuva forte no dia'), findsOneWidget);
+        expect(find.text('12,3 mm previstos'), findsOneWidget);
+        expect(dateBlockOf(tester).background, AppColors.danger);
+        expect(dateBlockOf(tester).foreground, Colors.white);
+        expect(dateBlockOf(tester).pulse, isTrue);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-07: sem previsão de chuva, o mm não aparece mesmo em risco',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(),
+            risk: ScheduleRiskLevel.atRisk,
+            isPastDue: false,
+          ),
+        );
+
+        expect(find.textContaining('mm previstos'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-07: sem risco, o mm não aparece mesmo com chuva prevista',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(),
+            risk: ScheduleRiskLevel.ok,
+            isPastDue: false,
+            expectedRainMm: 5,
+          ),
+        );
+
+        expect(find.textContaining('mm previstos'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-05/06: sem previsão usa o neutro',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(),
+            risk: ScheduleRiskLevel.unknown,
+            isPastDue: false,
+          ),
+        );
+
+        expect(find.text('Sem previsão para este dia ainda'), findsOneWidget);
+        expect(dateBlockOf(tester).pulse, isFalse);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-05/06: data passada usa o amarelo no lugar do risco',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(
+              scheduledDate: today.subtract(const Duration(days: 1)),
+            ),
+            risk: ScheduleRiskLevel.unknown,
+            isPastDue: true,
+          ),
+        );
+
+        expect(find.text('Data passada'), findsOneWidget);
+        expect(find.text('Sem previsão para este dia ainda'), findsNothing);
+        expect(dateBlockOf(tester).background, AppColors.caution);
+        expect(dateBlockOf(tester).pulse, isFalse);
+      },
+    );
 
     testWidgets('observação aparece quando existe', (tester) async {
       await pumpTile(
@@ -112,7 +186,9 @@ void main() {
       expect(find.text('talhão 3'), findsOneWidget);
     });
 
-    testWidgets('sem observação, nenhuma linha extra aparece', (tester) async {
+    testWidgets('sem observação, nenhuma linha extra aparece', (
+      tester,
+    ) async {
       await pumpTile(
         tester,
         ScheduleItem(
@@ -122,6 +198,20 @@ void main() {
         ),
       );
       expect(find.text('null'), findsNothing);
+    });
+
+    testWidgets('SCHEDUI-05: dia da semana por extenso maiúsculo', (
+      tester,
+    ) async {
+      await pumpTile(
+        tester,
+        ScheduleItem(
+          schedule: schedule(),
+          risk: ScheduleRiskLevel.ok,
+          isPastDue: false,
+        ),
+      );
+      expect(find.text('Quarta-feira'), findsOneWidget);
     });
   });
 
@@ -139,12 +229,37 @@ void main() {
         );
         expect(find.text('Risco de chuva forte no dia'), findsNothing);
         expect(find.text('Data passada'), findsNothing);
+        expect(find.textContaining('mm previstos'), findsNothing);
       },
     );
 
-    testWidgets('AGD-28: concluído mostra o checkbox marcado', (
-      tester,
-    ) async {
+    testWidgets(
+      'SCHEDUI-05/06: concluído usa o bloco neutro e não pulsa',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(completed: true),
+            risk: ScheduleRiskLevel.unknown,
+            isPastDue: false,
+          ),
+        );
+
+        final block = dateBlockOf(tester);
+        final context = tester.element(find.byType(ScheduleTile));
+        expect(
+          block.background,
+          Theme.of(context).colorScheme.surfaceContainerHigh,
+        );
+        expect(
+          block.foreground,
+          Theme.of(context).colorScheme.onSurfaceVariant,
+        );
+        expect(block.pulse, isFalse);
+      },
+    );
+
+    testWidgets('AGD-28: concluído mostra o check marcado', (tester) async {
       await pumpTile(
         tester,
         ScheduleItem(
@@ -153,8 +268,8 @@ void main() {
           isPastDue: false,
         ),
       );
-      final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
-      expect(checkbox.value, isTrue);
+      final check = tester.widget<AnimatedCheck>(find.byType(AnimatedCheck));
+      expect(check.value, isTrue);
     });
 
     testWidgets(
@@ -170,7 +285,7 @@ void main() {
           ),
           onEdit: () => edited = true,
         );
-        await tester.tap(find.byType(ListTile));
+        await tester.tap(find.byType(InkWell));
         await tester.pumpAndSettle();
         expect(edited, isFalse);
       },
@@ -189,13 +304,13 @@ void main() {
         ),
         onEdit: () => edited = true,
       );
-      await tester.tap(find.byType(ListTile));
+      await tester.tap(find.byType(InkWell));
       await tester.pumpAndSettle();
       expect(edited, isTrue);
     });
 
     testWidgets(
-      'AGD-28: marcar o checkbox chama onToggleCompleted(true)',
+      'AGD-28: marcar o check chama onToggleCompleted(true)',
       (tester) async {
         bool? toggledTo;
         await pumpTile(
@@ -207,14 +322,14 @@ void main() {
           ),
           onToggleCompleted: (value) => toggledTo = value,
         );
-        await tester.tap(find.byType(Checkbox));
+        await tester.tap(find.byType(AnimatedCheck));
         await tester.pumpAndSettle();
         expect(toggledTo, isTrue);
       },
     );
 
     testWidgets(
-      'AGD-29: desmarcar o checkbox chama onToggleCompleted(false)',
+      'AGD-29: desmarcar o check chama onToggleCompleted(false)',
       (tester) async {
         bool? toggledTo;
         await pumpTile(
@@ -226,14 +341,36 @@ void main() {
           ),
           onToggleCompleted: (value) => toggledTo = value,
         );
-        await tester.tap(find.byType(Checkbox));
+        await tester.tap(find.byType(AnimatedCheck));
         await tester.pumpAndSettle();
         expect(toggledTo, isFalse);
       },
     );
+  });
+
+  group('semântica', () {
+    testWidgets(
+      'SCHEDUI-09: rótulo traz dia da semana, data, status e observação',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(note: 'talhão 3'),
+            risk: ScheduleRiskLevel.ok,
+            isPastDue: false,
+          ),
+        );
+
+        final semantics = tester.getSemantics(find.byType(InkWell));
+        expect(semantics.label, contains('Quarta-feira'));
+        expect(semantics.label, contains('setembro de 2026'));
+        expect(semantics.label, contains('Previsão favorável'));
+        expect(semantics.label, contains('talhão 3'));
+      },
+    );
 
     testWidgets(
-      'AGD-30: menu "Excluir" chama onDelete',
+      'SCHEDUI-15: ação de acessibilidade "Excluir" chama onDelete',
       (tester) async {
         var deleted = false;
         await pumpTile(
@@ -245,10 +382,21 @@ void main() {
           ),
           onDelete: () => deleted = true,
         );
-        await tester.tap(find.byIcon(Icons.more_vert));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Excluir'));
-        await tester.pumpAndSettle();
+
+        final node = tester.getSemantics(find.byType(InkWell));
+        final actionIds = node.getSemanticsData().customSemanticsActionIds!;
+        final actionId = actionIds.singleWhere(
+          (id) => CustomSemanticsAction.getAction(id)!.label == 'Excluir',
+        );
+        // Sem substituto direto para acionar uma `CustomSemanticsAction` a
+        // partir do teste.
+        // ignore: deprecated_member_use
+        tester.binding.pipelineOwner.semanticsOwner!.performAction(
+          node.id,
+          SemanticsAction.customAction,
+          actionId,
+        );
+
         expect(deleted, isTrue);
       },
     );

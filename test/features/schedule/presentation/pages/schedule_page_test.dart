@@ -7,6 +7,7 @@ import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dar
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:ecosafra/features/schedule/presentation/pages/schedule_page.dart';
+import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -254,7 +255,7 @@ void main() {
         );
         await pumpPage(tester);
 
-        await tester.tap(find.byType(ListTile));
+        await tester.tap(find.byType(ScheduleTile));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Data da aplicação'));
         await tester.pumpAndSettle();
@@ -280,7 +281,7 @@ void main() {
         );
         await pumpPage(tester);
 
-        await tester.tap(find.byType(ListTile));
+        await tester.tap(find.byType(ScheduleTile));
         await tester.pumpAndSettle();
 
         expect(find.text('Editar agendamento'), findsOneWidget);
@@ -309,9 +310,7 @@ void main() {
         );
         await pumpPage(tester);
 
-        await tester.tap(find.byIcon(Icons.more_vert));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Excluir'));
+        tester.widget<ScheduleTile>(find.byType(ScheduleTile)).onDelete();
         await tester.pumpAndSettle();
 
         expect(find.text('Excluir agendamento?'), findsOneWidget);
@@ -335,9 +334,7 @@ void main() {
         );
         await pumpPage(tester);
 
-        await tester.tap(find.byIcon(Icons.more_vert));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Excluir'));
+        tester.widget<ScheduleTile>(find.byType(ScheduleTile)).onDelete();
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Excluir').last);

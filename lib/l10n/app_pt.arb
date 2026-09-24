@@ -257,5 +257,22 @@
   "@scheduleAlertTodayReminder": {"description": "Aviso no painel lembrando de uma aplicação agendada para hoje"},
 
   "scheduleAlertTomorrowReminder": "Aplicação de adubo planejada para amanhã",
-  "@scheduleAlertTomorrowReminder": {"description": "Aviso no painel lembrando de uma aplicação agendada para amanhã"}
+  "@scheduleAlertTomorrowReminder": {"description": "Aviso no painel lembrando de uma aplicação agendada para amanhã"},
+
+  "scheduleRainExpected": "{mm} mm previstos",
+  "@scheduleRainExpected": {
+    "description": "Chuva prevista para o dia de um agendamento em risco, no card da agenda",
+    "placeholders": {
+      "mm": {
+        "type": "String",
+        "example": "12,3"
+      }
+    }
+  },
+
+  "scheduleTileDeleteAction": "Excluir",
+  "@scheduleTileDeleteAction": {"description": "Ação de acessibilidade no card da agenda para excluir o agendamento direto, sem menu"},
+
+  "scheduleStatusCompleted": "Concluído",
+  "@scheduleStatusCompleted": {"description": "Status lido pelo leitor de tela para um agendamento já concluído"}
 }
