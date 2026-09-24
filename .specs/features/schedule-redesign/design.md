@@ -113,7 +113,7 @@ Nenhuma mudança de banco: restaurar usa a mesma tabela e o mesmo `insert`.
 
 | Decision | Choice | Rationale |
 | -------- | ------ | --------- |
-| Container transform | `OpenContainer` do pacote `animations` 3.x (oficial do time do Flutter) | Implementar a transição à mão exigiria rota e animação de forma customizadas; o pacote é o padrão do Material |
+| Container transform | `OpenContainer` do pacote `animations` 2.x (oficial do time do Flutter) | Implementar a transição à mão exigiria rota e animação de forma customizadas. A 3.x foi descartada no T11: ela depende do `material_ui`, uma segunda cópia do Material que não enxerga o tema do app; subir quando o app migrar para o `material_ui` |
 | Remoção otimista | Conjunto de ids ocultos no cubit | O `Dismissible` não espera o stream do banco |
 | Desfazer | Reinserir a linha original, com o mesmo id | Volta exatamente o mesmo registro; o aviso do painel se atualiza sozinho pelo stream |
 | Check | `CustomPainter` + `PathMetric` | Traçado progressivo real; o `Checkbox` do Material não anima o desenho |

@@ -1,9 +1,13 @@
+import 'dart:async';
+
+import 'package:animations/animations.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
+import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
-import 'package:ecosafra/features/schedule/presentation/widgets/schedule_form_sheet.dart';
+import 'package:ecosafra/features/schedule/presentation/pages/schedule_form_page.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_tile.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
 import 'package:flutter/material.dart';
@@ -57,24 +61,9 @@ class ScheduleView extends StatelessWidget {
         buildWhen: (previous, current) => previous.status != current.status,
         builder: (context, state) => state.status == ScheduleStatus.error
             ? const SizedBox.shrink()
-            : FloatingActionButton.extended(
-                onPressed: () => _createSchedule(context),
-                icon: const Icon(Icons.add_rounded),
-                label: Text(context.l10n.scheduleAddButton),
-              ),
+            : const _CreateScheduleButton(),
       ),
     );
-  }
-
-  Future<void> _createSchedule(BuildContext context) async {
-    final cubit = context.read<ScheduleCubit>();
-    final result = await ScheduleFormSheet.show(
-      context,
-      window: cubit.currentWindow(),
-    );
-    if (result != null) {
-      await cubit.addSchedule(result.date, note: result.note);
-    }
   }
 }
 
@@ -135,10 +124,6 @@ class _ScheduleSections extends StatelessWidget {
             key: ValueKey(item.schedule.id),
             index: index,
             item: item,
-            onEdit: () => _editSchedule(context, item),
-            onToggleCompleted: (completed) => context
-                .read<ScheduleCubit>()
-                .setCompleted(item.schedule.id, completed: completed),
             confirmDelete: () => _askDelete(context),
             performDelete: () => context
                 .read<ScheduleCubit>()
@@ -148,22 +133,6 @@ class _ScheduleSections extends StatelessWidget {
       ),
     ),
   ];
-
-  Future<void> _editSchedule(BuildContext context, ScheduleItem item) async {
-    final cubit = context.read<ScheduleCubit>();
-    final result = await ScheduleFormSheet.show(
-      context,
-      window: cubit.currentWindow(),
-      initial: item.schedule,
-    );
-    if (result != null) {
-      await cubit.editSchedule(
-        item.schedule.id,
-        result.date,
-        note: result.note,
-      );
-    }
-  }
 
   Future<bool> _askDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -191,8 +160,6 @@ class _AnimatedScheduleTile extends StatefulWidget {
   const _AnimatedScheduleTile({
     required this.index,
     required this.item,
-    required this.onEdit,
-    required this.onToggleCompleted,
     required this.confirmDelete,
     required this.performDelete,
     super.key,
@@ -200,8 +167,6 @@ class _AnimatedScheduleTile extends StatefulWidget {
 
   final int index;
   final ScheduleItem item;
-  final VoidCallback onEdit;
-  final ValueChanged<bool> onToggleCompleted;
   final Future<bool> Function() confirmDelete;
   final VoidCallback performDelete;
 
@@ -236,14 +201,133 @@ class _AnimatedScheduleTileState extends State<_AnimatedScheduleTile> {
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: FadeSlideIn.staggered(
                 index: widget.index,
-                child: ScheduleTile(
+                child: _ScheduleCard(
                   item: widget.item,
-                  onEdit: widget.onEdit,
-                  onToggleCompleted: widget.onToggleCompleted,
                   onDelete: _handleDelete,
                 ),
               ),
             ),
+    );
+  }
+}
+
+/// Duração do container transform: `Duration.zero` com redução de movimento
+/// faz a rota abrir e fechar sem desenhar quadros intermediários
+/// (SCHEDUI-21).
+Duration _containerTransitionDuration(BuildContext context) =>
+    context.reduceMotion ? Duration.zero : AppMotion.slow;
+
+/// Botão "Agendar" que se expande no formulário de criação (SCHEDUI-18).
+class _CreateScheduleButton extends StatelessWidget {
+  const _CreateScheduleButton();
+
+  // Elevação de repouso do FAB no Material 3 (nível 3). A sombra fica no
+  // `OpenContainer`: o recorte dele cortaria a sombra do próprio botão.
+  static const double _restingElevation = 6;
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<ScheduleCubit>();
+    final colors = context.colors;
+    // Forma padrão do FAB no Material 3, repetida no botão e no container
+    // para o recorte coincidir com o botão.
+    final shape =
+        context.theme.floatingActionButtonTheme.shape ??
+        const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusMd)),
+        );
+
+    return OpenContainer<ScheduleFormResult>(
+      transitionDuration: _containerTransitionDuration(context),
+      closedColor: colors.primaryContainer,
+      openColor: colors.surface,
+      middleColor: colors.surface,
+      closedElevation: _restingElevation,
+      openElevation: 0,
+      closedShape: shape,
+      tappable: false,
+      closedBuilder: (context, openContainer) => FloatingActionButton.extended(
+        onPressed: openContainer,
+        shape: shape,
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        icon: const Icon(Icons.add_rounded),
+        label: Text(context.l10n.scheduleAddButton),
+      ),
+      // A rota nova fica fora do `BlocProvider`: o cubit vem do contexto da
+      // lista. A janela é lida ao abrir, e não a do estado, por causa da
+      // virada do dia com a tela aberta.
+      openBuilder: (context, _) => ScheduleFormPage(
+        window: cubit.currentWindow(),
+      ),
+      onClosed: (result) {
+        if (result != null) {
+          unawaited(cubit.addSchedule(result.date, note: result.note));
+        }
+      },
+    );
+  }
+}
+
+/// O card de um agendamento. Não concluído: toque expande o card no
+/// formulário de edição (SCHEDUI-17). Concluído: não abre (AGD-27).
+class _ScheduleCard extends StatelessWidget {
+  const _ScheduleCard({required this.item, required this.onDelete});
+
+  final ScheduleItem item;
+  final VoidCallback onDelete;
+
+  ValueChanged<bool> _toggleCompleted(ScheduleCubit cubit) =>
+      (completed) =>
+          unawaited(cubit.setCompleted(item.schedule.id, completed: completed));
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<ScheduleCubit>();
+    final schedule = item.schedule;
+
+    if (schedule.isCompleted) {
+      return ScheduleTile(
+        item: item,
+        onEdit: () {},
+        onToggleCompleted: _toggleCompleted(cubit),
+        onDelete: onDelete,
+      );
+    }
+
+    return OpenContainer<ScheduleFormResult>(
+      transitionDuration: _containerTransitionDuration(context),
+      closedColor: context.colors.surfaceContainerLow,
+      openColor: context.colors.surface,
+      middleColor: context.colors.surface,
+      closedElevation: 0,
+      openElevation: 0,
+      // Mesmo raio do `CardThemeData` (`AppTheme`).
+      closedShape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusLg)),
+      ),
+      // O toque vem do `onEdit` do card, para o check à direita não abrir o
+      // formulário.
+      tappable: false,
+      closedBuilder: (context, openContainer) => ScheduleTile(
+        item: item,
+        onEdit: openContainer,
+        onToggleCompleted: _toggleCompleted(cubit),
+        onDelete: onDelete,
+      ),
+      openBuilder: (context, _) => ScheduleFormPage(
+        window: cubit.currentWindow(),
+        initial: schedule,
+      ),
+      onClosed: (result) {
+        if (result != null) {
+          unawaited(
+            cubit.editSchedule(schedule.id, result.date, note: result.note),
+          );
+        }
+      },
     );
   }
 }

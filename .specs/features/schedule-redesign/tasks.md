@@ -354,7 +354,7 @@ T11 → T12
 
 **Done when**:
 
-- [ ] `animations: ^3.0.0` no `pubspec.yaml`; nenhum outro pacote muda de versão no lockfile
+- [ ] `animations: ^2.2.0` no `pubspec.yaml` (a 3.x depende do `material_ui`, uma segunda cópia do Material que não enxerga o tema do app); nenhum outro pacote muda de versão no lockfile
 - [ ] `ScheduleFormPage` com as mesmas regras (janela da previsão via `currentWindow()`, `maxLength` 200, preenchimento na edição) devolvendo `ScheduleFormResult` pelo `pop`; `ScheduleFormSheet` e seu teste removidos, cenários migrados
 - [ ] Card não concluído e FAB abrem o formulário por `OpenContainer`; `onClosed` chama `addSchedule` ou `editSchedule`; concluído não abre
 - [ ] `transitionDuration` = `AppMotion.slow`, ou `Duration.zero` com redução de movimento
@@ -363,7 +363,7 @@ T11 → T12
 
 **Tests**: widget
 **Gate**: build
-**Status**: [ ] pendente
+**Status**: [x] feito
 
 ---
 
