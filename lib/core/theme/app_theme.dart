@@ -56,9 +56,13 @@ abstract final class AppTheme {
         titleTextStyle: textTheme.titleLarge,
       ),
 
+      // Altura mínima de 52, largura mínima de 64. `Size.fromHeight` daria
+      // largura mínima infinita e quebraria qualquer botão dentro de uma
+      // `Row` ou das ações de um diálogo; quem quer largura cheia pede com
+      // `SizedBox(width: double.infinity)` ou coluna em `stretch`.
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 52),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(AppSpacing.radiusMd),
@@ -71,7 +75,7 @@ abstract final class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 52),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(AppSpacing.radiusMd),

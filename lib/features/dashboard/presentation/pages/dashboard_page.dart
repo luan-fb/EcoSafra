@@ -172,9 +172,12 @@ class _ErrorSection extends StatelessWidget {
             style: context.texts.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.lg),
-          OutlinedButton(
-            onPressed: () => context.read<DashboardCubit>().loadForecast(),
-            child: Text(context.l10n.dashboardRetryButton),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => context.read<DashboardCubit>().loadForecast(),
+              child: Text(context.l10n.dashboardRetryButton),
+            ),
           ),
         ],
       ),

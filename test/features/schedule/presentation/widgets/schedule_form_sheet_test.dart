@@ -1,3 +1,4 @@
+import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_note.dart';
 import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dart';
@@ -5,10 +6,16 @@ import 'package:ecosafra/features/schedule/presentation/widgets/schedule_form_sh
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  setUpAll(() => initializeDateFormatting('pt_BR'));
+  setUpAll(() async {
+    await initializeDateFormatting('pt_BR');
+    // Tema real do app: o bug de largura infinita dos botões só aparecia
+    // com ele.
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
 
   final today = DateTime(2026, 9, 23);
   final window = SchedulingWindow.startingAt(today);
@@ -20,11 +27,12 @@ void main() {
     FertilizationSchedule? initial,
   }) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        locale: Locale('pt'),
+      MaterialApp(
+        theme: AppTheme.light,
+        locale: const Locale('pt'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: SizedBox.shrink()),
+        home: const Scaffold(body: SizedBox.shrink()),
       ),
     );
     final context = tester.element(find.byType(Scaffold));
