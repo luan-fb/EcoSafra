@@ -106,6 +106,35 @@ void main() {
       );
     });
 
+    // ROB-02: gravar o cache é um efeito colateral da atualização, não uma
+    // condição para ela: se a gravação falhar, a previsão nova (que já
+    // chegou da rede) ainda deve aparecer.
+    test(
+      'a gravação do cache falha: devolve a previsão nova mesmo assim',
+      () async {
+        when(() => networkInfo.isConnected).thenAnswer((_) async => true);
+        when(
+          () => remote.getForecast(coordinates),
+        ).thenAnswer((_) async => freshModel);
+        when(
+          () => local.cache(coordinates.cacheKey, freshModel),
+        ).thenThrow(Exception('disco cheio'));
+
+        final result = await repository.refreshForecast(coordinates);
+
+        final entity = result.getOrElse((_) => throw StateError('unexpected'));
+        expect(entity.coordinates, coordinates);
+        expect(
+          entity.hourly,
+          freshModel.hourly.map((point) => point.toEntity()).toList(),
+        );
+        expect(
+          entity.daily,
+          freshModel.daily.map((point) => point.toEntity()).toList(),
+        );
+      },
+    );
+
     // ROB-01: resposta incompleta é o `ServerException` que o data source
     // lança antes de devolver o modelo — a falha não deve apagar o cache
     // anterior, e a única forma de garantir isso é o repositório nunca

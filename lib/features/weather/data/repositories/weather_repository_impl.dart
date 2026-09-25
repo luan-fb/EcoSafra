@@ -50,7 +50,13 @@ class WeatherRepositoryImpl implements WeatherRepository {
     try {
       final model = await _remote.getForecast(coordinates);
       final fetchedAt = DateTime.now();
-      await _local.cache(coordinates.cacheKey, model);
+      // Falhar aqui não pode custar a previsão que acabou de chegar: o
+      // produtor prefere ver o dado novo sem cache a não ver nada.
+      try {
+        await _local.cache(coordinates.cacheKey, model);
+      } on Object {
+        // Erro de gravação não impede a previsão de aparecer.
+      }
       return Right(
         model.toEntity(coordinates: coordinates, fetchedAt: fetchedAt),
       );
