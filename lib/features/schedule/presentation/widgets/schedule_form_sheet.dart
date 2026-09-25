@@ -79,93 +79,88 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusLg),
+    // Sem fundo próprio: a folha (cor, cantos e puxador) é a do
+    // `showModalBottomSheet`; um segundo fundo aparecia como outra borda
+    // arredondada logo abaixo do puxador.
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(context).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  const SizedBox(width: AppSpacing.md),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    tooltip: context.l10n.scheduleFormCancel,
-                    onPressed: () => Navigator.of(context).pop(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const SizedBox(width: AppSpacing.md),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: context.l10n.scheduleFormCancel,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                if (_isEditing) ...[
+                  _RevealingDateBlock(date: _date, item: widget.initial!),
+                  const SizedBox(width: AppSpacing.sm),
+                ],
+                Expanded(
+                  child: Text(
+                    _isEditing
+                        ? context.l10n.scheduleFormEditTitle
+                        : context.l10n.scheduleFormCreateTitle,
+                    style: context.texts.titleLarge,
                   ),
-                  if (_isEditing) ...[
-                    _RevealingDateBlock(date: _date, item: widget.initial!),
-                    const SizedBox(width: AppSpacing.sm),
-                  ],
-                  Expanded(
-                    child: Text(
-                      _isEditing
-                          ? context.l10n.scheduleFormEditTitle
-                          : context.l10n.scheduleFormCreateTitle,
-                      style: context.texts.titleLarge,
+                ),
+              ],
+            ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                children: [
+                  InkWell(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    onTap: () => _pickDate(context),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: context.l10n.scheduleFormDateLabel,
+                        suffixIcon: const Icon(Icons.calendar_today_rounded),
+                      ),
+                      child: Text(DateFormat.yMMMEd('pt_BR').format(_date)),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  TextField(
+                    controller: _noteController,
+                    maxLength: ScheduleNote.maxLength,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.scheduleFormNoteLabel,
+                      hintText: context.l10n.scheduleFormNoteHint,
                     ),
                   ),
                 ],
               ),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  children: [
-                    InkWell(
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                      onTap: () => _pickDate(context),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: context.l10n.scheduleFormDateLabel,
-                          suffixIcon: const Icon(Icons.calendar_today_rounded),
-                        ),
-                        child: Text(DateFormat.yMMMEd('pt_BR').format(_date)),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    TextField(
-                      controller: _noteController,
-                      maxLength: ScheduleNote.maxLength,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.scheduleFormNoteLabel,
-                        hintText: context.l10n.scheduleFormNoteHint,
-                      ),
-                    ),
-                  ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.lg,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () =>
+                      Navigator.of(context).pop<ScheduleFormResult>((
+                        date: _date,
+                        note: ScheduleNote.normalize(_noteController.text),
+                      )),
+                  child: Text(context.l10n.scheduleFormSave),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  0,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () =>
-                        Navigator.of(context).pop<ScheduleFormResult>((
-                          date: _date,
-                          note: ScheduleNote.normalize(_noteController.text),
-                        )),
-                    child: Text(context.l10n.scheduleFormSave),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
