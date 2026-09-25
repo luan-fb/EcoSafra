@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/app/widgets/app_drawer.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
@@ -9,6 +11,7 @@ import 'package:ecosafra/features/dashboard/presentation/widgets/dashboard_heade
 import 'package:ecosafra/features/dashboard/presentation/widgets/forecast_section.dart';
 import 'package:ecosafra/features/schedule/presentation/alert/schedule_alert_banner.dart';
 import 'package:ecosafra/features/schedule/presentation/alert/schedule_alert_cubit.dart';
+import 'package:ecosafra/features/weather/domain/entities/location_description.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // `hide BindContextExtension`: o go_router_modular também define um
@@ -81,12 +84,22 @@ class DashboardView extends StatelessWidget {
                           ?.trim()
                           .split(' ')
                           .first;
-                      return DashboardHeader(
-                        userName: (firstName == null || firstName.isEmpty)
-                            ? context.l10n.dashboardDefaultUserName
-                            : firstName,
-                        userPhotoUrl: user?.photoUrl,
-                        onMenuTap: () => Scaffold.of(context).openDrawer(),
+                      return BlocSelector<
+                        DashboardCubit,
+                        DashboardState,
+                        LocationDescription?
+                      >(
+                        selector: (state) => state.location,
+                        builder: (context, location) => DashboardHeader(
+                          userName: (firstName == null || firstName.isEmpty)
+                              ? context.l10n.dashboardDefaultUserName
+                              : firstName,
+                          userPhotoUrl: user?.photoUrl,
+                          onMenuTap: () => Scaffold.of(context).openDrawer(),
+                          location: location,
+                          onLocationTap: () =>
+                              unawaited(_chooseLocation(context)),
+                        ),
                       );
                     },
                   ),
@@ -142,6 +155,13 @@ class DashboardView extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Abre a escolha de localização e recarrega a previsão se ela mudou.
+Future<void> _chooseLocation(BuildContext context) async {
+  final cubit = context.read<DashboardCubit>();
+  final changed = await context.pushNamed<bool>(AppRoute.location.name);
+  if (changed ?? false) await cubit.loadForecast();
 }
 
 /// Recalcula o aviso da agenda quando o app volta ao primeiro plano: é o

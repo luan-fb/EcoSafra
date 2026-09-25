@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:clock/clock.dart';
 import 'package:ecosafra/core/error/failure.dart';
@@ -5,10 +7,12 @@ import 'package:ecosafra/core/usecase/usecase.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:ecosafra/features/weather/domain/entities/coordinates.dart';
+import 'package:ecosafra/features/weather/domain/entities/location_description.dart';
 import 'package:ecosafra/features/weather/domain/entities/weather_forecast.dart';
 import 'package:ecosafra/features/weather/domain/usecases/evaluate_application_safety.dart';
 import 'package:ecosafra/features/weather/domain/usecases/get_current_location.dart';
 import 'package:ecosafra/features/weather/domain/usecases/get_forecast.dart';
+import 'package:ecosafra/features/weather/domain/usecases/get_location_description.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,9 +21,17 @@ class MockGetCurrentLocation extends Mock implements GetCurrentLocation {}
 
 class MockGetForecast extends Mock implements GetForecast {}
 
+class MockGetLocationDescription extends Mock
+    implements GetLocationDescription {}
+
 void main() {
+  setUpAll(
+    () => registerFallbackValue(const Coordinates(latitude: 0, longitude: 0)),
+  );
+
   late MockGetCurrentLocation getCurrentLocation;
   late MockGetForecast getForecast;
+  late MockGetLocationDescription getLocationDescription;
   // Relógio fixo na meia-noite do dia dos testes: com pontos horários
   // cobrindo o dia inteiro, `hourlyFrom` sempre encontra cobertura, seja
   // qual for o `hour` passado a `forecastAt`.
@@ -45,14 +57,24 @@ void main() {
     fetchedAt: DateTime(2026, 9, 25, hour),
   );
 
-  DashboardState loadedWith(WeatherForecast forecast) => DashboardState.loaded(
+  DashboardState loadedWith(
+    WeatherForecast forecast, {
+    LocationDescription? location,
+  }) => DashboardState.loaded(
     forecast,
     evaluate(forecast).getOrElse((_) => throw StateError('sem conselho')),
+    location: location,
   );
 
   setUp(() {
     getCurrentLocation = MockGetCurrentLocation();
     getForecast = MockGetForecast();
+    getLocationDescription = MockGetLocationDescription();
+    // Por padrão o nome do lugar não chega: os testes que não tratam dele
+    // veem só os estados da previsão.
+    when(
+      () => getLocationDescription(any()),
+    ).thenAnswer((_) => Completer<LocationDescription>().future);
     when(
       () => getCurrentLocation(const NoParams()),
     ).thenAnswer((_) async => const Right(coordinates));
@@ -62,6 +84,7 @@ void main() {
     getCurrentLocation: getCurrentLocation,
     getForecast: getForecast,
     evaluateApplicationSafety: evaluate,
+    getLocationDescription: getLocationDescription,
   );
 
   // O `loading` da abertura sai no construtor, antes de o blocTest ouvir o
@@ -114,4 +137,130 @@ void main() {
       loadedWith(forecastAt(12)),
     ],
   );
+
+  group('LOCV-01: nome da localização', () {
+    const cuiaba = LocationDescription(
+      label: 'Cuiabá, Mato Grosso',
+      source: LocationSource.device,
+    );
+
+    blocTest<DashboardCubit, DashboardState>(
+      'a previsão sai sem esperar o nome, que entra quando chegar',
+      setUp: () {
+        final description = Completer<LocationDescription>();
+        when(
+          () => getLocationDescription(coordinates),
+        ).thenAnswer((_) => description.future);
+        when(() => getForecast(coordinates)).thenAnswer((_) async* {
+          yield Right(forecastAt(8));
+          description.complete(cuiaba);
+        });
+      },
+      build: buildCubit,
+      wait: Duration.zero,
+      expect: () => [
+        loadedWith(forecastAt(8)),
+        loadedWith(forecastAt(8), location: cuiaba),
+      ],
+    );
+
+    blocTest<DashboardCubit, DashboardState>(
+      'a previsão seguinte já sai com o nome que chegou',
+      setUp: () {
+        when(
+          () => getLocationDescription(coordinates),
+        ).thenAnswer((_) async => cuiaba);
+        when(() => getForecast(coordinates)).thenAnswer(
+          (_) =>
+              Stream.fromFuture(
+                Future<void>.delayed(Duration.zero),
+              ).asyncExpand(
+                (_) => Stream.fromIterable([
+                  Right<Failure, WeatherForecast>(forecastAt(8)),
+                  Right<Failure, WeatherForecast>(forecastAt(12)),
+                ]),
+              ),
+        );
+      },
+      build: buildCubit,
+      wait: Duration.zero,
+      expect: () => [
+        loadedWith(forecastAt(8), location: cuiaba),
+        loadedWith(forecastAt(12), location: cuiaba),
+      ],
+    );
+
+    const campinasCoordinates = Coordinates(
+      latitude: -22.9,
+      longitude: -47.06,
+    );
+    const campinas = LocationDescription(
+      label: 'Campinas',
+      source: LocationSource.chosen,
+    );
+
+    void stubLocationChange() {
+      var calls = 0;
+      when(() => getCurrentLocation(const NoParams())).thenAnswer(
+        (_) async => Right(calls++ == 0 ? coordinates : campinasCoordinates),
+      );
+      when(
+        () => getForecast(coordinates),
+      ).thenAnswer((_) => Stream.value(Right(forecastAt(8))));
+    }
+
+    blocTest<DashboardCubit, DashboardState>(
+      'depois de trocar o lugar, o nome antigo que chega atrasado é '
+      'descartado',
+      setUp: () {
+        stubLocationChange();
+        final oldDescription = Completer<LocationDescription>();
+        final newDescription = Completer<LocationDescription>();
+        when(
+          () => getLocationDescription(coordinates),
+        ).thenAnswer((_) => oldDescription.future);
+        when(
+          () => getLocationDescription(campinasCoordinates),
+        ).thenAnswer((_) => newDescription.future);
+        when(() => getForecast(campinasCoordinates)).thenAnswer((_) async* {
+          yield Right(forecastAt(12));
+          newDescription.complete(campinas);
+          await Future<void>.delayed(Duration.zero);
+          oldDescription.complete(cuiaba);
+        });
+      },
+      build: buildCubit,
+      act: (cubit) async {
+        await Future<void>.delayed(Duration.zero);
+        await cubit.loadForecast();
+      },
+      wait: Duration.zero,
+      expect: () => [
+        loadedWith(forecastAt(8)),
+        loadedWith(forecastAt(12)),
+        loadedWith(forecastAt(12), location: campinas),
+      ],
+    );
+
+    blocTest<DashboardCubit, DashboardState>(
+      'o nome do lugar novo não rotula a previsão do lugar anterior',
+      setUp: () {
+        stubLocationChange();
+        when(
+          () => getLocationDescription(campinasCoordinates),
+        ).thenAnswer((_) async => campinas);
+        // A previsão do lugar novo ainda não chegou.
+        when(
+          () => getForecast(campinasCoordinates),
+        ).thenAnswer((_) => const Stream.empty());
+      },
+      build: buildCubit,
+      act: (cubit) async {
+        await Future<void>.delayed(Duration.zero);
+        await cubit.loadForecast();
+      },
+      wait: Duration.zero,
+      expect: () => [loadedWith(forecastAt(8))],
+    );
+  });
 }

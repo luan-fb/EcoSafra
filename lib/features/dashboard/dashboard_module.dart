@@ -14,6 +14,7 @@ import 'package:ecosafra/features/weather/domain/usecases/choose_place.dart';
 import 'package:ecosafra/features/weather/domain/usecases/evaluate_application_safety.dart';
 import 'package:ecosafra/features/weather/domain/usecases/get_current_location.dart';
 import 'package:ecosafra/features/weather/domain/usecases/get_forecast.dart';
+import 'package:ecosafra/features/weather/domain/usecases/get_location_description.dart';
 import 'package:ecosafra/features/weather/domain/usecases/search_places.dart';
 import 'package:ecosafra/features/weather/domain/usecases/use_device_location.dart';
 import 'package:ecosafra/features/weather/weather_module.dart';
@@ -39,6 +40,7 @@ class DashboardModule extends Module {
           getCurrentLocation: i.get<GetCurrentLocation>(),
           getForecast: i.get<GetForecast>(),
           evaluateApplicationSafety: i.get<EvaluateApplicationSafety>(),
+          getLocationDescription: i.get<GetLocationDescription>(),
         ),
       )
       // Dependências resolvidas aqui, na criação: o `ScheduleDataModule`
