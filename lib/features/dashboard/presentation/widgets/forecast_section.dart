@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
@@ -27,8 +28,12 @@ class ForecastSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentHour = forecast.hourly.first;
-    final today = forecast.daily.first;
+    final now = clock.now();
+    // O painel pode ficar aberto até a última hora prevista passar: aí o
+    // card mostra a última hora conhecida em vez de quebrar.
+    final currentHour =
+        forecast.hourlyFrom(now).firstOrNull ?? forecast.hourly.last;
+    final today = forecast.dayOf(now) ?? forecast.daily.first;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

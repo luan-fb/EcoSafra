@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
@@ -44,10 +45,10 @@ void main() {
   late MockScheduleAlertCubit scheduleAlertCubit;
   late MockAuthCubit authCubit;
 
-  // `ForecastSection` lê `hourly.first`/`daily.first` (pré-existente, sem
-  // guarda de lista vazia — fora do escopo desta task): a previsão de teste
-  // precisa de ao menos um ponto em cada lista para não quebrar quando o
-  // painel chega a `loaded`.
+  // `ForecastSection` lê `hourlyFrom(now).first`/`dayOf(now) ?? daily.first`
+  // (sem guarda de lista vazia — fora do escopo desta task): o único teste
+  // que chega a `loaded` fixa o relógio na hora deste ponto horário, para o
+  // painel não quebrar.
   final forecast = WeatherForecast(
     coordinates: const Coordinates(latitude: -23.5, longitude: -46.6),
     hourly: [
@@ -131,14 +132,19 @@ void main() {
         initialState: loading,
       );
 
-      await pumpDashboard(tester);
-      // Um `pump` primeiro entrega a emissão `loaded` do stream e monta
-      // `ForecastSection` (é aí que os timers do `FadeSlideIn` nascem);
-      // só depois um `pump` com duração deixa esses timers escalonados
-      // dispararem — na ordem inversa, o `elapse` aconteceria antes dos
-      // timers existirem, e o teste terminaria com timer pendente.
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 2));
+      // Relógio fixo na hora do único ponto horário de `forecast`: sem
+      // isto, `ForecastSection` buscaria a hora real, fora da cobertura da
+      // previsão de teste.
+      await withClock(Clock.fixed(DateTime(2026, 9, 24, 10)), () async {
+        await pumpDashboard(tester);
+        // Um `pump` primeiro entrega a emissão `loaded` do stream e monta
+        // `ForecastSection` (é aí que os timers do `FadeSlideIn` nascem);
+        // só depois um `pump` com duração deixa esses timers escalonados
+        // dispararem — na ordem inversa, o `elapse` aconteceria antes dos
+        // timers existirem, e o teste terminaria com timer pendente.
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 2));
+      });
 
       verify(() => scheduleAlertCubit.updateForecast(forecast)).called(1);
     },
