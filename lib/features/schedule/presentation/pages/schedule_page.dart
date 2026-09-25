@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
+import 'package:ecosafra/app/widgets/app_drawer.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
-import 'package:ecosafra/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
