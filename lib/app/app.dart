@@ -4,6 +4,7 @@ import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router_modular/go_router_modular.dart';
@@ -44,10 +45,27 @@ class EcoSafraApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
+          builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+            value: _navigationBarStyle(Theme.of(context).brightness),
+            child: child ?? const SizedBox.shrink(),
+          ),
         ),
       ),
     );
   }
+
+  /// Barra de navegação transparente e sem o véu de contraste que o Android
+  /// põe por padrão: o véu é claro quando os ícones da barra são escuros, e
+  /// ficava uma faixa clara sob o app no tema escuro. Os ícones seguem o
+  /// tema para continuarem visíveis sobre o fundo do app.
+  static SystemUiOverlayStyle _navigationBarStyle(Brightness brightness) =>
+      SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarContrastEnforced: false,
+        systemNavigationBarIconBrightness: brightness == Brightness.dark
+            ? Brightness.light
+            : Brightness.dark,
+      );
 
   /// Reage a mudanças de sessão que não vieram de uma navegação explícita —
   /// por exemplo, um logout dado a partir do painel, ou uma sessão revogada
