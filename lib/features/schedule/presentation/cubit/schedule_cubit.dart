@@ -105,11 +105,14 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     result.match(_emitActionFailure, (_) {});
   }
 
-  Future<void> setCompleted(String id, {required bool completed}) async {
+  /// Devolve se gravou: a tela mostra a conclusão antes de chamar o banco e
+  /// precisa desfazê-la quando a gravação falha.
+  Future<bool> setCompleted(String id, {required bool completed}) async {
     final result = await _setScheduleCompleted(
       SetScheduleCompletedParams(id: id, completed: completed),
     );
     result.match(_emitActionFailure, (_) {});
+    return result.isRight();
   }
 
   /// Emite a lista sem o item antes de chamar o banco: o `Dismissible`

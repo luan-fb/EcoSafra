@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
+import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
 import 'package:ecosafra/features/dashboard/presentation/widgets/app_drawer.dart';
+import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
@@ -275,57 +278,119 @@ class _CreateScheduleButton extends StatelessWidget {
   }
 }
 
-/// O card de um agendamento. Não concluído: toque expande o card no
-/// formulário de edição (SCHEDUI-17). Concluído: não abre (AGD-27).
-class _ScheduleCard extends StatelessWidget {
+/// O card de um agendamento. Não concluído: o toque abre o formulário de
+/// edição (SCHEDUI-17). Concluído: não abre (AGD-27).
+///
+/// Concluir ou desfazer muda o item de seção, e na outra seção o card
+/// nasceria de novo, já no estado final. Por isso o card mostra a mudança
+/// primeiro, deixa o check se desenhar em `AppMotion.medium` e só então
+/// grava; a lista nova, vinda do banco, é que o leva à outra seção.
+class _ScheduleCard extends StatefulWidget {
   const _ScheduleCard({required this.item, required this.onDelete});
 
   final ScheduleItem item;
   final VoidCallback onDelete;
 
-  ValueChanged<bool> _toggleCompleted(ScheduleCubit cubit) =>
-      (completed) =>
-          unawaited(cubit.setCompleted(item.schedule.id, completed: completed));
+  @override
+  State<_ScheduleCard> createState() => _ScheduleCardState();
+}
+
+class _ScheduleCardState extends State<_ScheduleCard> {
+  // Lido no `initState`: o `dispose` pode precisar gravar e já não tem
+  // acesso aos ancestrais.
+  late final ScheduleCubit _cubit;
+
+  /// Conclusão já exibida e ainda não gravada.
+  bool? _pendingCompleted;
+  Timer? _saveTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = context.read<ScheduleCubit>();
+  }
+
+  @override
+  void dispose() {
+    // Saiu da tela (ou da área visível) antes do fim da animação: grava na
+    // hora, para o toque não se perder.
+    if (_saveTimer?.isActive ?? false) {
+      _saveTimer!.cancel();
+      unawaited(_save(_pendingCompleted!));
+    }
+    super.dispose();
+  }
+
+  void _toggleCompleted(bool completed) {
+    _saveTimer?.cancel();
+    if (completed == widget.item.schedule.isCompleted) {
+      // Segundo toque durante a animação: volta atrás sem gravar nada.
+      setState(() => _pendingCompleted = null);
+      return;
+    }
+    if (context.reduceMotion) {
+      unawaited(_save(completed));
+      return;
+    }
+    setState(() => _pendingCompleted = completed);
+    _saveTimer = Timer(AppMotion.medium, () => unawaited(_save(completed)));
+  }
+
+  Future<void> _save(bool completed) async {
+    final saved = await _cubit.setCompleted(
+      widget.item.schedule.id,
+      completed: completed,
+    );
+    if (!saved && mounted) setState(() => _pendingCompleted = null);
+  }
+
+  Future<void> _edit() async {
+    final result = await ScheduleFormSheet.show(
+      context,
+      window: _cubit.currentWindow(),
+      initial: widget.item,
+    );
+    if (result != null && mounted) {
+      unawaited(
+        _cubit.editSchedule(
+          widget.item.schedule.id,
+          result.date,
+          note: result.note,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ScheduleCubit>();
+    // A mesma árvore nos dois estados: mudar o tipo do widget recriaria o
+    // check e as animações implícitas do card.
+    return ScheduleTile(
+      item: _displayedItem(),
+      onEdit: _edit,
+      onToggleCompleted: _toggleCompleted,
+      onDelete: widget.onDelete,
+    );
+  }
+
+  ScheduleItem _displayedItem() {
+    final pending = _pendingCompleted;
+    final item = widget.item;
     final schedule = item.schedule;
+    if (pending == null || pending == schedule.isCompleted) return item;
 
-    if (schedule.isCompleted) {
-      return ScheduleTile(
-        item: item,
-        onEdit: () {},
-        onToggleCompleted: _toggleCompleted(cubit),
-        onDelete: onDelete,
-      );
-    }
-
-    return Card(
-      elevation: 0,
-      color: context.colors.surfaceContainerLow,
-      margin: EdgeInsets.zero,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusLg)),
+    return ScheduleItem(
+      schedule: FertilizationSchedule(
+        id: schedule.id,
+        scheduledDate: schedule.scheduledDate,
+        createdAt: schedule.createdAt,
+        note: schedule.note,
+        // Só a presença da data importa para a tela; a gravada vem do banco.
+        completedAt: pending ? clock.now() : null,
       ),
-      child: ScheduleTile(
-        item: item,
-        onEdit: () async {
-          final result = await ScheduleFormSheet.show(
-            context,
-            window: cubit.currentWindow(),
-            initial: item,
-          );
-
-          if (result != null && context.mounted) {
-            unawaited(
-              cubit.editSchedule(schedule.id, result.date, note: result.note),
-            );
-          }
-        },
-        onToggleCompleted: _toggleCompleted(cubit),
-        onDelete: onDelete,
-      ),
+      risk: item.risk,
+      isPastDue: item.isPastDue,
+      expectedRainMm: item.expectedRainMm,
     );
   }
 }

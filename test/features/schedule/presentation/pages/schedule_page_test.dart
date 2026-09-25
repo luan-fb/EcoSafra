@@ -4,6 +4,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
+import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
@@ -67,7 +68,7 @@ void main() {
     ).thenAnswer((_) async {});
     when(
       () => cubit.setCompleted(any(), completed: any(named: 'completed')),
-    ).thenAnswer((_) async {});
+    ).thenAnswer((_) async => true);
     when(() => cubit.removeSchedule(any())).thenAnswer((_) async {});
     when(() => cubit.restoreSchedule(any())).thenAnswer((_) async {});
     when(() => cubit.currentWindow()).thenReturn(window);
@@ -482,6 +483,111 @@ void main() {
       expect(tileOf('Painel').selected, isFalse);
     },
   );
+
+  group('concluir e desfazer', () {
+    // O item troca de seção ao ser concluído; o card segura a conclusão na
+    // seção de origem até o check terminar de se desenhar.
+    final target = schedule('s1', window.first);
+
+    Future<void> pumpWithUpcoming(
+      WidgetTester tester, {
+      bool disableAnimations = false,
+    }) async {
+      stubState(
+        ScheduleState.loaded(
+          upcoming: [upcomingItem(target)],
+          completed: const [],
+          window: window,
+        ),
+      );
+      await pumpPage(tester, disableAnimations: disableAnimations);
+      await tester.pumpAndSettle();
+    }
+
+    AnimatedCheck check(WidgetTester tester) =>
+        tester.widget<AnimatedCheck>(find.byType(AnimatedCheck));
+
+    testWidgets(
+      'SCHEDUI-19: o check se desenha no próprio card e só grava em '
+      'AppMotion.medium',
+      (tester) async {
+        await pumpWithUpcoming(tester);
+        final checkState = tester.state(find.byType(AnimatedCheck));
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pump();
+        await tester.pump(AppMotion.medium ~/ 2);
+
+        // Mesmo `State`: o check anima de 0 a 1 em vez de nascer marcado.
+        expect(tester.state(find.byType(AnimatedCheck)), same(checkState));
+        expect(check(tester).value, isTrue);
+        verifyNever(
+          () => cubit.setCompleted(any(), completed: any(named: 'completed')),
+        );
+
+        await tester.pump(AppMotion.medium ~/ 2);
+        verify(() => cubit.setCompleted('s1', completed: true)).called(1);
+      },
+    );
+
+    testWidgets(
+      'tocar de novo durante a animação desfaz sem gravar',
+      (tester) async {
+        await pumpWithUpcoming(tester);
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pump(AppMotion.medium ~/ 3);
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pumpAndSettle();
+
+        expect(check(tester).value, isFalse);
+        verifyNever(
+          () => cubit.setCompleted(any(), completed: any(named: 'completed')),
+        );
+      },
+    );
+
+    testWidgets(
+      'se a gravação falha, o check volta a desmarcado',
+      (tester) async {
+        when(
+          () => cubit.setCompleted(any(), completed: any(named: 'completed')),
+        ).thenAnswer((_) async => false);
+        await pumpWithUpcoming(tester);
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pumpAndSettle();
+
+        verify(() => cubit.setCompleted('s1', completed: true)).called(1);
+        expect(check(tester).value, isFalse);
+      },
+    );
+
+    testWidgets(
+      'SCHEDUI-21: com redução de movimento, grava na hora',
+      (tester) async {
+        await pumpWithUpcoming(tester, disableAnimations: true);
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pump();
+
+        verify(() => cubit.setCompleted('s1', completed: true)).called(1);
+      },
+    );
+
+    testWidgets(
+      'sair da tela no meio da animação grava mesmo assim',
+      (tester) async {
+        await pumpWithUpcoming(tester);
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pump();
+        await tester.pumpWidget(const SizedBox.shrink());
+
+        verify(() => cubit.setCompleted('s1', completed: true)).called(1);
+      },
+    );
+  });
 
   group('excluir com swipe e Desfazer', () {
     final upcomingTarget = schedule('s1', window.first, note: 'ureia');
