@@ -1158,6 +1158,25 @@ void main() {
       verifyNever(() => getForecast(any()));
     });
 
+    test(
+      'não assina a previsão se a localização chega durante o close',
+      () async {
+        final location = Completer<Either<Failure, Coordinates>>();
+        when(
+          () => getCurrentLocation(const NoParams()),
+        ).thenAnswer((_) => location.future);
+        final cubit = buildCubit();
+        await flush();
+
+        final closing = cubit.close();
+        location.complete(const Right(coordinates));
+        await closing;
+        await flush();
+
+        verifyNever(() => getForecast(any()));
+      },
+    );
+
     test('falha de ação que termina depois do close não emite', () async {
       final result = Completer<Either<Failure, void>>();
       when(() => deleteSchedule('today')).thenAnswer((_) => result.future);

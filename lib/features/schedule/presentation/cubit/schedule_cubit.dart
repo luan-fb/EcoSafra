@@ -85,6 +85,11 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   /// terminar tentaria inserir um id que ainda existe no banco.
   final Map<String, Future<Either<Failure, void>>> _pendingDeletes = {};
 
+  /// `isClosed` só vira `true` no fim do `close`, depois de cancelar as
+  /// assinaturas: sem isto, a localização que chega nesse meio-tempo
+  /// abriria uma assinatura da previsão que ninguém cancela.
+  bool _closing = false;
+
   /// Datas aceitas pelo formulário, calculadas na hora em que ele abre:
   /// uma janela guardada no estado ficaria com a data de ontem se a tela
   /// estivesse aberta na virada do dia.
@@ -95,7 +100,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   Future<void> retry() async {
     if (state.status != ScheduleStatus.error) return;
     await _schedulesSubscription.cancel();
-    if (isClosed) return;
+    if (_closing) return;
     emit(const ScheduleState.loading());
     _watch();
   }
@@ -178,7 +183,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   /// Sem localização ou sem previsão, a Agenda funciona com risco `unknown`.
   Future<void> _loadForecast() async {
     final location = await _getCurrentLocation(const NoParams());
-    if (isClosed) return;
+    if (_closing) return;
     location.match((_) {}, (coordinates) {
       _forecastSubscription = _getForecast(coordinates).listen(
         (result) => result.match((_) {}, (forecast) {
@@ -260,6 +265,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
   @override
   Future<void> close() async {
+    _closing = true;
     await _schedulesSubscription.cancel();
     await _forecastSubscription?.cancel();
     return super.close();
