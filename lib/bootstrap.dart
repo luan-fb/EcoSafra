@@ -21,7 +21,11 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   // `runZonedGuarded` + estes dois handlers capturam 100% dos erros:
   // o primeiro pega erros do framework (build, layout, paint), o segundo
   // pega erros assíncronos que escapam da árvore de widgets.
+  // `presentError` imprime no console (o logcat, no Android) também em
+  // profile e release; o `developer.log` sozinho só aparece no DevTools, e
+  // um erro no primeiro frame virava uma tela cinza sem nenhuma pista.
   FlutterError.onError = (details) {
+    FlutterError.presentError(details);
     developer.log(
       details.exceptionAsString(),
       name: 'FlutterError',
@@ -31,6 +35,9 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
+    FlutterError.presentError(
+      FlutterErrorDetails(exception: error, stack: stack, library: 'ecosafra'),
+    );
     developer.log('Erro fora da árvore', error: error, stackTrace: stack);
     return true;
   };
@@ -83,10 +90,15 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
 
       runApp(await builder());
     },
-    (error, stack) => developer.log(
-      'Erro não capturado',
-      error: error,
-      stackTrace: stack,
-    ),
+    (error, stack) {
+      FlutterError.presentError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stack,
+          library: 'ecosafra',
+        ),
+      );
+      developer.log('Erro não capturado', error: error, stackTrace: stack);
+    },
   );
 }
