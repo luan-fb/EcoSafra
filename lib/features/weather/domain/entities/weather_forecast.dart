@@ -115,6 +115,16 @@ final class WeatherForecast extends Equatable {
   /// pra avisar "dados de X horas atrás" em vez de fingir tempo real.
   final bool isStale;
 
+  /// A mesma previsão, marcada como desatualizada: a atualização falhou e
+  /// isto é o que ficou salvo.
+  WeatherForecast asStale() => WeatherForecast(
+        coordinates: coordinates,
+        hourly: hourly,
+        daily: daily,
+        fetchedAt: fetchedAt,
+        isStale: true,
+      );
+
   /// Retorna o ponto de `daily` do mesmo dia de [date],
   /// ignorando a hora, ou `null` se o dia não está na previsão.
   DailyForecastPoint? dayOf(DateTime date) {

@@ -26,10 +26,11 @@ class WeatherRepositoryImpl implements WeatherRepository {
   Future<WeatherForecast?> getCachedForecast(Coordinates coordinates) async {
     final cached = await _local.getCached(coordinates.cacheKey);
     if (cached == null) return null;
+    // Sem `isStale`: se o cache está desatualizado só se sabe depois de
+    // tentar a rede, e quem tenta é o `GetForecast`.
     return cached.model.toEntity(
       coordinates: coordinates,
       fetchedAt: cached.fetchedAt,
-      isStale: true,
     );
   }
 
