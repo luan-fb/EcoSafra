@@ -18,6 +18,8 @@ vai coincidir com chuva forte, evitando o escoamento do insumo para rios e córr
 ![Testes](https://img.shields.io/badge/testes-500%2B-2E7D32)
 ![Lint](https://img.shields.io/badge/lint-very__good__analysis-7B1FA2)
 
+[![Baixar APK](https://img.shields.io/github/v/release/luan-fb/EcoSafra?label=Baixar%20APK&logo=android&logoColor=white&color=2E7D46)](https://github.com/luan-fb/EcoSafra/releases/latest)
+
 <!-- Captura principal: o painel com o card de decisão (ex.: 280px de largura) -->
 <img src="docs/images/hero.png" alt="Painel do EcoSafra" width="280" />
 
@@ -199,6 +201,13 @@ lib/
         ├── data/        # data source drift e repositório
         └── presentation/# cubits, páginas e widgets
 ```
+
+## Instalar
+
+1. No celular Android (8.0 ou superior), baixe o APK da
+   [última versão](https://github.com/luan-fb/EcoSafra/releases/latest), em *Assets*.
+2. Abra o arquivo e, se o Android pedir, permita a instalação de apps dessa fonte.
+3. Entre com a sua conta Google e permita a localização, ou escolha a cidade do talhão.
 
 ## Como rodar
 
