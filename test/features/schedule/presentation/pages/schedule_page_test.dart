@@ -718,6 +718,28 @@ void main() {
     );
 
     testWidgets(
+      'swipe completo para a direita também exclui, com a lixeira à '
+      'esquerda',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester);
+
+        await tester.drag(cardOf(upcomingTarget), const Offset(80, 0));
+        await tester.pump();
+        final trash = tester.getCenter(find.byIcon(Icons.delete_rounded));
+        expect(trash.dx, lessThan(tester.view.physicalSize.width / 2 / 3));
+        await tester.pumpAndSettle();
+
+        await tester.drag(cardOf(upcomingTarget), const Offset(600, 0));
+        await tester.pumpAndSettle();
+
+        verify(() => cubit.removeSchedule('s1')).called(1);
+        expect(cardOf(upcomingTarget), findsNothing);
+        expect(find.text('Agendamento excluído'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
       'o fundo do swipe é AppColors.danger com a lixeira',
       (tester) async {
         stubRemovable();
@@ -729,7 +751,7 @@ void main() {
             matching: find.byType(Dismissible),
           ),
         );
-        expect(dismissible.direction, DismissDirection.endToStart);
+        expect(dismissible.direction, DismissDirection.horizontal);
 
         await tester.drag(cardOf(upcomingTarget), const Offset(-80, 0));
         await tester.pump();
@@ -802,20 +824,6 @@ void main() {
         verifyNever(() => cubit.removeSchedule(any()));
         expect(cardOf(upcomingTarget), findsOneWidget);
         expect(find.text('Agendamento excluído'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'edge case: arrasto para a direita não exclui',
-      (tester) async {
-        stubRemovable();
-        await pumpPage(tester);
-
-        await tester.drag(cardOf(upcomingTarget), const Offset(600, 0));
-        await tester.pumpAndSettle();
-
-        verifyNever(() => cubit.removeSchedule(any()));
-        expect(cardOf(upcomingTarget), findsOneWidget);
       },
     );
 

@@ -218,10 +218,13 @@ class _ScheduleSections extends StatelessWidget {
   ];
 }
 
-/// Fundo revelado pelo arrasto para a esquerda. O espaço entre os cards fica
-/// de fora, para o fundo ter o mesmo tamanho do card.
+/// Fundo revelado pelo arrasto, com a lixeira do lado de onde o card sai.
+/// O espaço entre os cards fica de fora, para o fundo ter o mesmo tamanho
+/// do card.
 class _DeleteBackground extends StatelessWidget {
-  const _DeleteBackground();
+  const _DeleteBackground({required this.alignment});
+
+  final Alignment alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +236,7 @@ class _DeleteBackground extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(AppSpacing.radiusLg)),
         ),
         child: Align(
-          alignment: Alignment.centerRight,
+          alignment: alignment,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
             child: Icon(Icons.delete_rounded, color: context.colors.onError),
@@ -388,8 +391,11 @@ class _ScheduleCardState extends State<_ScheduleCard> {
       // do fim do arrasto, e a exclusão se perderia sem aviso.
       direction: _changePending
           ? DismissDirection.none
-          : DismissDirection.endToStart,
-      background: const _DeleteBackground(),
+          : DismissDirection.horizontal,
+      background: const _DeleteBackground(alignment: Alignment.centerLeft),
+      secondaryBackground: const _DeleteBackground(
+        alignment: Alignment.centerRight,
+      ),
       onDismissed: (_) => widget.onDelete(),
       child: Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.sm),
