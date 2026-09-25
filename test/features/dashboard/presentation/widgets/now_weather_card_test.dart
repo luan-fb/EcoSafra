@@ -42,7 +42,7 @@ void main() {
     );
   }
 
-  testWidgets('WLOT-05: mostra a animação do código de hoje, sem o ícone', (
+  testWidgets('mostra a animação do código de hoje, sem o ícone', (
     tester,
   ) async {
     await pumpCard(tester, weatherCode: 0);
@@ -51,13 +51,13 @@ void main() {
       find.byType(WeatherAnimationView),
     );
     expect(view.weatherCode, 0);
-    // WLOT-14: a animação decide o frio pela mesma temperatura do card.
+    // A animação decide o frio pela mesma temperatura do card.
     expect(view.temperature, currentHour.temperature);
     // O ícone estático de antes (sol) não pode continuar no card.
     expect(find.byIcon(WeatherCondition.iconFor(0)), findsNothing);
   });
 
-  testWidgets('WLOT-09: o leitor de tela recebe o rótulo do clima', (
+  testWidgets('o leitor de tela recebe o rótulo do clima', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
@@ -73,7 +73,7 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('WLOT-16: a pílula de chuva mostra o valor recebido', (
+  testWidgets('a pílula de chuva mostra o valor recebido', (
     tester,
   ) async {
     await pumpCard(tester, weatherCode: 0, rainNext48h: 12.34);

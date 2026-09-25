@@ -5,7 +5,8 @@
 enum AppRoute {
   splash(path: '/', name: 'splash'),
   signIn(path: '/entrar', name: 'sign-in'),
-  dashboard(path: '/painel', name: 'dashboard');
+  dashboard(path: '/painel', name: 'dashboard'),
+  schedule(path: '/agenda', name: 'schedule');
 
   const AppRoute({required this.path, required this.name});
 

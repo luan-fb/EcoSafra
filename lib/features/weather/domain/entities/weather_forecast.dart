@@ -1,3 +1,4 @@
+import 'package:ecosafra/core/extensions/date_extensions.dart';
 import 'package:ecosafra/features/weather/domain/entities/coordinates.dart';
 import 'package:equatable/equatable.dart';
 
@@ -92,6 +93,11 @@ final class WeatherForecast extends Equatable {
     this.isStale = false,
   });
 
+  /// Quantos dias de previsão o app pede à Open-Meteo. É a fonte única:
+  /// o data source usa este valor na requisição, e a agenda usa o mesmo
+  /// para limitar as datas a hoje até hoje + (coverageDays - 1).
+  static const int coverageDays = 7;
+
   final Coordinates coordinates;
 
   /// Próximas ~48h, uma entrada por hora.
@@ -108,6 +114,17 @@ final class WeatherForecast extends Equatable {
   /// (tipicamente por falta de internet no talhão). É o sinal que a UI usa
   /// pra avisar "dados de X horas atrás" em vez de fingir tempo real.
   final bool isStale;
+
+  /// Retorna o ponto de `daily` do mesmo dia de [date],
+  /// ignorando a hora, ou `null` se o dia não está na previsão.
+  DailyForecastPoint? dayOf(DateTime date) {
+    for (final day in daily) {
+      if (day.date.isSameDay(date)) {
+        return day;
+      }
+    }
+    return null;
+  }
 
   @override
   List<Object?> get props => [coordinates, hourly, daily, fetchedAt, isStale];

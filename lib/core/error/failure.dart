@@ -35,6 +35,10 @@ final class AuthFailure extends Failure {
   const AuthFailure([super.message = 'Não foi possível entrar na sua conta.']);
 }
 
+final class ValidationFailure extends Failure {
+  const ValidationFailure(super.message);
+}
+
 final class LocationFailure extends Failure {
   const LocationFailure(
     super.message, {

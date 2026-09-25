@@ -179,9 +179,101 @@
   "drawerMenuSchedule": "Agenda",
   "@drawerMenuSchedule": {"description": "Item do menu lateral para o caderno de agendamento"},
 
-  "drawerMenuComingSoon": "Em breve",
-  "@drawerMenuComingSoon": {"description": "Selo indicando uma seção do menu ainda não disponível"},
-
   "drawerMenuSignOut": "Sair",
-  "@drawerMenuSignOut": {"description": "Item do menu lateral para encerrar a sessão"}
+  "@drawerMenuSignOut": {"description": "Item do menu lateral para encerrar a sessão"},
+
+  "scheduleTitle": "Agenda",
+  "@scheduleTitle": {"description": "Título da tela do caderno de agendamento"},
+
+  "scheduleEmptyState": "Nenhum agendamento ainda. Toque em \"Agendar\" para planejar sua próxima aplicação.",
+  "@scheduleEmptyState": {"description": "Texto exibido quando a lista de agendamentos está vazia"},
+
+  "scheduleAddButton": "Agendar",
+  "@scheduleAddButton": {"description": "Botão flutuante para criar um novo agendamento"},
+
+  "scheduleErrorTitle": "Não foi possível carregar seus agendamentos.",
+  "@scheduleErrorTitle": {"description": "Título exibido quando a lista de agendamentos falha ao carregar"},
+
+  "scheduleRiskOk": "Previsão favorável",
+  "@scheduleRiskOk": {"description": "Rótulo quando o dia agendado não tem chuva de risco prevista"},
+
+  "scheduleRiskAtRisk": "Risco de chuva forte no dia",
+  "@scheduleRiskAtRisk": {"description": "Rótulo quando a previsão mudou e o dia agendado ficou arriscado"},
+
+  "scheduleRiskUnknown": "Sem previsão para este dia ainda",
+  "@scheduleRiskUnknown": {"description": "Rótulo quando o dia agendado está fora da janela de previsão"},
+
+  "scheduleDeletedMessage": "Agendamento excluído",
+  "@scheduleDeletedMessage": {"description": "Snackbar exibido logo após excluir um agendamento pelo swipe ou pela ação de acessibilidade"},
+
+  "scheduleDeletedUndo": "Desfazer",
+  "@scheduleDeletedUndo": {"description": "Ação do snackbar de exclusão que restaura o agendamento excluído"},
+
+  "scheduleFormCreateTitle": "Novo agendamento",
+  "@scheduleFormCreateTitle": {"description": "Título do formulário ao criar um agendamento"},
+
+  "scheduleFormEditTitle": "Editar agendamento",
+  "@scheduleFormEditTitle": {"description": "Título do formulário ao editar um agendamento"},
+
+  "scheduleFormDateLabel": "Data da aplicação",
+  "@scheduleFormDateLabel": {"description": "Rótulo do campo de data no formulário de agendamento"},
+
+  "scheduleFormNoteLabel": "Observação",
+  "@scheduleFormNoteLabel": {"description": "Rótulo do campo de observação no formulário de agendamento"},
+
+  "scheduleFormNoteHint": "Ex.: talhão 3, ureia",
+  "@scheduleFormNoteHint": {"description": "Dica do campo de observação no formulário de agendamento"},
+
+  "scheduleFormSave": "Salvar",
+  "@scheduleFormSave": {"description": "Botão de confirmar o formulário de agendamento"},
+
+  "scheduleFormCancel": "Cancelar",
+  "@scheduleFormCancel": {"description": "Botão de cancelar o formulário de agendamento"},
+
+  "scheduleCheckSemanticLabel": "Aplicação de {date} feita",
+  "@scheduleCheckSemanticLabel": {
+    "description": "Rótulo do leitor de tela para o controle de conclusão de um agendamento",
+    "placeholders": {"date": {"type": "String", "example": "quinta-feira, 24 de setembro"}}
+  },
+  "scheduleRetryButton": "Tentar de novo",
+  "@scheduleRetryButton": {"description": "Botão da tela de erro da agenda para carregar a lista de novo"},
+  "scheduleStatusPastDue": "Data passada",
+  "@scheduleStatusPastDue": {"description": "Rótulo de um agendamento não concluído cuja data já passou"},
+
+  "scheduleSectionUpcoming": "Próximos",
+  "@scheduleSectionUpcoming": {"description": "Título da seção de agendamentos não concluídos"},
+
+  "scheduleSectionCompleted": "Concluídos",
+  "@scheduleSectionCompleted": {"description": "Título da seção de agendamentos concluídos"},
+
+  "scheduleAlertRiskCount": "{count, plural, one{1 aplicação planejada em dia de chuva forte} other{{count} aplicações planejadas em dias de chuva forte}}",
+  "@scheduleAlertRiskCount": {
+    "description": "Aviso no painel com a quantidade de agendamentos em risco de chuva forte",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scheduleAlertTodayReminder": "Aplicação de adubo planejada para hoje",
+  "@scheduleAlertTodayReminder": {"description": "Aviso no painel lembrando de uma aplicação agendada para hoje"},
+
+  "scheduleAlertTomorrowReminder": "Aplicação de adubo planejada para amanhã",
+  "@scheduleAlertTomorrowReminder": {"description": "Aviso no painel lembrando de uma aplicação agendada para amanhã"},
+
+  "scheduleRainExpected": "{mm} mm previstos",
+  "@scheduleRainExpected": {
+    "description": "Chuva prevista para o dia de um agendamento em risco, no card da agenda",
+    "placeholders": {
+      "mm": {
+        "type": "String",
+        "example": "12,3"
+      }
+    }
+  },
+
+  "scheduleTileDeleteAction": "Excluir",
+  "@scheduleTileDeleteAction": {"description": "Ação de acessibilidade no card da agenda para excluir o agendamento direto, sem menu"},
+
+  "scheduleStatusCompleted": "Concluído",
+  "@scheduleStatusCompleted": {"description": "Status lido pelo leitor de tela para um agendamento já concluído"}
 }

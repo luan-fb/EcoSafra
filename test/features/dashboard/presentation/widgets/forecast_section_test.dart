@@ -14,14 +14,15 @@ void main() {
   setUpAll(() => initializeDateFormatting('pt_BR'));
   setUp(() => Lottie.cache.clear());
 
-  HourlyForecastPoint hour(int h, {required double rain}) => HourlyForecastPoint(
-    time: DateTime(2026, 9, 18, h),
-    precipitation: rain,
-    precipitationProbability: 0,
-    temperature: 20.0 + h,
-    relativeHumidity: 60,
-    windSpeed: 10,
-  );
+  HourlyForecastPoint hour(int h, {required double rain}) =>
+      HourlyForecastPoint(
+        time: DateTime(2026, 9, 18, h),
+        precipitation: rain,
+        precipitationProbability: 0,
+        temperature: 20.0 + h,
+        relativeHumidity: 60,
+        windSpeed: 10,
+      );
 
   DailyForecastPoint day(int d, {required int weatherCode}) =>
       DailyForecastPoint(
@@ -69,7 +70,7 @@ void main() {
     return tester.widget<NowWeatherCard>(find.byType(NowWeatherCard));
   }
 
-  testWidgets('WLOT-16: o card recebe a chuva de 48h da decisão', (
+  testWidgets('o card recebe a chuva de 48h da decisão', (
     tester,
   ) async {
     final card = await pumpSection(tester);
@@ -80,7 +81,7 @@ void main() {
   // Afirma `hourly.first` de propósito: é o comportamento atual, não um
   // requisito. A primeira hora da resposta é meia-noite, bug conhecido com
   // tarefa própria; quando for corrigido, este teste muda junto.
-  testWidgets('WLOT-05: o card recebe o código de hoje e a 1ª hora', (
+  testWidgets('o card recebe o código de hoje e a 1ª hora', (
     tester,
   ) async {
     final card = await pumpSection(tester);

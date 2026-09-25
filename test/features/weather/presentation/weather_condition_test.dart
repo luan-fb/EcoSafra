@@ -69,17 +69,17 @@ void main() {
 
     // Tabela de bordas, em dia quente. Cada faixa com as duas pontas.
     const warmCases = {
-      0: WeatherAnimation.sunny, // WLOT-01
-      1: WeatherAnimation.partlyCloudy, // WLOT-12
+      0: WeatherAnimation.sunny,
+      1: WeatherAnimation.partlyCloudy,
       2: WeatherAnimation.partlyCloudy,
-      3: WeatherAnimation.cloudy, // WLOT-02
+      3: WeatherAnimation.cloudy,
       45: WeatherAnimation.cloudy,
       48: WeatherAnimation.cloudy,
-      51: WeatherAnimation.rainy, // WLOT-03
+      51: WeatherAnimation.rainy,
       57: WeatherAnimation.rainy,
       61: WeatherAnimation.rainy,
       67: WeatherAnimation.rainy,
-      71: WeatherAnimation.cold, // WLOT-13: neve é frio mesmo em dia quente
+      71: WeatherAnimation.cold, // neve é frio mesmo em dia quente
       77: WeatherAnimation.cold,
       80: WeatherAnimation.rainy,
       82: WeatherAnimation.rainy,
@@ -88,7 +88,7 @@ void main() {
       95: WeatherAnimation.rainy,
       96: WeatherAnimation.rainy,
       99: WeatherAnimation.rainy,
-      // WLOT-04 e edge cases: buracos entre faixas e fora de 0..99.
+      // Buracos entre faixas e fora de 0..99.
       -1: WeatherAnimation.cloudy,
       4: WeatherAnimation.cloudy,
       50: WeatherAnimation.cloudy,
@@ -105,7 +105,7 @@ void main() {
       });
     }
 
-    group('frio (WLOT-14)', () {
+    group('frio', () {
       for (final code in [0, 1, 2, 3, 45, -1]) {
         test('código $code a 10° vira frio', () {
           expect(
@@ -115,7 +115,7 @@ void main() {
         });
       }
 
-      test('chuva vence o frio (WLOT-03)', () {
+      test('chuva vence o frio', () {
         for (final code in [51, 61, 80, 95]) {
           expect(
             WeatherCondition.animationFor(code, temperature: cold),
@@ -125,8 +125,7 @@ void main() {
         }
       });
 
-      // Edge case da spec: a regra usa o valor arredondado, o mesmo que o
-      // card mostra.
+      // A regra usa o valor arredondado, o mesmo que o card mostra.
       test('16,4° arredonda para 16 e é frio', () {
         expect(
           WeatherCondition.animationFor(0, temperature: 16.4),
@@ -143,9 +142,9 @@ void main() {
     });
 
     // A tabela acima pega as bordas; esta varre 0..99 inteiro, em dia
-    // quente e frio, contra as listas da spec montadas aqui de forma
-    // independente do `switch`.
-    test('todo código de 0 a 99 segue a tabela da spec', () {
+    // quente e frio, contra listas montadas aqui de forma independente do
+    // `switch`.
+    test('todo código de 0 a 99 segue a tabela de condições', () {
       Iterable<int> range(int from, int to) =>
           List.generate(to - from + 1, (i) => from + i);
       final rainy = {

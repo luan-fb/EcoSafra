@@ -6,6 +6,7 @@ import 'package:ecosafra/features/weather/data/models/daily_forecast_point_model
 import 'package:ecosafra/features/weather/data/models/hourly_forecast_point_model.dart';
 import 'package:ecosafra/features/weather/data/models/weather_forecast_model.dart';
 import 'package:ecosafra/features/weather/domain/entities/coordinates.dart';
+import 'package:ecosafra/features/weather/domain/entities/weather_forecast.dart';
 
 /// Fala com a Open-Meteo e já entrega no formato que o resto do app usa.
 ///
@@ -28,7 +29,7 @@ class OpenMeteoRemoteDataSource implements WeatherRemoteDataSource {
         'longitude': coordinates.longitude,
         'hourly': ApiConstants.hourlyVariables.join(','),
         'daily': ApiConstants.dailyVariables.join(','),
-        'forecast_days': 7,
+        'forecast_days': WeatherForecast.coverageDays,
         // Sem isto, a Open-Meteo devolve os horários em UTC — o produtor
         // não deveria ter que fazer essa conta de cabeça pra saber se "vai
         // chover às 15h" é daqui a três horas ou daqui a seis.
