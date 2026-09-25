@@ -466,24 +466,19 @@ class $FertilizationSchedulesTable extends FertilizationSchedules
 }
 
 class ScheduleRow extends DataClass implements Insertable<ScheduleRow> {
-  /// UUID v4 gerado no aparelho, não um autoincremento: o agendamento existe
-  /// antes de chegar ao banco e, se um dia houver sincronização em nuvem,
-  /// ids gerados em aparelhos diferentes não colidem.
+  /// UUID v4 gerado no aparelho: o id existe antes de chegar ao banco e não
+  /// colide se um dia houver sincronização entre aparelhos.
   final String id;
 
-  /// `uid` do Firebase Auth. Sem chave estrangeira: a conta não mora neste
-  /// banco. Toda consulta e toda escrita filtram por aqui, para um usuário
-  /// nunca enxergar nem alterar agendamento de outro no mesmo aparelho.
+  /// `uid` do Firebase Auth. Toda leitura e escrita filtra por ele.
   final String userId;
 
-  /// Dia da adubação, sempre à meia-noite local (a hora não tem significado).
+  /// Sempre à meia-noite local; só o dia importa.
   final DateTime scheduledDate;
   final String? note;
-
-  /// Desempate da ordenação quando dois agendamentos caem no mesmo dia.
   final DateTime createdAt;
 
-  /// Preenchida quando o usuário marca como concluído; `null` = pendente.
+  /// `null` enquanto a aplicação não foi marcada como feita.
   final DateTime? completedAt;
   const ScheduleRow({
     required this.id,
@@ -718,6 +713,475 @@ class FertilizationSchedulesCompanion extends UpdateCompanion<ScheduleRow> {
   }
 }
 
+class $ChosenLocationsTable extends ChosenLocations
+    with TableInfo<$ChosenLocationsTable, ChosenLocationRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChosenLocationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _regionMeta = const VerificationMeta('region');
+  @override
+  late final GeneratedColumn<String> region = GeneratedColumn<String>(
+    'region',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _countryMeta = const VerificationMeta(
+    'country',
+  );
+  @override
+  late final GeneratedColumn<String> country = GeneratedColumn<String>(
+    'country',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _latitudeMeta = const VerificationMeta(
+    'latitude',
+  );
+  @override
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+    'latitude',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _longitudeMeta = const VerificationMeta(
+    'longitude',
+  );
+  @override
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+    'longitude',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    userId,
+    name,
+    region,
+    country,
+    latitude,
+    longitude,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'chosen_locations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ChosenLocationRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('region')) {
+      context.handle(
+        _regionMeta,
+        region.isAcceptableOrUnknown(data['region']!, _regionMeta),
+      );
+    }
+    if (data.containsKey('country')) {
+      context.handle(
+        _countryMeta,
+        country.isAcceptableOrUnknown(data['country']!, _countryMeta),
+      );
+    }
+    if (data.containsKey('latitude')) {
+      context.handle(
+        _latitudeMeta,
+        latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latitudeMeta);
+    }
+    if (data.containsKey('longitude')) {
+      context.handle(
+        _longitudeMeta,
+        longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_longitudeMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {userId};
+  @override
+  ChosenLocationRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChosenLocationRow(
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      region: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}region'],
+      ),
+      country: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}country'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      )!,
+      longitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ChosenLocationsTable createAlias(String alias) {
+    return $ChosenLocationsTable(attachedDatabase, alias);
+  }
+}
+
+class ChosenLocationRow extends DataClass
+    implements Insertable<ChosenLocationRow> {
+  /// `uid` do Firebase Auth.
+  final String userId;
+  final String name;
+
+  /// Estado (`admin1` da geocodificação), quando o lugar tem.
+  final String? region;
+  final String? country;
+  final double latitude;
+  final double longitude;
+  final DateTime updatedAt;
+  const ChosenLocationRow({
+    required this.userId,
+    required this.name,
+    this.region,
+    this.country,
+    required this.latitude,
+    required this.longitude,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['user_id'] = Variable<String>(userId);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || region != null) {
+      map['region'] = Variable<String>(region);
+    }
+    if (!nullToAbsent || country != null) {
+      map['country'] = Variable<String>(country);
+    }
+    map['latitude'] = Variable<double>(latitude);
+    map['longitude'] = Variable<double>(longitude);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ChosenLocationsCompanion toCompanion(bool nullToAbsent) {
+    return ChosenLocationsCompanion(
+      userId: Value(userId),
+      name: Value(name),
+      region: region == null && nullToAbsent
+          ? const Value.absent()
+          : Value(region),
+      country: country == null && nullToAbsent
+          ? const Value.absent()
+          : Value(country),
+      latitude: Value(latitude),
+      longitude: Value(longitude),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ChosenLocationRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChosenLocationRow(
+      userId: serializer.fromJson<String>(json['userId']),
+      name: serializer.fromJson<String>(json['name']),
+      region: serializer.fromJson<String?>(json['region']),
+      country: serializer.fromJson<String?>(json['country']),
+      latitude: serializer.fromJson<double>(json['latitude']),
+      longitude: serializer.fromJson<double>(json['longitude']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'userId': serializer.toJson<String>(userId),
+      'name': serializer.toJson<String>(name),
+      'region': serializer.toJson<String?>(region),
+      'country': serializer.toJson<String?>(country),
+      'latitude': serializer.toJson<double>(latitude),
+      'longitude': serializer.toJson<double>(longitude),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ChosenLocationRow copyWith({
+    String? userId,
+    String? name,
+    Value<String?> region = const Value.absent(),
+    Value<String?> country = const Value.absent(),
+    double? latitude,
+    double? longitude,
+    DateTime? updatedAt,
+  }) => ChosenLocationRow(
+    userId: userId ?? this.userId,
+    name: name ?? this.name,
+    region: region.present ? region.value : this.region,
+    country: country.present ? country.value : this.country,
+    latitude: latitude ?? this.latitude,
+    longitude: longitude ?? this.longitude,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ChosenLocationRow copyWithCompanion(ChosenLocationsCompanion data) {
+    return ChosenLocationRow(
+      userId: data.userId.present ? data.userId.value : this.userId,
+      name: data.name.present ? data.name.value : this.name,
+      region: data.region.present ? data.region.value : this.region,
+      country: data.country.present ? data.country.value : this.country,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChosenLocationRow(')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('region: $region, ')
+          ..write('country: $country, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    userId,
+    name,
+    region,
+    country,
+    latitude,
+    longitude,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChosenLocationRow &&
+          other.userId == this.userId &&
+          other.name == this.name &&
+          other.region == this.region &&
+          other.country == this.country &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ChosenLocationsCompanion extends UpdateCompanion<ChosenLocationRow> {
+  final Value<String> userId;
+  final Value<String> name;
+  final Value<String?> region;
+  final Value<String?> country;
+  final Value<double> latitude;
+  final Value<double> longitude;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ChosenLocationsCompanion({
+    this.userId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.region = const Value.absent(),
+    this.country = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ChosenLocationsCompanion.insert({
+    required String userId,
+    required String name,
+    this.region = const Value.absent(),
+    this.country = const Value.absent(),
+    required double latitude,
+    required double longitude,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : userId = Value(userId),
+       name = Value(name),
+       latitude = Value(latitude),
+       longitude = Value(longitude),
+       updatedAt = Value(updatedAt);
+  static Insertable<ChosenLocationRow> custom({
+    Expression<String>? userId,
+    Expression<String>? name,
+    Expression<String>? region,
+    Expression<String>? country,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (userId != null) 'user_id': userId,
+      if (name != null) 'name': name,
+      if (region != null) 'region': region,
+      if (country != null) 'country': country,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ChosenLocationsCompanion copyWith({
+    Value<String>? userId,
+    Value<String>? name,
+    Value<String?>? region,
+    Value<String?>? country,
+    Value<double>? latitude,
+    Value<double>? longitude,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ChosenLocationsCompanion(
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      region: region ?? this.region,
+      country: country ?? this.country,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (region.present) {
+      map['region'] = Variable<String>(region.value);
+    }
+    if (country.present) {
+      map['country'] = Variable<String>(country.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChosenLocationsCompanion(')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('region: $region, ')
+          ..write('country: $country, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -726,6 +1190,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $FertilizationSchedulesTable fertilizationSchedules =
       $FertilizationSchedulesTable(this);
+  late final $ChosenLocationsTable chosenLocations = $ChosenLocationsTable(
+    this,
+  );
   late final Index schedulesUserDate = Index(
     'schedules_user_date',
     'CREATE INDEX schedules_user_date ON fertilization_schedules (user_id, scheduled_date)',
@@ -737,6 +1204,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     cachedForecasts,
     fertilizationSchedules,
+    chosenLocations,
     schedulesUserDate,
   ];
 }
@@ -1155,6 +1623,250 @@ typedef $$FertilizationSchedulesTableProcessedTableManager =
       ScheduleRow,
       PrefetchHooks Function()
     >;
+typedef $$ChosenLocationsTableCreateCompanionBuilder =
+    ChosenLocationsCompanion Function({
+      required String userId,
+      required String name,
+      Value<String?> region,
+      Value<String?> country,
+      required double latitude,
+      required double longitude,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ChosenLocationsTableUpdateCompanionBuilder =
+    ChosenLocationsCompanion Function({
+      Value<String> userId,
+      Value<String> name,
+      Value<String?> region,
+      Value<String?> country,
+      Value<double> latitude,
+      Value<double> longitude,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ChosenLocationsTableFilterComposer
+    extends Composer<_$AppDatabase, $ChosenLocationsTable> {
+  $$ChosenLocationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get region => $composableBuilder(
+    column: $table.region,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get country => $composableBuilder(
+    column: $table.country,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get longitude => $composableBuilder(
+    column: $table.longitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ChosenLocationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChosenLocationsTable> {
+  $$ChosenLocationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get region => $composableBuilder(
+    column: $table.region,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get country => $composableBuilder(
+    column: $table.country,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get longitude => $composableBuilder(
+    column: $table.longitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ChosenLocationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChosenLocationsTable> {
+  $$ChosenLocationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get region =>
+      $composableBuilder(column: $table.region, builder: (column) => column);
+
+  GeneratedColumn<String> get country =>
+      $composableBuilder(column: $table.country, builder: (column) => column);
+
+  GeneratedColumn<double> get latitude =>
+      $composableBuilder(column: $table.latitude, builder: (column) => column);
+
+  GeneratedColumn<double> get longitude =>
+      $composableBuilder(column: $table.longitude, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ChosenLocationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ChosenLocationsTable,
+          ChosenLocationRow,
+          $$ChosenLocationsTableFilterComposer,
+          $$ChosenLocationsTableOrderingComposer,
+          $$ChosenLocationsTableAnnotationComposer,
+          $$ChosenLocationsTableCreateCompanionBuilder,
+          $$ChosenLocationsTableUpdateCompanionBuilder,
+          (
+            ChosenLocationRow,
+            BaseReferences<
+              _$AppDatabase,
+              $ChosenLocationsTable,
+              ChosenLocationRow
+            >,
+          ),
+          ChosenLocationRow,
+          PrefetchHooks Function()
+        > {
+  $$ChosenLocationsTableTableManager(
+    _$AppDatabase db,
+    $ChosenLocationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChosenLocationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChosenLocationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChosenLocationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> userId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> region = const Value.absent(),
+                Value<String?> country = const Value.absent(),
+                Value<double> latitude = const Value.absent(),
+                Value<double> longitude = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ChosenLocationsCompanion(
+                userId: userId,
+                name: name,
+                region: region,
+                country: country,
+                latitude: latitude,
+                longitude: longitude,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String userId,
+                required String name,
+                Value<String?> region = const Value.absent(),
+                Value<String?> country = const Value.absent(),
+                required double latitude,
+                required double longitude,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ChosenLocationsCompanion.insert(
+                userId: userId,
+                name: name,
+                region: region,
+                country: country,
+                latitude: latitude,
+                longitude: longitude,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ChosenLocationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ChosenLocationsTable,
+      ChosenLocationRow,
+      $$ChosenLocationsTableFilterComposer,
+      $$ChosenLocationsTableOrderingComposer,
+      $$ChosenLocationsTableAnnotationComposer,
+      $$ChosenLocationsTableCreateCompanionBuilder,
+      $$ChosenLocationsTableUpdateCompanionBuilder,
+      (
+        ChosenLocationRow,
+        BaseReferences<_$AppDatabase, $ChosenLocationsTable, ChosenLocationRow>,
+      ),
+      ChosenLocationRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1166,4 +1878,6 @@ class $AppDatabaseManager {
         _db,
         _db.fertilizationSchedules,
       );
+  $$ChosenLocationsTableTableManager get chosenLocations =>
+      $$ChosenLocationsTableTableManager(_db, _db.chosenLocations);
 }

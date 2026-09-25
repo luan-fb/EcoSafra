@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:ecosafra/core/database/app_database.steps.dart';
 import 'package:ecosafra/core/database/tables/cached_forecasts_table.dart';
+import 'package:ecosafra/core/database/tables/chosen_locations_table.dart';
 import 'package:ecosafra/core/database/tables/fertilization_schedules_table.dart';
 
 part 'app_database.g.dart';
@@ -11,7 +12,9 @@ part 'app_database.g.dart';
 /// `@DriftDatabase(tables: [...])` faz o `build_runner` gerar `_$AppDatabase`
 /// com um método por tabela (`select`, `into`, etc.), do mesmo jeito que o
 /// annotation processor do Room gera a implementação de um `@Dao`.
-@DriftDatabase(tables: [CachedForecasts, FertilizationSchedules])
+@DriftDatabase(
+  tables: [CachedForecasts, FertilizationSchedules, ChosenLocations],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -27,8 +30,9 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// - v1: cache da previsão (`cached_forecasts`).
   /// - v2: agenda de adubação (`fertilization_schedules`).
+  /// - v3: localização escolhida por conta (`chosen_locations`).
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   /// Leva o banco já instalado nos aparelhos para a versão atual; uma
   /// instalação nova é criada direto na última versão. Os passos vêm de
@@ -42,6 +46,9 @@ class AppDatabase extends _$AppDatabase {
         // `createTable` não cria os índices da tabela; sem esta linha, o
         // banco migrado ficaria diferente de uma instalação nova.
         await m.createIndex(schema.schedulesUserDate);
+      },
+      from2To3: (m, schema) async {
+        await m.createTable(schema.chosenLocations);
       },
     ),
   );

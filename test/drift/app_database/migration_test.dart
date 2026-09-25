@@ -9,6 +9,7 @@ import 'generated/schema.dart';
 
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
+import 'generated/schema_v3.dart' as v3;
 
 /// Cada teste parte de um banco idêntico ao snapshot de uma versão antiga
 /// (`drift_schemas/app_database/`), roda a migração real do `AppDatabase` e
@@ -144,7 +145,8 @@ void main() {
         final version = await db
             .customSelect('PRAGMA user_version')
             .getSingle();
-        expect(version.read<int>('user_version'), 2);
+        // O app sobe direto para a versão atual, passando pela v2.
+        expect(version.read<int>('user_version'), 3);
 
         final index = await db
             .customSelect(
@@ -182,5 +184,173 @@ void main() {
         ]);
       },
     );
+  });
+
+  group('migração v2 → v3', () {
+    final fetchedAt = DateTime(2026, 9, 24, 10);
+    final fetchedAtSeconds = fetchedAt.millisecondsSinceEpoch ~/ 1000;
+    final scheduledSeconds =
+        DateTime(2026, 9, 26).millisecondsSinceEpoch ~/ 1000;
+
+    test('preserva o cache e a agenda e cria chosen_locations aceitando '
+        'inserts', () async {
+      final oldCachedForecasts = <v2.CachedForecastsData>[
+        v2.CachedForecastsData(
+          locationKey: '-15.60,-56.10',
+          payloadJson: '{"v":1}',
+          fetchedAt: fetchedAtSeconds,
+        ),
+      ];
+      final oldSchedules = <v2.FertilizationSchedulesData>[
+        v2.FertilizationSchedulesData(
+          id: 'b3f1c0de-0000-4000-8000-000000000001',
+          userId: 'uid-1',
+          scheduledDate: scheduledSeconds,
+          note: 'Ureia no talhão 3',
+          createdAt: fetchedAtSeconds,
+        ),
+        v2.FertilizationSchedulesData(
+          id: 'b3f1c0de-0000-4000-8000-000000000002',
+          userId: 'uid-2',
+          scheduledDate: scheduledSeconds,
+          createdAt: fetchedAtSeconds,
+          completedAt: fetchedAtSeconds + 60,
+        ),
+      ];
+      final expectedCachedForecasts = <v3.CachedForecastsData>[
+        v3.CachedForecastsData(
+          locationKey: '-15.60,-56.10',
+          payloadJson: '{"v":1}',
+          fetchedAt: fetchedAtSeconds,
+        ),
+      ];
+      final expectedSchedules = <v3.FertilizationSchedulesData>[
+        v3.FertilizationSchedulesData(
+          id: 'b3f1c0de-0000-4000-8000-000000000001',
+          userId: 'uid-1',
+          scheduledDate: scheduledSeconds,
+          note: 'Ureia no talhão 3',
+          createdAt: fetchedAtSeconds,
+        ),
+        v3.FertilizationSchedulesData(
+          id: 'b3f1c0de-0000-4000-8000-000000000002',
+          userId: 'uid-2',
+          scheduledDate: scheduledSeconds,
+          createdAt: fetchedAtSeconds,
+          completedAt: fetchedAtSeconds + 60,
+        ),
+      ];
+      final newChosenLocation = v3.ChosenLocationsData(
+        userId: 'uid-1',
+        name: 'Cuiabá',
+        region: 'Mato Grosso',
+        country: 'Brasil',
+        latitude: -15.59611,
+        longitude: -56.09667,
+        updatedAt: fetchedAtSeconds,
+      );
+
+      await verifier.testWithDataIntegrity(
+        oldVersion: 2,
+        newVersion: 3,
+        createOld: v2.DatabaseAtV2.new,
+        createNew: v3.DatabaseAtV3.new,
+        openTestedDatabase: AppDatabase.withExecutor,
+        createItems: (batch, oldDb) {
+          batch
+            ..insertAll(oldDb.cachedForecasts, oldCachedForecasts)
+            ..insertAll(oldDb.fertilizationSchedules, oldSchedules);
+        },
+        validateItems: (newDb) async {
+          expect(
+            await newDb.select(newDb.cachedForecasts).get(),
+            expectedCachedForecasts,
+          );
+          expect(
+            await (newDb.select(
+              newDb.fertilizationSchedules,
+            )..orderBy([(t) => OrderingTerm.asc(t.id)])).get(),
+            expectedSchedules,
+          );
+
+          expect(await newDb.select(newDb.chosenLocations).get(), isEmpty);
+          await newDb.into(newDb.chosenLocations).insert(newChosenLocation);
+          expect(await newDb.select(newDb.chosenLocations).get(), [
+            newChosenLocation,
+          ]);
+        },
+      );
+    });
+
+    test('o AppDatabase migrado lê a agenda e o cache antigos e grava a '
+        'localização escolhida', () async {
+      final schema = await verifier.schemaAt(2);
+
+      final oldDb = v2.DatabaseAtV2(schema.newConnection());
+      await oldDb
+          .into(oldDb.cachedForecasts)
+          .insert(
+            v2.CachedForecastsData(
+              locationKey: '-15.60,-56.10',
+              payloadJson: '{"v":1}',
+              fetchedAt: fetchedAtSeconds,
+            ),
+          );
+      await oldDb
+          .into(oldDb.fertilizationSchedules)
+          .insert(
+            v2.FertilizationSchedulesData(
+              id: 'b3f1c0de-0000-4000-8000-000000000001',
+              userId: 'uid-1',
+              scheduledDate: scheduledSeconds,
+              note: 'Ureia no talhão 3',
+              createdAt: fetchedAtSeconds,
+            ),
+          );
+      await oldDb.close();
+
+      final db = AppDatabase.withExecutor(schema.newConnection());
+      addTearDown(db.close);
+
+      final version = await db.customSelect('PRAGMA user_version').getSingle();
+      expect(version.read<int>('user_version'), 3);
+
+      expect(await db.select(db.cachedForecasts).get(), [
+        CachedForecast(
+          locationKey: '-15.60,-56.10',
+          payloadJson: '{"v":1}',
+          fetchedAt: fetchedAt,
+        ),
+      ]);
+      expect(await db.select(db.fertilizationSchedules).get(), [
+        ScheduleRow(
+          id: 'b3f1c0de-0000-4000-8000-000000000001',
+          userId: 'uid-1',
+          scheduledDate: DateTime(2026, 9, 26),
+          note: 'Ureia no talhão 3',
+          createdAt: fetchedAt,
+        ),
+      ]);
+
+      final index = await db
+          .customSelect(
+            "SELECT sql FROM sqlite_master WHERE type = 'index' "
+            "AND name = 'schedules_user_date'",
+          )
+          .getSingleOrNull();
+      expect(index, isNotNull);
+
+      final chosen = ChosenLocationRow(
+        userId: 'uid-1',
+        name: 'Cuiabá',
+        region: 'Mato Grosso',
+        country: 'Brasil',
+        latitude: -15.59611,
+        longitude: -56.09667,
+        updatedAt: fetchedAt,
+      );
+      await db.into(db.chosenLocations).insert(chosen);
+      expect(await db.select(db.chosenLocations).get(), [chosen]);
+    });
   });
 }
