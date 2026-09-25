@@ -48,7 +48,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
        _getForecast = getForecast,
        _evaluateScheduleRisk = evaluateScheduleRisk,
        _clock = clock,
-       super(ScheduleState.loading(SchedulingWindow.startingAt(clock.now()))) {
+       super(const ScheduleState.loading()) {
     _schedulesSubscription = watchSchedules(
       const NoParams(),
     ).listen(_onSchedules, onError: _onSchedulesError);
@@ -86,9 +86,9 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   /// terminar tentaria inserir um id que ainda existe no banco.
   final Map<String, Future<Either<Failure, void>>> _pendingDeletes = {};
 
-  /// Janela calculada na hora em que o formulário abre: com a tela aberta
-  /// na virada do dia, `state.window` ainda seria a de ontem até a próxima
-  /// emissão.
+  /// Datas aceitas pelo formulário, calculadas na hora em que ele abre:
+  /// uma janela guardada no estado ficaria com a data de ontem se a tela
+  /// estivesse aberta na virada do dia.
   SchedulingWindow currentWindow() => SchedulingWindow.startingAt(_clock.now());
 
   Future<void> addSchedule(DateTime date, {String? note}) async {
@@ -157,12 +157,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   /// a próxima emissão a atualiza.
   void _onSchedulesError(Object _) {
     if (state.status == ScheduleStatus.loaded) return;
-    emit(
-      ScheduleState.error(
-        _loadFailure,
-        SchedulingWindow.startingAt(_clock.now()),
-      ),
-    );
+    emit(const ScheduleState.error(_loadFailure));
   }
 
   /// Sem localização ou sem previsão, a Agenda funciona com risco `unknown`.
@@ -228,7 +223,6 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       ScheduleState.loaded(
         upcoming: upcoming,
         completed: [for (final (_, item) in completed) item],
-        window: SchedulingWindow.startingAt(now),
       ),
     );
   }

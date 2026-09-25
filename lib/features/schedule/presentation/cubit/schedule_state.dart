@@ -1,7 +1,6 @@
 import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
-import 'package:ecosafra/features/schedule/domain/entities/scheduling_window.dart';
 import 'package:equatable/equatable.dart';
 
 enum ScheduleStatus { loading, loaded, error }
@@ -33,28 +32,24 @@ final class ScheduleItem extends Equatable {
 final class ScheduleState extends Equatable {
   const ScheduleState._({
     required this.status,
-    required this.window,
     this.upcoming = const [],
     this.completed = const [],
     this.failure,
   });
 
-  const ScheduleState.loading(SchedulingWindow window)
-    : this._(status: ScheduleStatus.loading, window: window);
+  const ScheduleState.loading() : this._(status: ScheduleStatus.loading);
 
   const ScheduleState.loaded({
     required List<ScheduleItem> upcoming,
     required List<ScheduleItem> completed,
-    required SchedulingWindow window,
   }) : this._(
          status: ScheduleStatus.loaded,
          upcoming: upcoming,
          completed: completed,
-         window: window,
        );
 
-  const ScheduleState.error(Failure failure, SchedulingWindow window)
-    : this._(status: ScheduleStatus.error, failure: failure, window: window);
+  const ScheduleState.error(Failure failure)
+    : this._(status: ScheduleStatus.error, failure: failure);
 
   final ScheduleStatus status;
 
@@ -64,9 +59,6 @@ final class ScheduleState extends Equatable {
   /// Concluídos, por data decrescente.
   final List<ScheduleItem> completed;
 
-  /// Datas aceitas pelo seletor ao criar e editar.
-  final SchedulingWindow window;
-
   /// Em `error`, o motivo da tela de erro; nos outros status, a falha de
   /// uma ação (snackbar), que não derruba a lista.
   final Failure? failure;
@@ -75,10 +67,9 @@ final class ScheduleState extends Equatable {
     status: status,
     upcoming: upcoming,
     completed: completed,
-    window: window,
     failure: failure,
   );
 
   @override
-  List<Object?> get props => [status, upcoming, completed, window, failure];
+  List<Object?> get props => [status, upcoming, completed, failure];
 }

@@ -55,7 +55,6 @@ void main() {
 
   final now = DateTime(2026, 9, 23, 10);
   final fixedClock = Clock.fixed(now);
-  final window = SchedulingWindow.startingAt(now);
 
   const coordinates = Coordinates(latitude: -15.6, longitude: -56.1);
   const heavyRain = EvaluateApplicationSafety.dangerThresholdMm + 5;
@@ -163,7 +162,7 @@ void main() {
     final cubit = buildCubit();
     addTearDown(cubit.close);
 
-    expect(cubit.state, ScheduleState.loading(window));
+    expect(cubit.state, const ScheduleState.loading());
   });
 
   group('seções e ordem (AGD-08, AGD-28, AGD-29)', () {
@@ -198,7 +197,6 @@ void main() {
             item(later),
           ],
           completed: [item(doneFuture), item(doneRecent), item(doneOld)],
-          window: window,
         ),
       ],
     );
@@ -214,7 +212,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: const [],
           completed: [item(doneSecond), item(doneFirst)],
-          window: window,
         ),
       ],
     );
@@ -233,17 +230,14 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(forToday)],
           completed: const [],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: const [],
           completed: [item(schedule('today', today, completed: true))],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: [item(forToday)],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -253,10 +247,9 @@ void main() {
       build: buildCubit,
       act: (_) => schedulesController.add(const []),
       expect: () => [
-        ScheduleState.loaded(
-          upcoming: const [],
-          completed: const [],
-          window: window,
+        const ScheduleState.loaded(
+          upcoming: [],
+          completed: [],
         ),
       ],
     );
@@ -286,7 +279,6 @@ void main() {
             item(later),
           ],
           completed: [item(doneToday)],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: [
@@ -295,7 +287,6 @@ void main() {
             item(later, risk: ScheduleRiskLevel.ok, rainMm: lightRain),
           ],
           completed: [item(doneToday)],
-          window: window,
         ),
       ],
     );
@@ -332,7 +323,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(pastDue, isPastDue: true)],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -352,7 +342,6 @@ void main() {
             item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
           ],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -371,21 +360,18 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(later)],
           completed: const [],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: [
             item(later, risk: ScheduleRiskLevel.ok, rainMm: lightRain),
           ],
           completed: const [],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: [
             item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
           ],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -406,7 +392,6 @@ void main() {
             item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
           ],
           completed: const [],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: [
@@ -417,7 +402,6 @@ void main() {
             ),
           ],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -436,7 +420,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(forToday)],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -452,7 +435,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(forToday)],
           completed: const [],
-          window: window,
         ),
       ],
       verify: (_) => verifyNever(() => getForecast(any())),
@@ -463,7 +445,7 @@ void main() {
     late DateTime current;
 
     blocTest<ScheduleCubit, ScheduleState>(
-      'recalcula a janela e a data passada a cada emissão pelo relógio',
+      'recalcula a data passada a cada emissão pelo relógio',
       setUp: () => current = now,
       build: () => buildCubit(clock: Clock(() => current)),
       act: (_) async {
@@ -476,12 +458,10 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(schedule('today', today))],
           completed: const [],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: [item(schedule('today', today), isPastDue: true)],
           completed: const [],
-          window: SchedulingWindow.startingAt(DateTime(2026, 9, 24)),
         ),
       ],
     );
@@ -502,8 +482,6 @@ void main() {
         cubit.currentWindow(),
         SchedulingWindow.startingAt(DateTime(2026, 9, 24)),
       );
-      // O estado ainda é o da última emissão; o formulário não pode usá-lo.
-      expect(cubit.state.window, window);
       await cubit.close();
     },
   );
@@ -517,7 +495,7 @@ void main() {
         await flush();
         forecastController.add(Right(weekForecast()));
       },
-      expect: () => [ScheduleState.error(loadFailure, window)],
+      expect: () => [const ScheduleState.error(loadFailure)],
     );
 
     blocTest<ScheduleCubit, ScheduleState>(
@@ -532,7 +510,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(schedule('today', today))],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -546,11 +523,10 @@ void main() {
         schedulesController.add([schedule('today', today)]);
       },
       expect: () => [
-        ScheduleState.error(loadFailure, window),
+        const ScheduleState.error(loadFailure),
         ScheduleState.loaded(
           upcoming: [item(schedule('today', today))],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -561,12 +537,10 @@ void main() {
     final loaded = ScheduleState.loaded(
       upcoming: [item(forToday)],
       completed: const [],
-      window: window,
     );
-    final removed = ScheduleState.loaded(
-      upcoming: const [],
-      completed: const [],
-      window: window,
+    const removed = ScheduleState.loaded(
+      upcoming: [],
+      completed: [],
     );
     final createParams = CreateScheduleParams(
       scheduledDate: inThreeDays,
@@ -768,7 +742,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(forToday), item(later)],
           completed: const [],
-          window: window,
         ),
         ScheduleState.loaded(
           upcoming: [
@@ -776,7 +749,6 @@ void main() {
             item(later, risk: ScheduleRiskLevel.atRisk, rainMm: heavyRain),
           ],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -824,7 +796,6 @@ void main() {
             item(outOfForecast),
           ],
           completed: [item(doneToday)],
-          window: window,
         ),
       ],
     );
@@ -837,7 +808,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(forToday), item(later)],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -849,12 +819,10 @@ void main() {
     final both = ScheduleState.loaded(
       upcoming: [item(forToday), item(later)],
       completed: const [],
-      window: window,
     );
     final onlyLater = ScheduleState.loaded(
       upcoming: [item(later)],
       completed: const [],
-      window: window,
     );
 
     Future<void> loadBoth() async {
@@ -990,7 +958,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(laterEdited)],
           completed: const [],
-          window: window,
         ),
       ],
     );
@@ -1061,7 +1028,6 @@ void main() {
     final loaded = ScheduleState.loaded(
       upcoming: [item(later)],
       completed: const [],
-      window: window,
     );
     final deleted = FertilizationSchedule(
       id: 'done',
@@ -1094,7 +1060,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [item(later)],
           completed: [item(deleted)],
-          window: window,
         ),
       ],
       verify: (_) => verify(() => restoreSchedule(deleted)).called(1),

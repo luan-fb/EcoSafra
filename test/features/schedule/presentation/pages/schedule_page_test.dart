@@ -136,7 +136,6 @@ void main() {
           ScheduleState.loaded(
             upcoming: [upcomingItem(schedule('s1', today))],
             completed: [completedItem(schedule('s2', today, completed: true))],
-            window: window,
           ),
         );
         await pumpPage(tester);
@@ -153,7 +152,6 @@ void main() {
           ScheduleState.loaded(
             upcoming: [upcomingItem(schedule('s1', today))],
             completed: const [],
-            window: window,
           ),
         );
         await pumpPage(tester);
@@ -170,7 +168,6 @@ void main() {
           ScheduleState.loaded(
             upcoming: const [],
             completed: [completedItem(schedule('s2', today, completed: true))],
-            window: window,
           ),
         );
         await pumpPage(tester);
@@ -185,10 +182,9 @@ void main() {
     'estado vazio geral: sem nenhum agendamento',
     (tester) async {
       stubState(
-        ScheduleState.loaded(
-          upcoming: const [],
-          completed: const [],
-          window: window,
+        const ScheduleState.loaded(
+          upcoming: [],
+          completed: [],
         ),
       );
       await pumpPage(tester);
@@ -210,10 +206,9 @@ void main() {
       'AGD-01: toque no FAB abre o formulário e confirmar chama addSchedule',
       (tester) async {
         stubState(
-          ScheduleState.loaded(
-            upcoming: const [],
-            completed: const [],
-            window: window,
+          const ScheduleState.loaded(
+            upcoming: [],
+            completed: [],
           ),
         );
         await pumpPage(tester);
@@ -235,16 +230,12 @@ void main() {
 
     testWidgets(
       'edge case: virada do dia com a tela aberta, o seletor usa a janela '
-      'atual e não a do estado',
+      'calculada pelo cubit na hora de abrir',
       (tester) async {
-        final yesterdayWindow = SchedulingWindow.startingAt(
-          today.subtract(const Duration(days: 1)),
-        );
         stubState(
-          ScheduleState.loaded(
-            upcoming: const [],
-            completed: const [],
-            window: yesterdayWindow,
+          const ScheduleState.loaded(
+            upcoming: [],
+            completed: [],
           ),
         );
         await pumpPage(tester);
@@ -263,7 +254,7 @@ void main() {
     );
 
     testWidgets('FAB ausente em erro', (tester) async {
-      stubState(ScheduleState.error(const CacheFailure('falhou'), window));
+      stubState(const ScheduleState.error(CacheFailure('falhou')));
       await pumpPage(tester);
 
       expect(find.byType(FloatingActionButton), findsNothing);
@@ -274,17 +265,13 @@ void main() {
   group('editar', () {
     testWidgets(
       'edge case: virada do dia com a tela aberta, a edição também usa a '
-      'janela atual e não a do estado',
+      'janela calculada pelo cubit na hora de abrir',
       (tester) async {
-        final yesterdayWindow = SchedulingWindow.startingAt(
-          today.subtract(const Duration(days: 1)),
-        );
         final target = schedule('s1', window.first);
         stubState(
           ScheduleState.loaded(
             upcoming: [upcomingItem(target)],
             completed: const [],
-            window: yesterdayWindow,
           ),
         );
         await pumpPage(tester);
@@ -310,7 +297,6 @@ void main() {
           ScheduleState.loaded(
             upcoming: [upcomingItem(target)],
             completed: const [],
-            window: window,
           ),
         );
         await pumpPage(tester);
@@ -341,7 +327,6 @@ void main() {
     }) => ScheduleState.loaded(
       upcoming: upcoming,
       completed: completed,
-      window: window,
     );
 
     testWidgets(
@@ -459,10 +444,9 @@ void main() {
     'a Agenda mostra o AppDrawer com o item "Agenda" selecionado',
     (tester) async {
       stubState(
-        ScheduleState.loaded(
-          upcoming: const [],
-          completed: const [],
-          window: window,
+        const ScheduleState.loaded(
+          upcoming: [],
+          completed: [],
         ),
       );
       await pumpPage(tester);
@@ -497,7 +481,6 @@ void main() {
         ScheduleState.loaded(
           upcoming: [upcomingItem(target)],
           completed: const [],
-          window: window,
         ),
       );
       await pumpPage(tester, disableAnimations: disableAnimations);
@@ -600,7 +583,6 @@ void main() {
       var current = ScheduleState.loaded(
         upcoming: [upcomingItem(upcomingTarget)],
         completed: [completedItem(completedTarget)],
-        window: window,
       );
       final states = StreamController<ScheduleState>();
       addTearDown(states.close);
@@ -616,7 +598,6 @@ void main() {
             for (final item in current.completed)
               if (item.schedule.id != id) item,
           ],
-          window: window,
         );
         states.add(current);
       });
@@ -926,7 +907,6 @@ void main() {
     ScheduleState loadedWithOneUpcoming() => ScheduleState.loaded(
       upcoming: [upcomingItem(schedule('s1', window.first))],
       completed: const [],
-      window: window,
     );
 
     testWidgets(
@@ -988,7 +968,6 @@ void main() {
       final loaded = ScheduleState.loaded(
         upcoming: [upcomingItem(schedule('s1', today))],
         completed: const [],
-        window: window,
       );
       final withFailure = loaded.withActionFailure(
         const CacheFailure('Não foi possível salvar o agendamento.'),
