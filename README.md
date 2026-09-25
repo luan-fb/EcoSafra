@@ -7,13 +7,15 @@
 
 **Adube na hora certa. Proteja o rio.**
 
+Projeto acadêmico da UPX 7 no Centro Universitário Newton Paiva.
+
 Aplicativo Android, offline-first, que avisa o produtor rural quando aplicar fertilizante
 vai coincidir com chuva forte, evitando o escoamento do insumo para rios e córregos.
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
-![Testes](https://img.shields.io/badge/testes-316%20passando-2E7D32)
+![Testes](https://img.shields.io/badge/testes-416%20passando-2E7D32)
 ![Lint](https://img.shields.io/badge/lint-very__good__analysis-7B1FA2)
 
 <!-- Captura principal: o painel com o card de decisão (ex.: 280px de largura) -->
@@ -171,13 +173,7 @@ carregamento se já existe algo salvo para exibir.
 
 ## Qualidade
 
-- **316 testes** automatizados, entre unidade, widget, banco em memória e migração de schema.
-- **Especificação antes do código:** features grandes passam por especificação, design e tarefas
-  em [`.specs/`](.specs/), com critérios de aceite rastreáveis até o teste que os prova.
-- **Verificação independente:** ao fim de cada feature, um revisor que não escreveu o código
-  confere cada critério contra os testes e **injeta defeitos** no código para garantir que os
-  testes os detectam. O relatório da Agenda está em
-  [`.specs/features/schedule/validation.md`](.specs/features/schedule/validation.md).
+- **416 testes** automatizados, entre unidade, widget, banco em memória e migração de schema.
 - **Histórico legível:** Conventional Commits, um commit por tarefa, cada um compilando e passando
   nos testes sozinho.
 
@@ -236,21 +232,6 @@ flutter test
 - [ ] Usar a umidade do solo, que o app já recebe, no motor de decisão
 - [ ] Exibir no app a atribuição "Weather data by Open-Meteo.com", exigida pela licença CC BY 4.0
 - [ ] Suporte a iOS
-
-## Equipe
-
-Projeto acadêmico da **UPX 7** no Centro Universitário Newton Paiva.
-
-| Integrante | GitHub |
-| --- | --- |
-| Danielle Evangelista da Silva | <!-- @usuario --> |
-| Gustavo Luiz Andrade Costa | <!-- @usuario --> |
-| Luan Ferreira Boaventura | [@luan-fb](https://github.com/luan-fb) |
-| Matheus Carneiro Silva | <!-- @usuario --> |
-| Vitor Hugo Vaz Silva | <!-- @usuario --> |
-| William do Nascimento Reis Junior | <!-- @usuario --> |
-
-**Orientador:** Adriano Marinheiro Pompeu
 
 ## Créditos
 
