@@ -59,11 +59,20 @@ class DashboardCubit extends Cubit<DashboardState> {
     // o `RefreshIndicator` já mostra que está carregando.
     if (state.status != DashboardStatus.loaded) {
       emit(const DashboardState.loading());
+    } else if (state.refreshFailure != null) {
+      // Limpa a falha anterior: a mesma falha de novo precisa virar um
+      // estado novo para o snackbar aparecer outra vez.
+      emit(state.withRefreshFailure(null));
     }
 
     final locationResult = await _getCurrentLocation(const NoParams());
     await locationResult.match(
-      (failure) async => emit(DashboardState.error(failure)),
+      (failure) async => emit(
+        // Com a previsão na tela, a falha de localização não a apaga.
+        state.status == DashboardStatus.loaded
+            ? state.withRefreshFailure(failure)
+            : DashboardState.error(failure),
+      ),
       (coordinates) async {
         if (coordinates != _describedCoordinates) {
           _describedCoordinates = coordinates;

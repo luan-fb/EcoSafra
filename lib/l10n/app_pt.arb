@@ -296,5 +296,8 @@
   "@locationPickerEmpty": {"description": "Mensagem quando a busca de cidade não encontra nenhum lugar"},
 
   "locationPickerNetworkError": "Sem internet para buscar lugares. Tente de novo quando tiver sinal.",
-  "@locationPickerNetworkError": {"description": "Mensagem quando a busca de cidade falha por falta de rede"}
+  "@locationPickerNetworkError": {"description": "Mensagem quando a busca de cidade falha por falta de rede"},
+
+  "dashboardChooseLocationButton": "Escolher localização",
+  "@dashboardChooseLocationButton": {"description": "Botão e ação do snackbar que abrem a escolha da localização quando a localização falha"}
 }

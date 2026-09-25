@@ -1,12 +1,14 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:clock/clock.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
+import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:ecosafra/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:ecosafra/features/dashboard/presentation/widgets/forecast_section.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_alert.dart';
 import 'package:ecosafra/features/schedule/presentation/alert/schedule_alert_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/alert/schedule_alert_state.dart';
@@ -254,7 +256,7 @@ void main() {
     expect(find.text('agenda-aberta'), findsOneWidget);
   });
 
-  group('localização no cabeçalho', () {
+  group('localização no painel', () {
     const device = LocationDescription(
       label: 'Cuiabá, Mato Grosso',
       source: LocationSource.device,
@@ -409,6 +411,105 @@ void main() {
       });
 
       verifyNever(() => dashboardCubit.loadForecast());
+    });
+
+    group('LOCM-07: erro de localização', () {
+      testWidgets('oferece "Escolher localização" junto de "Tentar de novo"', (
+        tester,
+      ) async {
+        stubDashboard(
+          const DashboardState.error(LocationFailure('GPS desligado.')),
+        );
+
+        await pumpWithRouter(tester);
+
+        expect(find.text('GPS desligado.'), findsOneWidget);
+        expect(find.text('Tentar de novo'), findsOneWidget);
+        expect(find.text('Escolher localização'), findsOneWidget);
+      });
+
+      testWidgets('outra falha não oferece a escolha de localização', (
+        tester,
+      ) async {
+        stubDashboard(const DashboardState.error(NetworkFailure()));
+
+        await pumpWithRouter(tester);
+
+        expect(find.text('Tentar de novo'), findsOneWidget);
+        expect(find.text('Escolher localização'), findsNothing);
+      });
+
+      testWidgets('o botão abre a escolha, e voltar com true recarrega', (
+        tester,
+      ) async {
+        stubDashboard(
+          const DashboardState.error(LocationFailure('GPS desligado.')),
+        );
+        await pumpWithRouter(tester, pickerResult: true);
+
+        await tester.tap(find.text('Escolher localização'));
+        await settleRoute(tester);
+        expect(find.text('escolha-aberta'), findsOneWidget);
+
+        await tester.tap(find.text('escolha-aberta'));
+        await settleRoute(tester);
+        verify(() => dashboardCubit.loadForecast()).called(1);
+      });
+    });
+
+    group('ROB-04: falha de localização ao atualizar', () {
+      const gpsOff = LocationFailure('Ative a localização do aparelho.');
+
+      void stubRefreshFailure() {
+        final loaded = DashboardState.loaded(forecast, advice);
+        final failed = loaded.withRefreshFailure(gpsOff);
+        when(() => dashboardCubit.state).thenReturn(failed);
+        whenListen(
+          dashboardCubit,
+          Stream.fromIterable([loaded, failed]),
+          initialState: loaded,
+        );
+      }
+
+      testWidgets(
+        'mantém a previsão e mostra o snackbar com a mensagem e a ação',
+        (tester) async {
+          stubRefreshFailure();
+
+          await withClock(forecastHour, () => pumpWithRouter(tester));
+
+          expect(find.byType(ForecastSection), findsOneWidget);
+          expect(
+            find.widgetWithText(SnackBar, 'Ative a localização do aparelho.'),
+            findsOneWidget,
+          );
+          expect(
+            find.widgetWithText(SnackBarAction, 'Escolher localização'),
+            findsOneWidget,
+          );
+        },
+      );
+
+      testWidgets('a ação do snackbar abre a escolha de localização', (
+        tester,
+      ) async {
+        stubRefreshFailure();
+
+        await withClock(forecastHour, () async {
+          await pumpWithRouter(tester, pickerResult: true);
+
+          await tester.tap(
+            find.widgetWithText(SnackBarAction, 'Escolher localização'),
+          );
+          await settleRoute(tester);
+          expect(find.text('escolha-aberta'), findsOneWidget);
+
+          await tester.tap(find.text('escolha-aberta'));
+          await settleRoute(tester);
+        });
+
+        verify(() => dashboardCubit.loadForecast()).called(1);
+      });
     });
   });
 }

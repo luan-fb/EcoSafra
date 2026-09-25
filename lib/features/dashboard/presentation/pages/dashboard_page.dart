@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ecosafra/app/router/app_routes.dart';
 import 'package:ecosafra/app/widgets/app_drawer.dart';
+import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
@@ -58,14 +59,27 @@ class DashboardView extends StatelessWidget {
         // Sem `appBar:` de propósito — o cabeçalho de marca (`DashboardHeader`)
         // faz esse papel, incluindo o botão que abre este `drawer:`.
         drawer: const AppDrawer(),
-        body: BlocListener<DashboardCubit, DashboardState>(
-          // A previsão nova só interessa ao aviso quando o painel terminou de
-          // carregar — repassar `loading`/`error` apagaria a previsão anterior
-          // do `ScheduleAlertCubit`, que ainda vale enquanto uma nova não chega.
-          listenWhen: (previous, current) =>
-              current.status == DashboardStatus.loaded,
-          listener: (context, state) =>
-              context.read<ScheduleAlertCubit>().updateForecast(state.forecast),
+        body: MultiBlocListener(
+          listeners: [
+            BlocListener<DashboardCubit, DashboardState>(
+              // A previsão nova só interessa ao aviso quando o painel terminou
+              // de carregar — repassar `loading`/`error` apagaria a previsão
+              // anterior do `ScheduleAlertCubit`, que ainda vale enquanto uma
+              // nova não chega.
+              listenWhen: (previous, current) =>
+                  current.status == DashboardStatus.loaded,
+              listener: (context, state) => context
+                  .read<ScheduleAlertCubit>()
+                  .updateForecast(state.forecast),
+            ),
+            BlocListener<DashboardCubit, DashboardState>(
+              listenWhen: (previous, current) =>
+                  previous.refreshFailure != current.refreshFailure &&
+                  current.refreshFailure != null,
+              listener: (context, state) =>
+                  _showRefreshFailure(context, state.refreshFailure!),
+            ),
+          ],
           child: RefreshIndicator(
             onRefresh: context.read<DashboardCubit>().loadForecast,
             child: CustomScrollView(
@@ -131,6 +145,7 @@ class DashboardView extends StatelessWidget {
                           message:
                               state.failure?.message ??
                               context.l10n.dashboardErrorTitle,
+                          offerLocationChoice: state.failure is LocationFailure,
                         ),
                         DashboardStatus.loaded => ForecastSection(
                           forecast: state.forecast!,
@@ -162,6 +177,24 @@ Future<void> _chooseLocation(BuildContext context) async {
   final cubit = context.read<DashboardCubit>();
   final changed = await context.pushNamed<bool>(AppRoute.location.name);
   if (changed ?? false) await cubit.loadForecast();
+}
+
+/// A previsão continua na tela; o snackbar diz o que falhou e leva à escolha
+/// de localização.
+void _showRefreshFailure(BuildContext context, Failure failure) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(failure.message),
+        // Com ação, o `SnackBar` ficaria aberto até ser fechado.
+        persist: false,
+        action: SnackBarAction(
+          label: context.l10n.dashboardChooseLocationButton,
+          onPressed: () => unawaited(_chooseLocation(context)),
+        ),
+      ),
+    );
 }
 
 /// Recalcula o aviso da agenda quando o app volta ao primeiro plano: é o
@@ -209,9 +242,16 @@ class _LoadingSection extends StatelessWidget {
 }
 
 class _ErrorSection extends StatelessWidget {
-  const _ErrorSection({required this.message});
+  const _ErrorSection({
+    required this.message,
+    required this.offerLocationChoice,
+  });
 
   final String message;
+
+  /// Falha de localização: além de tentar de novo, o produtor pode escolher
+  /// a cidade.
+  final bool offerLocationChoice;
 
   @override
   Widget build(BuildContext context) {
@@ -238,6 +278,16 @@ class _ErrorSection extends StatelessWidget {
               child: Text(context.l10n.dashboardRetryButton),
             ),
           ),
+          if (offerLocationChoice) ...[
+            const SizedBox(height: AppSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => unawaited(_chooseLocation(context)),
+                child: Text(context.l10n.dashboardChooseLocationButton),
+              ),
+            ),
+          ],
         ],
       ),
     );

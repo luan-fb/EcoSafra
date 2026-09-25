@@ -263,4 +263,71 @@ void main() {
       expect: () => [loadedWith(forecastAt(8))],
     );
   });
+
+  group('ROB-04: falha de localização ao atualizar', () {
+    const gpsOff = LocationFailure('Ative a localização do aparelho.');
+
+    blocTest<DashboardCubit, DashboardState>(
+      'com a previsão na tela, mantém a mesma previsão e guarda a falha',
+      setUp: () {
+        var calls = 0;
+        when(() => getCurrentLocation(const NoParams())).thenAnswer(
+          (_) async =>
+              calls++ == 0 ? const Right(coordinates) : const Left(gpsOff),
+        );
+        when(
+          () => getForecast(coordinates),
+        ).thenAnswer((_) => Stream.value(Right(forecastAt(8))));
+      },
+      build: buildCubit,
+      act: (cubit) async {
+        await Future<void>.delayed(Duration.zero);
+        await cubit.loadForecast();
+      },
+      expect: () => [
+        loadedWith(forecastAt(8)),
+        loadedWith(forecastAt(8)).withRefreshFailure(gpsOff),
+      ],
+      verify: (cubit) {
+        expect(cubit.state.status, DashboardStatus.loaded);
+        expect(cubit.state.forecast, forecastAt(8));
+        expect(cubit.state.refreshFailure, gpsOff);
+      },
+    );
+
+    blocTest<DashboardCubit, DashboardState>(
+      'a mesma falha de novo gera um estado novo, para avisar outra vez',
+      setUp: () {
+        var calls = 0;
+        when(() => getCurrentLocation(const NoParams())).thenAnswer(
+          (_) async =>
+              calls++ == 0 ? const Right(coordinates) : const Left(gpsOff),
+        );
+        when(
+          () => getForecast(coordinates),
+        ).thenAnswer((_) => Stream.value(Right(forecastAt(8))));
+      },
+      build: buildCubit,
+      act: (cubit) async {
+        await Future<void>.delayed(Duration.zero);
+        await cubit.loadForecast();
+        await cubit.loadForecast();
+      },
+      expect: () => [
+        loadedWith(forecastAt(8)),
+        loadedWith(forecastAt(8)).withRefreshFailure(gpsOff),
+        loadedWith(forecastAt(8)),
+        loadedWith(forecastAt(8)).withRefreshFailure(gpsOff),
+      ],
+    );
+
+    blocTest<DashboardCubit, DashboardState>(
+      'sem previsão na tela, a falha de localização vira erro',
+      setUp: () => when(
+        () => getCurrentLocation(const NoParams()),
+      ).thenAnswer((_) async => const Left(gpsOff)),
+      build: buildCubit,
+      expect: () => [const DashboardState.error(gpsOff)],
+    );
+  });
 }

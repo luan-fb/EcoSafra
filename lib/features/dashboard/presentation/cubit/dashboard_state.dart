@@ -13,6 +13,7 @@ final class DashboardState extends Equatable {
     this.advice,
     this.location,
     this.failure,
+    this.refreshFailure,
   });
 
   const DashboardState.initial() : this._(status: DashboardStatus.initial);
@@ -46,14 +47,35 @@ final class DashboardState extends Equatable {
 
   final Failure? failure;
 
+  /// Em `loaded`, a falha ao atualizar que não apagou a previsão (snackbar).
+  final Failure? refreshFailure;
+
   DashboardState withLocation(LocationDescription location) => DashboardState._(
     status: status,
     forecast: forecast,
     advice: advice,
     location: location,
     failure: failure,
+    refreshFailure: refreshFailure,
   );
 
+  DashboardState withRefreshFailure(Failure? refreshFailure) =>
+      DashboardState._(
+        status: status,
+        forecast: forecast,
+        advice: advice,
+        location: location,
+        failure: failure,
+        refreshFailure: refreshFailure,
+      );
+
   @override
-  List<Object?> get props => [status, forecast, advice, location, failure];
+  List<Object?> get props => [
+    status,
+    forecast,
+    advice,
+    location,
+    failure,
+    refreshFailure,
+  ];
 }
