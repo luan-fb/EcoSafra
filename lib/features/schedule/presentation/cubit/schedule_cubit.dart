@@ -136,10 +136,16 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     _hiddenIds.add(id);
     _emitLoaded();
 
-    final deletion = _deleteSchedule(id);
-    _pendingDeletes[id] = deletion;
-    final result = await deletion;
-    unawaited(_pendingDeletes.remove(id));
+    final deletion = _pendingDeletes[id] = _deleteSchedule(id);
+    final Either<Failure, void> result;
+    try {
+      result = await deletion;
+    } finally {
+      // Sai do mapa mesmo se o caso de uso lançar: senão o Desfazer
+      // esperaria para sempre uma exclusão que falhou. `remove` devolve a
+      // própria exclusão, já concluída.
+      unawaited(_pendingDeletes.remove(id));
+    }
     result.match((failure) {
       _hiddenIds.remove(id);
       if (isClosed) return;

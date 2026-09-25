@@ -940,6 +940,26 @@ void main() {
     );
 
     test(
+      'exclusão que lança exceção não deixa o Desfazer seguinte preso nela',
+      () async {
+        when(
+          () => deleteSchedule('today'),
+        ).thenAnswer((_) async => throw StateError('banco'));
+        when(
+          () => restoreSchedule(forToday),
+        ).thenAnswer((_) async => const Right(null));
+        final cubit = buildCubit();
+        await loadBoth();
+
+        await expectLater(cubit.removeSchedule('today'), throwsStateError);
+        await cubit.restoreSchedule(forToday);
+
+        verify(() => restoreSchedule(forToday)).called(1);
+        await cubit.close();
+      },
+    );
+
+    test(
       'Desfazer depois de uma exclusão que falhou não restaura: o item nem '
       'saiu do banco',
       () async {
