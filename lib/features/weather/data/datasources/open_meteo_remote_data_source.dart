@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ecosafra/core/error/exceptions.dart';
 import 'package:ecosafra/core/network/api_constants.dart';
+import 'package:ecosafra/core/network/dio_error_unwrapper.dart';
 import 'package:ecosafra/features/weather/data/datasources/weather_remote_data_source.dart';
 import 'package:ecosafra/features/weather/data/models/daily_forecast_point_model.dart';
 import 'package:ecosafra/features/weather/data/models/hourly_forecast_point_model.dart';
@@ -22,20 +23,25 @@ class OpenMeteoRemoteDataSource implements WeatherRemoteDataSource {
 
   @override
   Future<WeatherForecastModel> getForecast(Coordinates coordinates) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      ApiConstants.forecast,
-      queryParameters: {
-        'latitude': coordinates.latitude,
-        'longitude': coordinates.longitude,
-        'hourly': ApiConstants.hourlyVariables.join(','),
-        'daily': ApiConstants.dailyVariables.join(','),
-        'forecast_days': WeatherForecast.coverageDays,
-        // Sem isto, a Open-Meteo devolve os horários em UTC — o produtor
-        // não deveria ter que fazer essa conta de cabeça pra saber se "vai
-        // chover às 15h" é daqui a três horas ou daqui a seis.
-        'timezone': 'auto',
-      },
-    );
+    final Response<Map<String, dynamic>> response;
+    try {
+      response = await _dio.get<Map<String, dynamic>>(
+        ApiConstants.forecast,
+        queryParameters: {
+          'latitude': coordinates.latitude,
+          'longitude': coordinates.longitude,
+          'hourly': ApiConstants.hourlyVariables.join(','),
+          'daily': ApiConstants.dailyVariables.join(','),
+          'forecast_days': WeatherForecast.coverageDays,
+          // Sem isto, a Open-Meteo devolve os horários em UTC — o produtor
+          // não deveria ter que fazer essa conta de cabeça pra saber se "vai
+          // chover às 15h" é daqui a três horas ou daqui a seis.
+          'timezone': 'auto',
+        },
+      );
+    } on DioException catch (e) {
+      throw unwrapDioException(e);
+    }
 
     final data = response.data;
     if (data == null) {
@@ -104,8 +110,8 @@ class OpenMeteoRemoteDataSource implements WeatherRemoteDataSource {
       (i) => DailyForecastPointModel(
         date: DateTime.parse(dates[i] as String),
         precipitationSum: (precipitationSum[i] as num).toDouble(),
-        precipitationProbabilityMax:
-            (precipitationProbabilityMax[i] as num).toInt(),
+        precipitationProbabilityMax: (precipitationProbabilityMax[i] as num)
+            .toInt(),
         temperatureMax: (temperatureMax[i] as num).toDouble(),
         temperatureMin: (temperatureMin[i] as num).toDouble(),
         windSpeedMax: (windSpeedMax[i] as num).toDouble(),

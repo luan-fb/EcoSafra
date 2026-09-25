@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ecosafra/core/error/exceptions.dart';
 import 'package:ecosafra/core/network/api_constants.dart';
+import 'package:ecosafra/core/network/dio_error_unwrapper.dart';
 import 'package:ecosafra/features/weather/data/datasources/place_search_remote_data_source.dart';
 import 'package:ecosafra/features/weather/domain/entities/coordinates.dart';
 import 'package:ecosafra/features/weather/domain/entities/place.dart';
@@ -28,10 +29,7 @@ class OpenMeteoGeocodingDataSource implements PlaceSearchRemoteDataSource {
         },
       );
     } on DioException catch (e) {
-      // O `ErrorInterceptor` guarda a exceção do app em `error`.
-      final error = e.error;
-      if (error is AppException) throw error;
-      throw const NetworkException();
+      throw unwrapDioException(e);
     }
 
     // Sem nenhum lugar, a API omite `results` em vez de mandar lista vazia.

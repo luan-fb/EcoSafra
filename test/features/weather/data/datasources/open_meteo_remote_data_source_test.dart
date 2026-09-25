@@ -99,4 +99,51 @@ void main() {
     expect(model.hourly, hasLength(1));
     expect(model.daily, hasLength(1));
   });
+
+  test(
+    'falha do Dio: relança a exceção que o ErrorInterceptor anexou',
+    () async {
+      when(
+        () => dio.get<Map<String, dynamic>>(
+          ApiConstants.forecast,
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: ApiConstants.forecast),
+          type: DioExceptionType.connectionTimeout,
+          error: const NetworkException(
+            'O servidor demorou demais para responder.',
+          ),
+        ),
+      );
+
+      await expectLater(
+        dataSource.getForecast(coordinates),
+        throwsA(isA<NetworkException>()),
+      );
+    },
+  );
+
+  test(
+    'falha do Dio sem AppException anexada: NetworkException genérica',
+    () async {
+      when(
+        () => dio.get<Map<String, dynamic>>(
+          ApiConstants.forecast,
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: ApiConstants.forecast),
+          type: DioExceptionType.unknown,
+        ),
+      );
+
+      await expectLater(
+        dataSource.getForecast(coordinates),
+        throwsA(isA<NetworkException>()),
+      );
+    },
+  );
 }
