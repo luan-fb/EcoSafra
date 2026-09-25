@@ -75,6 +75,7 @@ dependencies:
   # Renderiza animações exportadas do After Effects (JSON) direto no canvas
   # do Flutter — sem vídeo/GIF, então escala sem perder nitidez.
   lottie: ^3.6.1
+  geocoding: ^5.0.0
 
 dev_dependencies:
   flutter_test:
