@@ -105,6 +105,26 @@ void main() {
         isA<ServerFailure>(),
       );
     });
+
+    // ROB-01: resposta incompleta é o `ServerException` que o data source
+    // lança antes de devolver o modelo — a falha não deve apagar o cache
+    // anterior, e a única forma de garantir isso é o repositório nunca
+    // chegar a chamar `_local.cache` nesse caminho.
+    test(
+      'com conexão mas o servidor falha: não grava (nem apaga) o cache',
+      () async {
+        when(() => networkInfo.isConnected).thenAnswer((_) async => true);
+        when(() => remote.getForecast(coordinates)).thenThrow(
+          const ServerException(
+            'A previsão veio incompleta. Tente novamente mais tarde.',
+          ),
+        );
+
+        await repository.refreshForecast(coordinates);
+
+        verifyNever(() => local.cache(any(), any()));
+      },
+    );
   });
 
   group('getCachedForecast', () {

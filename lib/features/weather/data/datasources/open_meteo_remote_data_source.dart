@@ -43,10 +43,14 @@ class OpenMeteoRemoteDataSource implements WeatherRemoteDataSource {
     }
 
     try {
-      return WeatherForecastModel(
-        hourly: _parseHourly(data['hourly'] as Map<String, dynamic>),
-        daily: _parseDaily(data['daily'] as Map<String, dynamic>),
-      );
+      final hourly = _parseHourly(data['hourly'] as Map<String, dynamic>);
+      final daily = _parseDaily(data['daily'] as Map<String, dynamic>);
+      if (hourly.isEmpty || daily.isEmpty) {
+        throw const ServerException(
+          'A previsão veio incompleta. Tente novamente mais tarde.',
+        );
+      }
+      return WeatherForecastModel(hourly: hourly, daily: daily);
     }
     // Resposta de uma API externa é fronteira do sistema: um campo ausente
     // ou de outro tipo não é bug nosso, é o contrato mudando do lado de
