@@ -230,6 +230,8 @@
   "scheduleFormCancel": "Cancelar",
   "@scheduleFormCancel": {"description": "Botão de cancelar o formulário de agendamento"},
 
+  "scheduleRetryButton": "Tentar de novo",
+  "@scheduleRetryButton": {"description": "Botão da tela de erro da agenda para carregar a lista de novo"},
   "scheduleStatusPastDue": "Data passada",
   "@scheduleStatusPastDue": {"description": "Rótulo de um agendamento não concluído cuja data já passou"},
 

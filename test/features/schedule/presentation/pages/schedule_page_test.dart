@@ -70,6 +70,7 @@ void main() {
       () => cubit.setCompleted(any(), completed: any(named: 'completed')),
     ).thenAnswer((_) async => true);
     when(() => cubit.removeSchedule(any())).thenAnswer((_) async {});
+    when(() => cubit.retry()).thenAnswer((_) async {});
     when(() => cubit.restoreSchedule(any())).thenAnswer((_) async {});
     when(() => cubit.currentWindow()).thenReturn(window);
   });
@@ -252,6 +253,18 @@ void main() {
         expect(picker.lastDate, window.last);
       },
     );
+
+    testWidgets('erro oferece "Tentar de novo", que chama retry', (
+      tester,
+    ) async {
+      stubState(const ScheduleState.error(CacheFailure('falhou')));
+      await pumpPage(tester);
+
+      await tester.tap(find.text('Tentar de novo'));
+      await tester.pump();
+
+      verify(() => cubit.retry()).called(1);
+    });
 
     testWidgets('FAB ausente em erro', (tester) async {
       stubState(const ScheduleState.error(CacheFailure('falhou')));

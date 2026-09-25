@@ -532,6 +532,58 @@ void main() {
     );
   });
 
+  group('tentar de novo', () {
+    late StreamController<List<FertilizationSchedule>> retryController;
+
+    setUp(() {
+      retryController = StreamController();
+      var calls = 0;
+      when(() => watchSchedules(const NoParams())).thenAnswer(
+        (_) =>
+            calls++ == 0 ? schedulesController.stream : retryController.stream,
+      );
+    });
+
+    tearDown(() => unawaited(retryController.close()));
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'depois do error, volta a loading e carrega pela assinatura nova',
+      build: buildCubit,
+      act: (cubit) async {
+        schedulesController.addError(Exception('banco'));
+        await flush();
+        await cubit.retry();
+        retryController.add([schedule('today', today)]);
+      },
+      expect: () => [
+        const ScheduleState.error(loadFailure),
+        const ScheduleState.loading(),
+        ScheduleState.loaded(
+          upcoming: [item(schedule('today', today))],
+          completed: const [],
+        ),
+      ],
+      verify: (_) => verify(() => watchSchedules(const NoParams())).called(2),
+    );
+
+    blocTest<ScheduleCubit, ScheduleState>(
+      'fora do error não faz nada',
+      build: buildCubit,
+      act: (cubit) async {
+        schedulesController.add([schedule('today', today)]);
+        await flush();
+        await cubit.retry();
+      },
+      expect: () => [
+        ScheduleState.loaded(
+          upcoming: [item(schedule('today', today))],
+          completed: const [],
+        ),
+      ],
+      verify: (_) => verify(() => watchSchedules(const NoParams())).called(1),
+    );
+  });
+
   group('ações (AGD-01, AGD-12, AGD-24, AGD-28, AGD-29, AGD-30)', () {
     final forToday = schedule('today', today);
     final loaded = ScheduleState.loaded(

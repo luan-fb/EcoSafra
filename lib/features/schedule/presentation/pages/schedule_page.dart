@@ -131,6 +131,7 @@ class _ScheduleViewState extends State<ScheduleView> {
             ScheduleStatus.error => _ErrorView(
               message:
                   state.failure?.message ?? context.l10n.scheduleErrorTitle,
+              onRetry: () => unawaited(context.read<ScheduleCubit>().retry()),
             ),
             ScheduleStatus.loaded => _ScheduleSections(
               state: state,
@@ -445,9 +446,10 @@ class _EmptyView extends StatelessWidget {
 }
 
 class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message});
+  const _ErrorView({required this.message, required this.onRetry});
 
   final String message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -467,6 +469,11 @@ class _ErrorView extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: context.texts.bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: Text(context.l10n.scheduleRetryButton),
             ),
           ],
         ),

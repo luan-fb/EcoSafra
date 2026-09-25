@@ -39,7 +39,8 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     required GetForecast getForecast,
     required EvaluateScheduleRisk evaluateScheduleRisk,
     required Clock clock,
-  }) : _createSchedule = createSchedule,
+  }) : _watchSchedules = watchSchedules,
+       _createSchedule = createSchedule,
        _updateSchedule = updateSchedule,
        _setScheduleCompleted = setScheduleCompleted,
        _deleteSchedule = deleteSchedule,
@@ -49,9 +50,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
        _evaluateScheduleRisk = evaluateScheduleRisk,
        _clock = clock,
        super(const ScheduleState.loading()) {
-    _schedulesSubscription = watchSchedules(
-      const NoParams(),
-    ).listen(_onSchedules, onError: _onSchedulesError);
+    _watch();
     unawaited(_loadForecast());
   }
 
@@ -59,6 +58,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     'Não foi possível carregar a agenda.',
   );
 
+  final WatchSchedules _watchSchedules;
   final CreateSchedule _createSchedule;
   final UpdateSchedule _updateSchedule;
   final SetScheduleCompleted _setScheduleCompleted;
@@ -69,8 +69,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   final EvaluateScheduleRisk _evaluateScheduleRisk;
   final Clock _clock;
 
-  late final StreamSubscription<List<FertilizationSchedule>>
-  _schedulesSubscription;
+  late StreamSubscription<List<FertilizationSchedule>> _schedulesSubscription;
   StreamSubscription<Object?>? _forecastSubscription;
 
   /// `null` até a primeira emissão do stream: a previsão sozinha não pode
@@ -90,6 +89,16 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   /// uma janela guardada no estado ficaria com a data de ontem se a tela
   /// estivesse aberta na virada do dia.
   SchedulingWindow currentWindow() => SchedulingWindow.startingAt(_clock.now());
+
+  /// Tenta carregar a lista de novo depois de uma falha: sem ela, a tela de
+  /// erro só sairia com uma nova emissão, e nada na tela provoca uma.
+  Future<void> retry() async {
+    if (state.status != ScheduleStatus.error) return;
+    await _schedulesSubscription.cancel();
+    if (isClosed) return;
+    emit(const ScheduleState.loading());
+    _watch();
+  }
 
   Future<void> addSchedule(DateTime date, {String? note}) async {
     final result = await _createSchedule(
@@ -144,6 +153,12 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     if (pending != null && (await pending).isLeft()) return;
     final result = await _restoreSchedule(schedule);
     result.match(_emitActionFailure, (_) {});
+  }
+
+  void _watch() {
+    _schedulesSubscription = _watchSchedules(
+      const NoParams(),
+    ).listen(_onSchedules, onError: _onSchedulesError);
   }
 
   void _onSchedules(List<FertilizationSchedule> schedules) {
