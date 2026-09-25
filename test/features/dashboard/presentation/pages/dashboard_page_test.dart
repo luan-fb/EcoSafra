@@ -176,6 +176,27 @@ void main() {
     },
   );
 
+  testWidgets(
+    'voltar ao app recalcula o aviso da agenda (virada do dia)',
+    (tester) async {
+      stubDashboard(const DashboardState.loading());
+      stubScheduleAlert(const ScheduleAlertState());
+      await pumpDashboard(tester);
+
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      verifyNever(() => scheduleAlertCubit.refresh());
+
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      verify(() => scheduleAlertCubit.refresh()).called(1);
+    },
+  );
+
   testWidgets('AGD-19: tocar no aviso abre a Agenda', (tester) async {
     stubDashboard(const DashboardState.loading());
     stubScheduleAlert(

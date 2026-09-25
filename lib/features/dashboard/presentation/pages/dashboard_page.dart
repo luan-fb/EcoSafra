@@ -50,96 +50,130 @@ class DashboardView extends StatelessWidget {
     // tela — ela não precisa "saber" disso, só some da árvore.
     final user = context.read<AuthCubit>().state.user;
 
-    return Scaffold(
-      // Sem `appBar:` de propósito — o cabeçalho de marca (`DashboardHeader`)
-      // faz esse papel, incluindo o botão que abre este `drawer:`.
-      drawer: const AppDrawer(),
-      body: BlocListener<DashboardCubit, DashboardState>(
-        // A previsão nova só interessa ao aviso quando o painel terminou de
-        // carregar — repassar `loading`/`error` apagaria a previsão anterior
-        // do `ScheduleAlertCubit`, que ainda vale enquanto uma nova não chega.
-        listenWhen: (previous, current) =>
-            current.status == DashboardStatus.loaded,
-        listener: (context, state) =>
-            context.read<ScheduleAlertCubit>().updateForecast(state.forecast),
-        child: RefreshIndicator(
-          onRefresh: context.read<DashboardCubit>().loadForecast,
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                // `Builder` dá um `context` que já fica ABAIXO do Scaffold na
-                // árvore — é o que permite `Scaffold.of(context).openDrawer()`
-                // funcionar. O `context` do método `build` acima ainda não
-                // serve: ele existe num ponto anterior à criação do Scaffold.
-                child: Builder(
-                  builder: (context) {
-                    // `?.split(' ').first` só cai no fallback se o nome for
-                    // `null` — uma string vazia (não-nula) passaria direto e
-                    // a saudação ficaria "Boa tarde, " sem nome nenhum.
-                    final firstName = user?.displayName
-                        ?.trim()
-                        .split(' ')
-                        .first;
-                    return DashboardHeader(
-                      userName: (firstName == null || firstName.isEmpty)
-                          ? context.l10n.dashboardDefaultUserName
-                          : firstName,
-                      userPhotoUrl: user?.photoUrl,
-                      onMenuTap: () => Scaffold.of(context).openDrawer(),
-                    );
-                  },
-                ),
-              ),
-              // Fora da `ForecastSection` de propósito: o aviso da agenda
-              // segue valendo com a previsão carregando ou com erro (o
-              // lembrete de hoje/amanhã não depende de chuva).
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  0,
-                ),
-                sliver: SliverToBoxAdapter(
-                  child: ScheduleAlertBanner(
-                    onTap: () => context.goNamed(AppRoute.schedule.name),
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                sliver: SliverToBoxAdapter(
-                  child: BlocBuilder<DashboardCubit, DashboardState>(
-                    builder: (context, state) => switch (state.status) {
-                      DashboardStatus.initial ||
-                      DashboardStatus.loading => const _LoadingSection(),
-                      DashboardStatus.error => _ErrorSection(
-                        message:
-                            state.failure?.message ??
-                            context.l10n.dashboardErrorTitle,
-                      ),
-                      DashboardStatus.loaded => ForecastSection(
-                        forecast: state.forecast!,
-                        advice: state.advice!,
-                      ),
+    return _RefreshAlertOnResume(
+      child: Scaffold(
+        // Sem `appBar:` de propósito — o cabeçalho de marca (`DashboardHeader`)
+        // faz esse papel, incluindo o botão que abre este `drawer:`.
+        drawer: const AppDrawer(),
+        body: BlocListener<DashboardCubit, DashboardState>(
+          // A previsão nova só interessa ao aviso quando o painel terminou de
+          // carregar — repassar `loading`/`error` apagaria a previsão anterior
+          // do `ScheduleAlertCubit`, que ainda vale enquanto uma nova não chega.
+          listenWhen: (previous, current) =>
+              current.status == DashboardStatus.loaded,
+          listener: (context, state) =>
+              context.read<ScheduleAlertCubit>().updateForecast(state.forecast),
+          child: RefreshIndicator(
+            onRefresh: context.read<DashboardCubit>().loadForecast,
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  // `Builder` dá um `context` que já fica ABAIXO do Scaffold na
+                  // árvore — é o que permite `Scaffold.of(context).openDrawer()`
+                  // funcionar. O `context` do método `build` acima ainda não
+                  // serve: ele existe num ponto anterior à criação do Scaffold.
+                  child: Builder(
+                    builder: (context) {
+                      // `?.split(' ').first` só cai no fallback se o nome for
+                      // `null` — uma string vazia (não-nula) passaria direto e
+                      // a saudação ficaria "Boa tarde, " sem nome nenhum.
+                      final firstName = user?.displayName
+                          ?.trim()
+                          .split(' ')
+                          .first;
+                      return DashboardHeader(
+                        userName: (firstName == null || firstName.isEmpty)
+                            ? context.l10n.dashboardDefaultUserName
+                            : firstName,
+                        userPhotoUrl: user?.photoUrl,
+                        onMenuTap: () => Scaffold.of(context).openDrawer(),
+                      );
                     },
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: Builder(
-                  builder: (context) {
-                    final bottom = MediaQuery.paddingOf(context).bottom;
-                    return SizedBox(height: bottom + AppSpacing.md);
-                  },
+                // Fora da `ForecastSection` de propósito: o aviso da agenda
+                // segue valendo com a previsão carregando ou com erro (o
+                // lembrete de hoje/amanhã não depende de chuva).
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: ScheduleAlertBanner(
+                      onTap: () => context.goNamed(AppRoute.schedule.name),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                SliverPadding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  sliver: SliverToBoxAdapter(
+                    child: BlocBuilder<DashboardCubit, DashboardState>(
+                      builder: (context, state) => switch (state.status) {
+                        DashboardStatus.initial ||
+                        DashboardStatus.loading => const _LoadingSection(),
+                        DashboardStatus.error => _ErrorSection(
+                          message:
+                              state.failure?.message ??
+                              context.l10n.dashboardErrorTitle,
+                        ),
+                        DashboardStatus.loaded => ForecastSection(
+                          forecast: state.forecast!,
+                          advice: state.advice!,
+                        ),
+                      },
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Builder(
+                    builder: (context) {
+                      final bottom = MediaQuery.paddingOf(context).bottom;
+                      return SizedBox(height: bottom + AppSpacing.md);
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Recalcula o aviso da agenda quando o app volta ao primeiro plano: é o
+/// momento em que um "amanhã" pode ter virado "hoje".
+class _RefreshAlertOnResume extends StatefulWidget {
+  const _RefreshAlertOnResume({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_RefreshAlertOnResume> createState() => _RefreshAlertOnResumeState();
+}
+
+class _RefreshAlertOnResumeState extends State<_RefreshAlertOnResume> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () => context.read<ScheduleAlertCubit>().refresh(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _LoadingSection extends StatelessWidget {

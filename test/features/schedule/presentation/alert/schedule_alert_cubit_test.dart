@@ -289,6 +289,26 @@ void main() {
       expect: () => const [tomorrowReminder, todayReminder],
     );
 
+    blocTest<ScheduleAlertCubit, ScheduleAlertState>(
+      'refresh vira o dia sem precisar de lista ou previsão nova',
+      setUp: () => current = now,
+      build: () => buildCubit(clock: Clock(() => current)),
+      act: (cubit) async {
+        schedulesController.add([schedule('a', tomorrow)]);
+        await flush();
+        current = DateTime(2026, 9, 24, 0, 5);
+        cubit.refresh();
+      },
+      expect: () => const [tomorrowReminder, todayReminder],
+    );
+
+    blocTest<ScheduleAlertCubit, ScheduleAlertState>(
+      'refresh antes da primeira lista não inventa aviso',
+      build: buildCubit,
+      act: (cubit) => cubit.refresh(),
+      expect: () => const <ScheduleAlertState>[],
+    );
+
     test('lê o relógio a cada cálculo', () async {
       current = now;
       final evaluate = MockEvaluateScheduleAlert();

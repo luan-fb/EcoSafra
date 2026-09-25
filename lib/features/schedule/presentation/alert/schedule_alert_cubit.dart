@@ -42,6 +42,13 @@ class ScheduleAlertCubit extends Cubit<ScheduleAlertState> {
     _evaluate();
   }
 
+  /// Recalcula com a data de agora. Sem lista ou previsão nova, "amanhã"
+  /// continuaria "amanhã" depois da meia-noite com o painel aberto.
+  void refresh() {
+    if (isClosed) return;
+    _evaluate();
+  }
+
   void _onSchedules(List<FertilizationSchedule> schedules) {
     _schedules = schedules;
     _evaluate();
