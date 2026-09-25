@@ -346,12 +346,17 @@ class _ScheduleCardState extends State<_ScheduleCard> {
   }
 
   Future<void> _edit() async {
+    // Desmarcar um concluído o mostra editável antes de gravar; editar nesse
+    // meio-tempo abriria o formulário para um card prestes a mudar de seção.
+    if (_pendingCompleted != null) return;
     final result = await ScheduleFormSheet.show(
       context,
       window: _cubit.currentWindow(),
       initial: widget.item,
     );
-    if (result != null && mounted) {
+    // Sem `mounted`: a gravação não usa o `context`, e o card pode ter sido
+    // trocado enquanto o formulário estava aberto.
+    if (result != null && !_cubit.isClosed) {
       unawaited(
         _cubit.editSchedule(
           widget.item.schedule.id,

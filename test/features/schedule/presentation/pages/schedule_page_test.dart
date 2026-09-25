@@ -73,6 +73,7 @@ void main() {
     when(() => cubit.retry()).thenAnswer((_) async {});
     when(() => cubit.restoreSchedule(any())).thenAnswer((_) async {});
     when(() => cubit.currentWindow()).thenReturn(window);
+    when(() => cubit.isClosed).thenReturn(false);
   });
 
   FertilizationSchedule schedule(
@@ -523,6 +524,28 @@ void main() {
 
         await tester.pump(AppMotion.medium ~/ 2);
         verify(() => cubit.setCompleted('s1', completed: true)).called(1);
+      },
+    );
+
+    testWidgets(
+      'ao desmarcar um concluído, o card não abre a edição antes de gravar',
+      (tester) async {
+        stubState(
+          ScheduleState.loaded(
+            upcoming: const [],
+            completed: [completedItem(schedule('s2', today, completed: true))],
+          ),
+        );
+        await pumpPage(tester, disableAnimations: false);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pump(AppMotion.medium ~/ 3);
+        await tester.tap(find.byType(ScheduleTile), warnIfMissed: false);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ScheduleFormSheet), findsNothing);
+        verify(() => cubit.setCompleted('s2', completed: false)).called(1);
       },
     );
 
