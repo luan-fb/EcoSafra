@@ -57,6 +57,9 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   static const _loadFailure = CacheFailure(
     'Não foi possível carregar a agenda.',
   );
+  static const _deleteFailure = CacheFailure(
+    'Não foi possível excluir o agendamento.',
+  );
 
   final WatchSchedules _watchSchedules;
   final CreateSchedule _createSchedule;
@@ -139,22 +142,27 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     _hiddenIds.add(id);
     _emitLoaded();
 
-    final deletion = _pendingDeletes[id] = _deleteSchedule(id);
-    final Either<Failure, void> result;
-    try {
-      result = await deletion;
-    } finally {
-      // Sai do mapa mesmo se o caso de uso lançar: senão o Desfazer
-      // esperaria para sempre uma exclusão que falhou. `remove` devolve a
-      // própria exclusão, já concluída.
-      unawaited(_pendingDeletes.remove(id));
-    }
+    final deletion = _pendingDeletes[id] = _deleteSafely(id);
+    final result = await deletion;
+    // `remove` devolve a própria exclusão, já concluída.
+    unawaited(_pendingDeletes.remove(id));
     result.match((failure) {
       _hiddenIds.remove(id);
       if (isClosed) return;
       _emitLoaded();
       _emitActionFailure(failure);
     }, (_) {});
+  }
+
+  /// O repositório já converte erros em `Failure`; uma exceção que escape
+  /// ainda assim vira falha, para o item voltar à lista em vez de ficar
+  /// oculto, e o Desfazer, que espera esta exclusão, não relançá-la.
+  Future<Either<Failure, void>> _deleteSafely(String id) async {
+    try {
+      return await _deleteSchedule(id);
+    } on Object {
+      return const Left(_deleteFailure);
+    }
   }
 
   /// O item volta pela próxima emissão do stream. O id deixa de ser oculto

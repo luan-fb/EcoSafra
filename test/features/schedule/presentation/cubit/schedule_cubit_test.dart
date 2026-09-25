@@ -955,21 +955,27 @@ void main() {
     );
 
     test(
-      'exclusão que lança exceção não deixa o Desfazer seguinte preso nela',
+      'exclusão que lança exceção vira falha: o item volta e o Desfazer '
+      'não restaura',
       () async {
         when(
           () => deleteSchedule('today'),
         ).thenAnswer((_) async => throw StateError('banco'));
-        when(
-          () => restoreSchedule(forToday),
-        ).thenAnswer((_) async => const Right(null));
         final cubit = buildCubit();
         await loadBoth();
 
-        await expectLater(cubit.removeSchedule('today'), throwsStateError);
-        await cubit.restoreSchedule(forToday);
+        final removing = cubit.removeSchedule('today');
+        final restoring = cubit.restoreSchedule(forToday);
+        await removing;
+        await restoring;
 
-        verify(() => restoreSchedule(forToday)).called(1);
+        expect(
+          cubit.state,
+          both.withActionFailure(
+            const CacheFailure('Não foi possível excluir o agendamento.'),
+          ),
+        );
+        verifyNever(() => restoreSchedule(forToday));
         await cubit.close();
       },
     );
