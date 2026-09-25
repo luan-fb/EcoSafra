@@ -97,12 +97,15 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
   /// Tenta carregar a lista de novo depois de uma falha: sem ela, a tela de
   /// erro só sairia com uma nova emissão, e nada na tela provoca uma.
+  ///
+  /// Sai do estado de erro antes de esperar o cancelamento: uma segunda
+  /// chamada nesse intervalo já não passa da checagem.
   Future<void> retry() async {
-    if (state.status != ScheduleStatus.error) return;
-    await _schedulesSubscription.cancel();
-    if (_closing) return;
+    if (_closing || state.status != ScheduleStatus.error) return;
     emit(const ScheduleState.loading());
+    final previous = _schedulesSubscription;
     _watch();
+    await previous.cancel();
   }
 
   Future<void> addSchedule(DateTime date, {String? note}) async {

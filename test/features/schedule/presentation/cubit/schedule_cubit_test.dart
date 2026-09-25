@@ -566,6 +566,21 @@ void main() {
       verify: (_) => verify(() => watchSchedules(const NoParams())).called(2),
     );
 
+    test('duas chamadas seguidas assinam a lista uma vez só', () async {
+      final cubit = buildCubit();
+      schedulesController.addError(Exception('banco'));
+      await flush();
+
+      final first = cubit.retry();
+      final second = cubit.retry();
+      await first;
+      await second;
+
+      verify(() => watchSchedules(const NoParams())).called(2);
+      expect(retryController.hasListener, isTrue);
+      await cubit.close();
+    });
+
     blocTest<ScheduleCubit, ScheduleState>(
       'fora do error não faz nada',
       build: buildCubit,
