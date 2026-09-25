@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/core/usecase/usecase.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_cubit.dart';
@@ -19,12 +20,27 @@ class MockGetForecast extends Mock implements GetForecast {}
 void main() {
   late MockGetCurrentLocation getCurrentLocation;
   late MockGetForecast getForecast;
-  const evaluate = EvaluateApplicationSafety();
+  // Relógio fixo na meia-noite do dia dos testes: com pontos horários
+  // cobrindo o dia inteiro, `hourlyFrom` sempre encontra cobertura, seja
+  // qual for o `hour` passado a `forecastAt`.
+  final evaluate = EvaluateApplicationSafety(
+    clock: Clock.fixed(DateTime(2026, 9, 25)),
+  );
   const coordinates = Coordinates(latitude: -15.6, longitude: -56.1);
 
   WeatherForecast forecastAt(int hour) => WeatherForecast(
     coordinates: coordinates,
-    hourly: const [],
+    hourly: [
+      for (var h = 0; h < 24; h++)
+        HourlyForecastPoint(
+          time: DateTime(2026, 9, 25, h),
+          precipitation: 0,
+          precipitationProbability: 0,
+          temperature: 20,
+          relativeHumidity: 60,
+          windSpeed: 10,
+        ),
+    ],
     daily: const [],
     fetchedAt: DateTime(2026, 9, 25, hour),
   );

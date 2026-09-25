@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:dio/dio.dart';
 import 'package:ecosafra/core/database/app_database.dart';
 import 'package:ecosafra/core/network/api_constants.dart';
@@ -47,7 +48,7 @@ class WeatherModule extends Module {
         (i) => GetForecast(i.get<WeatherRepository>()),
       )
       ..addSingleton<EvaluateApplicationSafety>(
-        (i) => const EvaluateApplicationSafety(),
+        (i) => EvaluateApplicationSafety(clock: i.get<Clock>()),
       )
       ..addSingleton<DeviceLocationDataSource>(
         (i) => const GeolocatorLocationDataSource(),

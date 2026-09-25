@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:ecosafra/core/error/failure.dart';
 import 'package:ecosafra/core/usecase/usecase.dart';
 import 'package:ecosafra/features/weather/domain/entities/fertilizer_advice.dart';
@@ -17,7 +18,11 @@ import 'package:fpdart/fpdart.dart';
 /// dados reais de adoção.
 class EvaluateApplicationSafety
     implements SyncUseCase<FertilizerAdvice, WeatherForecast> {
-  const EvaluateApplicationSafety();
+  const EvaluateApplicationSafety({this.clock = const Clock()});
+
+  /// Fonte da hora atual — a janela de 24h/48h parte dela. `Clock.fixed` nos
+  /// testes.
+  final Clock clock;
 
   /// Acima disso em 24h, o insumo tem risco alto de escoar antes de agir.
   static const double dangerThresholdMm = 10;
@@ -25,10 +30,18 @@ class EvaluateApplicationSafety
   /// Entre isto e o limiar de perigo, ainda dá pra aplicar, mas com cautela.
   static const double cautionThresholdMm = 3;
 
+  static const _noCoverageFailure = CacheFailure(
+    'A previsão salva não cobre mais as próximas horas. '
+    'Conecte-se à internet para atualizar.',
+  );
+
   @override
   Either<Failure, FertilizerAdvice> call(WeatherForecast params) {
-    final rainNext24h = _sumPrecipitation(params, hours: 24);
-    final rainNext48h = _sumPrecipitation(params, hours: 48);
+    final hourlyFromNow = params.hourlyFrom(clock.now());
+    if (hourlyFromNow.isEmpty) return const Left(_noCoverageFailure);
+
+    final rainNext24h = _sumPrecipitation(hourlyFromNow, hours: 24);
+    final rainNext48h = _sumPrecipitation(hourlyFromNow, hours: 48);
 
     final level = switch (rainNext24h) {
       > dangerThresholdMm => AdviceLevel.danger,
@@ -48,10 +61,12 @@ class EvaluateApplicationSafety
     );
   }
 
-  double _sumPrecipitation(WeatherForecast forecast, {required int hours}) =>
-      forecast.hourly
-          .take(hours)
-          .fold(0, (total, point) => total + point.precipitation);
+  double _sumPrecipitation(
+    List<HourlyForecastPoint> hourlyFromNow, {
+    required int hours,
+  }) => hourlyFromNow
+      .take(hours)
+      .fold(0, (total, point) => total + point.precipitation);
 
   /// Quanto mais chuva além do limiar de perigo, maior a fração do insumo
   /// que se estima perdida por escoamento — cresce com o excesso, mas nunca
