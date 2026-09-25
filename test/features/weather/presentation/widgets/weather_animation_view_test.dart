@@ -74,7 +74,7 @@ void main() {
   String assetOf(LottieBuilder builder) =>
       (builder.lottie as AssetLottie).assetName;
 
-  group('WLOT-05: asset da animação mapeada', () {
+  group('asset da animação mapeada', () {
     for (final (code, temperature, expected) in [
       (0, warm, WeatherAnimation.sunny),
       (2, warm, WeatherAnimation.partlyCloudy),
@@ -105,7 +105,7 @@ void main() {
     }
   });
 
-  testWidgets('WLOT-06: toca em loop quando o sistema permite animação', (
+  testWidgets('toca em loop quando o sistema permite animação', (
     tester,
   ) async {
     await tester.pumpWidget(host(0));
@@ -115,7 +115,7 @@ void main() {
     expect(builder.repeat, isTrue);
   });
 
-  group('WLOT-07: "remover animações" ativo', () {
+  group('"remover animações" ativo', () {
     testWidgets('para no quadro fixo', (tester) async {
       disableAnimations(tester);
       await tester.pumpWidget(host(0));
@@ -138,7 +138,7 @@ void main() {
     }
   });
 
-  testWidgets('WLOT-08: asset com erro cai no ícone estático e é reportado', (
+  testWidgets('asset com erro cai no ícone estático e é reportado', (
     tester,
   ) async {
     final bundle = _FailingAssetBundle();
@@ -155,7 +155,7 @@ void main() {
     expect(tester.takeException(), isFlutterError);
   });
 
-  testWidgets('WLOT-09: a animação não expõe nada ao leitor de tela', (
+  testWidgets('a animação não expõe nada ao leitor de tela', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
@@ -167,13 +167,13 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('WLOT-15: limita a 30 quadros por segundo', (tester) async {
+  testWidgets('limita a 30 quadros por segundo', (tester) async {
     await tester.pumpWidget(host(0));
     expect(lottieIn(tester).frameRate, const FrameRate(30));
   });
 
   group('troca de clima', () {
-    testWidgets('WLOT-10: cross-fade quando a animação muda', (tester) async {
+    testWidgets('cross-fade quando a animação muda', (tester) async {
       await tester.pumpWidget(host(0));
       await tester.pumpWidget(host(61));
       await tester.pump(const Duration(milliseconds: 100));
@@ -207,7 +207,7 @@ void main() {
       expect(assetOf(lottieIn(tester)), WeatherAnimation.rainy.assetPath);
     });
 
-    testWidgets('WLOT-11: mesma animação não reinicia', (tester) async {
+    testWidgets('mesma animação não reinicia', (tester) async {
       await tester.pumpWidget(host(61));
       final before = tester.state(find.byType(LottieBuilder));
 
@@ -220,7 +220,7 @@ void main() {
       expect(tester.state(find.byType(LottieBuilder)), same(before));
     });
 
-    testWidgets('WLOT-17: sem transição com "remover animações"', (
+    testWidgets('sem transição com "remover animações"', (
       tester,
     ) async {
       disableAnimations(tester);

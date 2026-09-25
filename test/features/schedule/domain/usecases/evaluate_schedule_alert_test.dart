@@ -70,7 +70,7 @@ void main() {
   final inThreeDays = DateTime(2026, 9, 26);
   final inFourDays = DateTime(2026, 9, 27);
 
-  test('AGD-15: dois agendamentos em risco geram alerta com contagem 2', () {
+  test('dois agendamentos em risco geram alerta com contagem 2', () {
     final result = run(
       [schedule(inThreeDays), schedule(inFourDays)],
       forecast: weekForecast(heavyOn: {inThreeDays, inFourDays}),
@@ -79,19 +79,19 @@ void main() {
     expect(result, const ScheduleRiskAlert(2));
   });
 
-  test('AGD-16: só um agendamento para hoje gera lembrete de hoje', () {
+  test('só um agendamento para hoje gera lembrete de hoje', () {
     final result = run([schedule(today)], forecast: weekForecast());
 
     expect(result, const ScheduleTodayReminder());
   });
 
-  test('AGD-17: só um agendamento para amanhã gera lembrete de amanhã', () {
+  test('só um agendamento para amanhã gera lembrete de amanhã', () {
     final result = run([schedule(tomorrow)], forecast: weekForecast());
 
     expect(result, const ScheduleTomorrowReminder());
   });
 
-  test('AGD-17: amanhã é o dia seguinte no calendário na virada do mês', () {
+  test('amanhã é o dia seguinte no calendário na virada do mês', () {
     final result = run(
       [schedule(DateTime(2026, 10))],
       at: DateTime(2026, 9, 30, 23, 59),
@@ -100,7 +100,7 @@ void main() {
     expect(result, const ScheduleTomorrowReminder());
   });
 
-  test('AGD-16/17: hoje e amanhã juntos geram só o lembrete de hoje', () {
+  test('hoje e amanhã juntos geram só o lembrete de hoje', () {
     final result = run(
       [schedule(tomorrow), schedule(today)],
       forecast: weekForecast(),
@@ -109,17 +109,17 @@ void main() {
     expect(result, const ScheduleTodayReminder());
   });
 
-  test('AGD-18: sem risco nem agendamento para hoje ou amanhã, sem aviso', () {
+  test('sem risco nem agendamento para hoje ou amanhã, sem aviso', () {
     final result = run([schedule(inThreeDays)], forecast: weekForecast());
 
     expect(result, isNull);
   });
 
-  test('AGD-18: sem agendamentos, sem aviso', () {
+  test('sem agendamentos, sem aviso', () {
     expect(run(const [], forecast: weekForecast()), isNull);
   });
 
-  test('AGD-20: agendamento concluído em risco é ignorado', () {
+  test('agendamento concluído em risco é ignorado', () {
     final result = run(
       [schedule(inThreeDays, completed: true)],
       forecast: weekForecast(heavyOn: {inThreeDays}),
@@ -128,7 +128,7 @@ void main() {
     expect(result, isNull);
   });
 
-  test('AGD-20: agendamento concluído para hoje não gera lembrete', () {
+  test('agendamento concluído para hoje não gera lembrete', () {
     final result = run(
       [schedule(today, completed: true)],
       forecast: weekForecast(),
@@ -137,7 +137,7 @@ void main() {
     expect(result, isNull);
   });
 
-  test('AGD-20: agendamento de ontem é ignorado, mesmo com chuva forte', () {
+  test('agendamento de ontem é ignorado, mesmo com chuva forte', () {
     final result = run(
       [schedule(yesterday)],
       forecast: forecast({yesterday: heavyRain, today: lightRain}),

@@ -81,7 +81,7 @@ void main() {
 
   group('rótulos e cores', () {
     testWidgets(
-      'SCHEDUI-05/06: previsão favorável usa o verde e o rótulo certo',
+      'previsão favorável usa o verde e o rótulo certo',
       (tester) async {
         await pumpTile(
           tester,
@@ -100,7 +100,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-05/06: risco usa o vermelho, pulsa e mostra a chuva em mm',
+      'risco usa o vermelho, pulsa e mostra a chuva em mm',
       (tester) async {
         await pumpTile(
           tester,
@@ -121,7 +121,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-07: sem previsão de chuva, o mm não aparece mesmo em risco',
+      'sem previsão de chuva, o mm não aparece mesmo em risco',
       (tester) async {
         await pumpTile(
           tester,
@@ -137,7 +137,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-07: sem risco, o mm não aparece mesmo com chuva prevista',
+      'sem risco, o mm não aparece mesmo com chuva prevista',
       (tester) async {
         await pumpTile(
           tester,
@@ -154,7 +154,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-05/06: sem previsão usa o neutro',
+      'sem previsão usa o neutro',
       (tester) async {
         await pumpTile(
           tester,
@@ -176,7 +176,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-05/06: data passada usa o amarelo no lugar do risco',
+      'data passada usa o amarelo no lugar do risco',
       (tester) async {
         await pumpTile(
           tester,
@@ -222,7 +222,7 @@ void main() {
       expect(find.text('null'), findsNothing);
     });
 
-    testWidgets('SCHEDUI-05: dia da semana por extenso maiúsculo', (
+    testWidgets('dia da semana por extenso maiúsculo', (
       tester,
     ) async {
       await pumpTile(
@@ -299,7 +299,7 @@ void main() {
 
   group('concluído', () {
     testWidgets(
-      'AGD-28: concluído não mostra rótulo de risco',
+      'concluído não mostra rótulo de risco',
       (tester) async {
         await pumpTile(
           tester,
@@ -316,7 +316,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-20: concluído em risco não pulsa mais (histórico, não alerta)',
+      'concluído em risco não pulsa mais (histórico, não alerta)',
       (tester) async {
         await pumpTile(
           tester,
@@ -331,7 +331,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-05/06: concluído usa o bloco neutro e não pulsa',
+      'concluído usa o bloco neutro e não pulsa',
       (tester) async {
         await pumpTile(
           tester,
@@ -356,7 +356,7 @@ void main() {
       },
     );
 
-    testWidgets('AGD-28: concluído mostra o check marcado', (tester) async {
+    testWidgets('concluído mostra o check marcado', (tester) async {
       await pumpTile(
         tester,
         ScheduleItem(
@@ -370,7 +370,7 @@ void main() {
     });
 
     testWidgets(
-      'AGD-27: toque no concluído não chama onEdit',
+      'toque no concluído não chama onEdit',
       (tester) async {
         var edited = false;
         await pumpTile(
@@ -407,7 +407,7 @@ void main() {
     });
 
     testWidgets(
-      'AGD-28: marcar o check chama onToggleCompleted(true)',
+      'marcar o check chama onToggleCompleted(true)',
       (tester) async {
         bool? toggledTo;
         await pumpTile(
@@ -426,7 +426,7 @@ void main() {
     );
 
     testWidgets(
-      'AGD-29: desmarcar o check chama onToggleCompleted(false)',
+      'desmarcar o check chama onToggleCompleted(false)',
       (tester) async {
         bool? toggledTo;
         await pumpTile(
@@ -447,7 +447,7 @@ void main() {
 
   group('transições', () {
     testWidgets(
-      'SCHEDUI-03: concluir anima o estilo do texto com animação implícita',
+      'concluir anima o estilo do texto com animação implícita',
       (tester) async {
         await pumpTile(
           tester,
@@ -491,7 +491,7 @@ void main() {
 
   group('semântica', () {
     testWidgets(
-      'SCHEDUI-09: rótulo traz dia da semana, data, status e observação',
+      'rótulo traz dia da semana, data, status e observação',
       (tester) async {
         await pumpTile(
           tester,
@@ -531,7 +531,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-15: ação de acessibilidade "Excluir" chama onDelete',
+      'ação de acessibilidade "Excluir" chama onDelete',
       (tester) async {
         var deleted = false;
         await pumpTile(

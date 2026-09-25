@@ -131,7 +131,7 @@ void main() {
 
   group('seções', () {
     testWidgets(
-      'AGD-08: mostra "Próximos" e "Concluídos" quando há dos dois',
+      'mostra "Próximos" e "Concluídos" quando há dos dois',
       (tester) async {
         stubState(
           ScheduleState.loaded(
@@ -204,7 +204,7 @@ void main() {
 
   group('FAB', () {
     testWidgets(
-      'AGD-01: toque no FAB abre o formulário e confirmar chama addSchedule',
+      'toque no FAB abre o formulário e confirmar chama addSchedule',
       (tester) async {
         stubState(
           const ScheduleState.loaded(
@@ -303,7 +303,7 @@ void main() {
     );
 
     testWidgets(
-      'AGD-24: tocar num agendamento não concluído abre o formulário preenchido',
+      'tocar num agendamento não concluído abre o formulário preenchido',
       (tester) async {
         final target = schedule('s1', window.last, note: 'ureia');
         stubState(
@@ -343,7 +343,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-18: fechar o formulário de criação sem salvar não chama '
+      'fechar o formulário de criação sem salvar não chama '
       'addSchedule',
       (tester) async {
         stubState(loadedWith());
@@ -366,7 +366,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-17: salvar a edição com outra observação chama editSchedule',
+      'salvar a edição com outra observação chama editSchedule',
       (tester) async {
         final target = schedule('s1', window.first, note: 'ureia');
         stubState(loadedWith(upcoming: [upcomingItem(target)]));
@@ -397,7 +397,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-17: fechar a edição sem salvar não chama editSchedule',
+      'fechar a edição sem salvar não chama editSchedule',
       (tester) async {
         final target = schedule('s1', window.first, note: 'ureia');
         stubState(loadedWith(upcoming: [upcomingItem(target)]));
@@ -433,7 +433,7 @@ void main() {
     );
 
     testWidgets(
-      'AGD-27: tocar num agendamento concluído não abre o formulário',
+      'tocar num agendamento concluído não abre o formulário',
       (tester) async {
         stubState(
           loadedWith(
@@ -504,7 +504,7 @@ void main() {
         tester.widget<AnimatedCheck>(find.byType(AnimatedCheck));
 
     testWidgets(
-      'SCHEDUI-19: o check se desenha no próprio card e só grava em '
+      'o check se desenha no próprio card e só grava em '
       'AppMotion.medium',
       (tester) async {
         await pumpWithUpcoming(tester);
@@ -560,7 +560,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-21: com redução de movimento, grava na hora',
+      'com redução de movimento, grava na hora',
       (tester) async {
         await pumpWithUpcoming(tester, disableAnimations: true);
 
@@ -626,7 +626,7 @@ void main() {
     }
 
     testWidgets(
-      'SCHEDUI-10, 11: swipe completo para a esquerda tira o card, chama '
+      'swipe completo para a esquerda tira o card, chama '
       'removeSchedule e mostra o snackbar com Desfazer',
       (tester) async {
         stubRemovable();
@@ -643,7 +643,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-10: o fundo do swipe é AppColors.danger com a lixeira',
+      'o fundo do swipe é AppColors.danger com a lixeira',
       (tester) async {
         stubRemovable();
         await pumpPage(tester);
@@ -674,7 +674,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-12: tocar em "Desfazer" chama restoreSchedule com o '
+      'tocar em "Desfazer" chama restoreSchedule com o '
       'agendamento exato',
       (tester) async {
         stubRemovable();
@@ -742,7 +742,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-15: a ação de acessibilidade "Excluir" faz o mesmo fluxo, '
+      'a ação de acessibilidade "Excluir" faz o mesmo fluxo, '
       'sem gesto',
       (tester) async {
         stubRemovable();
@@ -786,7 +786,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-11: o snackbar some sozinho depois de 4 segundos',
+      'o snackbar some sozinho depois de 4 segundos',
       (tester) async {
         stubRemovable();
         await pumpPage(tester);
@@ -835,7 +835,7 @@ void main() {
     }
 
     testWidgets(
-      'SCHEDUI-16: fechar a tela com o snackbar visível esconde o snackbar',
+      'fechar a tela com o snackbar visível esconde o snackbar',
       (tester) async {
         stubRemovable();
         await pumpPageAsRoute(tester);
@@ -853,7 +853,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-16: com navegação acessível (snackbar sem timeout), fechar a '
+      'com navegação acessível (snackbar sem timeout), fechar a '
       'tela também esconde o snackbar',
       (tester) async {
         tester.platformDispatcher.accessibilityFeaturesTestValue =
@@ -878,7 +878,7 @@ void main() {
   group('voltar do sistema', () {
     // Com `goNamed`, a Agenda é a única rota da pilha: sem o `PopScope`,
     // este voltar fecharia o app em vez de ir ao Painel. Roteador real,
-    // como no AGD-19 do painel: prova o destino da navegação.
+    // como no teste do aviso do painel: prova o destino da navegação.
     Future<void> pumpWithRouter(WidgetTester tester) async {
       final router = GoRouter(
         initialLocation: AppRoute.schedule.path,
@@ -976,7 +976,7 @@ void main() {
   });
 
   testWidgets(
-    'AGD-12: falha de ação mostra snackbar e mantém a lista',
+    'falha de ação mostra snackbar e mantém a lista',
     (tester) async {
       final loaded = ScheduleState.loaded(
         upcoming: [upcomingItem(schedule('s1', today))],

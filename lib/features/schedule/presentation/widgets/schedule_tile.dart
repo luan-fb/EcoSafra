@@ -22,7 +22,7 @@ String _capitalizedWeekday(DateTime date) {
 
 /// Um agendamento na lista: bloco de data colorido pelo status à esquerda,
 /// dia da semana, observação e rótulo de status ao centro, e o controle de
-/// conclusão à direita (SCHEDUI-05..09).
+/// conclusão à direita.
 ///
 /// Concluído: sem toque para editar, sem rótulo de risco, estilo apagado.
 class ScheduleTile extends StatelessWidget {
@@ -65,7 +65,7 @@ class ScheduleTile extends StatelessWidget {
                 },
                 child: InkWell(
                   // Concluído é histórico: para mudar, desfaz a conclusão
-                  // antes (AGD-27).
+                  // antes.
                   onTap: canEdit ? onEdit : null,
                   // Mesmo raio do `CardThemeData` (`AppTheme`), para o
                   // ripple não vazar pelo canto arredondado do `Card`.

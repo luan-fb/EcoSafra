@@ -30,8 +30,8 @@ final class SchedulingWindow extends Equatable {
     return !day.isBefore(first) && !day.isAfter(last);
   }
 
-  /// O dia de [date] se estiver na janela; senão, `first` (AGD-26: o
-  /// seletor abre em hoje quando a data do agendamento já não é editável).
+  /// O dia de [date] se estiver na janela; senão, `first` (o seletor
+  /// abre em hoje quando a data do agendamento já não é editável).
   DateTime clamp(DateTime date) {
     final day = date.dateOnly;
     return contains(day) ? day : first;

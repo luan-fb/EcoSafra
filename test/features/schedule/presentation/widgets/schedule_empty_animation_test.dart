@@ -15,7 +15,7 @@ void main() {
   }
 
   group('ScheduleEmptyAnimation', () {
-    testWidgets('SCHEDUI-01: Anima continuamente quando animações estão ativadas', (tester) async {
+    testWidgets('Anima continuamente quando animações estão ativadas', (tester) async {
       await tester.pumpWidget(buildApp(disableAnimations: false));
 
       expect(find.byType(ScheduleEmptyAnimation), findsOneWidget);
@@ -28,7 +28,7 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('SCHEDUI-01: Renderiza ícone sem loop de animação quando disableAnimations é true', (tester) async {
+    testWidgets('Renderiza ícone sem loop de animação quando disableAnimations é true', (tester) async {
       await tester.pumpWidget(buildApp(disableAnimations: true));
 
       expect(find.byType(ScheduleEmptyAnimation), findsOneWidget);

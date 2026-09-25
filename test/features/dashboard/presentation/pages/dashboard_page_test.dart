@@ -118,7 +118,7 @@ void main() {
   }
 
   testWidgets(
-    'AGD-21: quando o painel termina de carregar, avisa o '
+    'quando o painel termina de carregar, avisa o '
     'ScheduleAlertCubit com a previsão exata',
     (tester) async {
       stubScheduleAlert(const ScheduleAlertState());
@@ -145,7 +145,7 @@ void main() {
   );
 
   testWidgets(
-    'AGD-21: enquanto carrega, ainda não chama updateForecast',
+    'enquanto carrega, ainda não chama updateForecast',
     (tester) async {
       stubDashboard(const DashboardState.loading());
       stubScheduleAlert(const ScheduleAlertState());
@@ -197,7 +197,7 @@ void main() {
     },
   );
 
-  testWidgets('AGD-19: tocar no aviso abre a Agenda', (tester) async {
+  testWidgets('tocar no aviso abre a Agenda', (tester) async {
     stubDashboard(const DashboardState.loading());
     stubScheduleAlert(
       const ScheduleAlertState(alert: ScheduleTodayReminder()),

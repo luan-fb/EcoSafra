@@ -134,7 +134,7 @@ void main() {
     );
   });
 
-  group('lista e previsão (AGD-15, AGD-21)', () {
+  group('lista e previsão', () {
     blocTest<ScheduleAlertCubit, ScheduleAlertState>(
       'lista sem nada para hoje ou amanhã não emite estado repetido',
       build: buildCubit,
@@ -216,7 +216,7 @@ void main() {
     );
   });
 
-  group('falha na leitura (AGD-22)', () {
+  group('falha na leitura', () {
     blocTest<ScheduleAlertCubit, ScheduleAlertState>(
       'erro no stream zera o aviso',
       build: buildCubit,
@@ -273,7 +273,7 @@ void main() {
     );
   });
 
-  group('relógio (AGD-23)', () {
+  group('relógio', () {
     late DateTime current;
 
     blocTest<ScheduleAlertCubit, ScheduleAlertState>(

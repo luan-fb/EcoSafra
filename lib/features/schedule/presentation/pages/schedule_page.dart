@@ -71,7 +71,7 @@ class _ScheduleViewState extends State<ScheduleView> {
   @override
   void dispose() {
     // O messenger é do app e sobrevive à tela: um "Desfazer" ainda visível
-    // (ou na fila) chamaria um cubit já fechado (SCHEDUI-16). A remoção é
+    // (ou na fila) chamaria um cubit já fechado. A remoção é
     // imediata, sem a animação de saída em que o botão ainda aceitaria
     // toque. Fica para o fim do quadro porque, durante o `dispose`, a árvore
     // está travada e o messenger não pode se reconstruir; e só se ele ainda
@@ -86,9 +86,9 @@ class _ScheduleViewState extends State<ScheduleView> {
     super.dispose();
   }
 
-  /// Mesmo fluxo para o swipe e para a ação de acessibilidade
-  /// (SCHEDUI-10, 11, 15): o cubit tira o item da lista antes de ir ao banco,
-  /// e o snackbar anterior sai, de modo que só o último Desfazer vale.
+  /// Mesmo fluxo para o swipe e para a ação de acessibilidade: o cubit tira
+  /// o item da lista antes de ir ao banco, e o snackbar anterior sai, de
+  /// modo que só o último Desfazer vale.
   void _delete(ScheduleItem item) {
     final cubit = context.read<ScheduleCubit>();
     final schedule = item.schedule;
@@ -99,8 +99,8 @@ class _ScheduleViewState extends State<ScheduleView> {
       SnackBar(
         content: Text(context.l10n.scheduleDeletedMessage),
         duration: _undoSnackBarDuration,
-        // Com ação, o `SnackBar` fica aberto até ser fechado; a spec pede
-        // que suma sozinho em 4 s.
+        // Com ação, o `SnackBar` fica aberto até ser fechado; o Desfazer
+        // deve sumir sozinho em 4 s.
         persist: false,
         action: SnackBarAction(
           label: context.l10n.scheduleDeletedUndo,
@@ -254,7 +254,7 @@ class _DeleteBackground extends StatelessWidget {
   }
 }
 
-/// Botão "Agendar" que se expande no formulário de criação (SCHEDUI-18).
+/// Botão "Agendar", que abre o formulário de criação.
 class _CreateScheduleButton extends StatelessWidget {
   const _CreateScheduleButton();
 
@@ -280,7 +280,7 @@ class _CreateScheduleButton extends StatelessWidget {
 }
 
 /// O card de um agendamento. Não concluído: o toque abre o formulário de
-/// edição (SCHEDUI-17). Concluído: não abre (AGD-27).
+/// edição. Concluído: não abre.
 ///
 /// Concluir ou desfazer muda o item de seção, e na outra seção o card
 /// nasceria de novo, já no estado final. Por isso o card mostra a mudança

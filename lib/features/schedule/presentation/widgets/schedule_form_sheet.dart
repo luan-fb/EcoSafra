@@ -17,9 +17,8 @@ typedef ScheduleFormResult = ({DateTime date, String? note});
 const double _dateBlockRevealStart = 0.3;
 
 /// Formulário de criar e editar um agendamento, aberto como bottom sheet:
-/// mesma janela de datas e mesmo limite de observação para os dois casos
-/// (AGD-25, SCHEDUI-22). Devolve um [ScheduleFormResult] pelo
-/// `Navigator.pop`.
+/// mesma janela de datas e mesmo limite de observação para os dois casos.
+/// Devolve um [ScheduleFormResult] pelo `Navigator.pop`.
 class ScheduleFormSheet extends StatefulWidget {
   const ScheduleFormSheet({required this.window, this.initial, super.key});
 
@@ -36,7 +35,7 @@ class ScheduleFormSheet extends StatefulWidget {
   ///
   /// A animação do sheet segue o ritmo do app (`AppMotion.slow` na
   /// abertura, `AppMotion.medium` ao fechar) e some com redução de
-  /// movimento (SCHEDUI-21).
+  /// movimento.
   static Future<ScheduleFormResult?> show(
     BuildContext context, {
     required SchedulingWindow window,
@@ -173,8 +172,8 @@ class _ScheduleFormSheetState extends State<ScheduleFormSheet> {
   }
 
   /// `initialDate` sempre passa por `clamp`: a data já selecionada normalmente
-  /// está na janela, mas numa edição cuja data original ficou pra trás
-  /// (AGD-26), o seletor abre em hoje em vez de recusar.
+  /// está na janela, mas numa edição cuja data original ficou pra trás o
+  /// seletor abre em hoje em vez de recusar.
   Future<void> _pickDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,

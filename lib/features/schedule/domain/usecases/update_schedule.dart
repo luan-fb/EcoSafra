@@ -24,7 +24,7 @@ final class UpdateScheduleParams extends Equatable {
   List<Object?> get props => [id, scheduledDate, note];
 }
 
-/// Mesma janela e mesmas regras de observação da criação (AGD-25); só
+/// Mesma janela e mesmas regras de observação da criação; só
 /// agendamentos não concluídos chegam aqui, a UI que impede editar os
 /// concluídos.
 class UpdateSchedule implements UseCase<void, UpdateScheduleParams> {

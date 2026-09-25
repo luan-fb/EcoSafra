@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 
 /// Controle de conclusão do agendamento: substitui o `Checkbox` do Material
 /// por um traço desenhado progressivamente com `CustomPainter` e
-/// `PathMetric` (SCHEDUI-08, SCHEDUI-19).
+/// `PathMetric`.
 ///
 /// Marcar anima o traço de 0 a 1 em `AppMotion.medium`; desmarcar, de 1 a 0.
 /// Com redução de movimento, o valor muda direto, sem passar por estados
 /// intermediários. Mantém a semântica de um checkbox e um alvo de toque de
-/// 48 x 48 (SCHEDUI-09, SCHEDUI-21).
+/// 48 x 48.
 class AnimatedCheck extends StatefulWidget {
   const AnimatedCheck({
     required this.value,

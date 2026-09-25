@@ -90,7 +90,7 @@ void main() {
     return count;
   }
 
-  testWidgets('SCHEDUI-19: marcar anima o progresso de 0 a 1', (
+  testWidgets('marcar anima o progresso de 0 a 1', (
     tester,
   ) async {
     await pumpCheck(tester, value: false);
@@ -112,7 +112,7 @@ void main() {
     expect(progressOf(tester), 1);
   });
 
-  testWidgets('SCHEDUI-19: desmarcar anima o progresso de volta a 0', (
+  testWidgets('desmarcar anima o progresso de volta a 0', (
     tester,
   ) async {
     await pumpCheck(tester, value: true);
@@ -136,7 +136,7 @@ void main() {
   });
 
   testWidgets(
-    'SCHEDUI-19: o traço desenhado cresce com o progresso, não salta pronto',
+    'o traço desenhado cresce com o progresso, não salta pronto',
     (tester) async {
       await pumpCheck(tester, value: false);
       final onPrimary = AppTheme.light.colorScheme.onPrimary;
@@ -170,7 +170,7 @@ void main() {
   );
 
   testWidgets(
-    'SCHEDUI-19: a duração do traçado é exatamente AppMotion.medium',
+    'a duração do traçado é exatamente AppMotion.medium',
     (tester) async {
       await pumpCheck(tester, value: false);
 
@@ -190,7 +190,7 @@ void main() {
   );
 
   testWidgets(
-    'SCHEDUI-21: com redução de movimento o valor muda direto, sem passo intermediário',
+    'com redução de movimento o valor muda direto, sem passo intermediário',
     (tester) async {
       disableAnimations(tester);
       await pumpCheck(tester, value: false);
@@ -208,7 +208,7 @@ void main() {
     },
   );
 
-  testWidgets('SCHEDUI-09: semântica expõe checked conforme o valor', (
+  testWidgets('semântica expõe checked conforme o valor', (
     tester,
   ) async {
     await pumpCheck(tester, value: true);
@@ -218,7 +218,7 @@ void main() {
   });
 
   testWidgets(
-    'SCHEDUI-09: semântica expõe desmarcado quando o valor é falso',
+    'semântica expõe desmarcado quando o valor é falso',
     (tester) async {
       await pumpCheck(tester, value: false);
 
@@ -227,7 +227,7 @@ void main() {
     },
   );
 
-  testWidgets('SCHEDUI-09: alvo de toque tem pelo menos 48 x 48', (
+  testWidgets('alvo de toque tem pelo menos 48 x 48', (
     tester,
   ) async {
     await pumpCheck(tester, value: false);

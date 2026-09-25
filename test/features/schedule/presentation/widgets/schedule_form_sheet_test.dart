@@ -66,7 +66,7 @@ void main() {
 
   group('seletor de data', () {
     testWidgets(
-      'AGD-03: firstDate e lastDate são os limites da janela',
+      'firstDate e lastDate são os limites da janela',
       (tester) async {
         await pumpAndOpen(tester);
 
@@ -82,7 +82,7 @@ void main() {
     );
 
     testWidgets(
-      'AGD-01: initialDate é a data atual ao criar (hoje, já na janela)',
+      'initialDate é a data atual ao criar (hoje, já na janela)',
       (tester) async {
         await pumpAndOpen(tester);
 
@@ -97,7 +97,7 @@ void main() {
     );
 
     testWidgets(
-      'AGD-26: data do agendamento fora da janela abre o seletor em hoje',
+      'data do agendamento fora da janela abre o seletor em hoje',
       (tester) async {
         final outOfWindow = FertilizationSchedule(
           id: 's1',
@@ -176,7 +176,7 @@ void main() {
 
   group('salvar e cancelar', () {
     testWidgets(
-      'AGD-01, AGD-03: salvar devolve a data e a observação normalizada',
+      'salvar devolve a data e a observação normalizada',
       (tester) async {
         final future = await pumpAndOpen(tester);
         await tester.enterText(find.byType(TextField), '  talhão 3  ');
@@ -190,7 +190,7 @@ void main() {
       },
     );
 
-    testWidgets('AGD-04: observação em branco vira null', (tester) async {
+    testWidgets('observação em branco vira null', (tester) async {
       final future = await pumpAndOpen(tester);
       await tester.enterText(find.byType(TextField), '   ');
       await tester.tap(find.text('Salvar'));
@@ -359,7 +359,7 @@ void main() {
 
   group('animação do sheet', () {
     testWidgets(
-      'SCHEDUI-21: com redução de movimento, abre sem quadros '
+      'com redução de movimento, abre sem quadros '
       'intermediários',
       (tester) async {
         await tester.pumpWidget(
@@ -406,7 +406,7 @@ void main() {
     );
 
     testWidgets(
-      'SCHEDUI-26: abre em AppMotion.slow, fecha em AppMotion.medium, com '
+      'abre em AppMotion.slow, fecha em AppMotion.medium, com '
       'a curva AppMotion.emphasized',
       (tester) async {
         await tester.pumpWidget(

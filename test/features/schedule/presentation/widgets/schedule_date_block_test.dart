@@ -48,7 +48,7 @@ void main() {
       .transform
       .getMaxScaleOnAxis();
 
-  testWidgets('SCHEDUI-05: mostra dia e mês abreviado maiúsculos sem ponto', (
+  testWidgets('mostra dia e mês abreviado maiúsculos sem ponto', (
     tester,
   ) async {
     await pumpBlock(tester);
@@ -57,7 +57,7 @@ void main() {
     expect(find.text('SET'), findsOneWidget);
   });
 
-  testWidgets('SCHEDUI-20: pulse true anima a escala em loop', (
+  testWidgets('pulse true anima a escala em loop', (
     tester,
   ) async {
     await pumpBlock(tester, pulse: true);
@@ -75,7 +75,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('SCHEDUI-20: pulse false não anima', (tester) async {
+  testWidgets('pulse false não anima', (tester) async {
     await pumpBlock(tester);
 
     await tester.pump(const Duration(milliseconds: 500));
@@ -83,7 +83,7 @@ void main() {
     expect(scaleOf(tester), 1.0);
   });
 
-  testWidgets('SCHEDUI-21: redução de movimento desliga o pulso', (
+  testWidgets('redução de movimento desliga o pulso', (
     tester,
   ) async {
     disableAnimations(tester);

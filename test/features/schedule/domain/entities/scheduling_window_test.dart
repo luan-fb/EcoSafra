@@ -49,7 +49,7 @@ void main() {
       expect(window.clamp(DateTime(2026, 9, 10)), equals(window.first));
     });
 
-    test('data depois de last vira first (spec: abre o seletor em hoje)', () {
+    test('data depois de last vira first (o seletor abre em hoje)', () {
       expect(window.clamp(DateTime(2026, 10, 15)), equals(window.first));
     });
 

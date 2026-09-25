@@ -48,7 +48,7 @@ void main() {
     );
   }
 
-  testWidgets('AGD-15: risco com contagem 1 usa o singular', (tester) async {
+  testWidgets('risco com contagem 1 usa o singular', (tester) async {
     stubState(const ScheduleAlertState(alert: ScheduleRiskAlert(1)));
     await pumpBanner(tester, onTap: () {});
     await tester.pumpAndSettle();
@@ -59,7 +59,7 @@ void main() {
     );
   });
 
-  testWidgets('AGD-15: risco com contagem 3 usa o plural', (tester) async {
+  testWidgets('risco com contagem 3 usa o plural', (tester) async {
     stubState(const ScheduleAlertState(alert: ScheduleRiskAlert(3)));
     await pumpBanner(tester, onTap: () {});
     await tester.pumpAndSettle();
@@ -70,7 +70,7 @@ void main() {
     );
   });
 
-  testWidgets('AGD-16: lembrete de aplicação para hoje', (tester) async {
+  testWidgets('lembrete de aplicação para hoje', (tester) async {
     stubState(const ScheduleAlertState(alert: ScheduleTodayReminder()));
     await pumpBanner(tester, onTap: () {});
     await tester.pumpAndSettle();
@@ -81,7 +81,7 @@ void main() {
     );
   });
 
-  testWidgets('AGD-17: lembrete de aplicação para amanhã', (tester) async {
+  testWidgets('lembrete de aplicação para amanhã', (tester) async {
     stubState(const ScheduleAlertState(alert: ScheduleTomorrowReminder()));
     await pumpBanner(tester, onTap: () {});
     await tester.pumpAndSettle();
@@ -92,7 +92,7 @@ void main() {
     );
   });
 
-  testWidgets('AGD-18: sem alerta, o banner não ocupa espaço', (
+  testWidgets('sem alerta, o banner não ocupa espaço', (
     tester,
   ) async {
     stubState(const ScheduleAlertState());
@@ -103,7 +103,7 @@ void main() {
     expect(tester.getSize(find.byType(ScheduleAlertBanner)).height, 0);
   });
 
-  testWidgets('AGD-19: tocar no aviso chama onTap', (tester) async {
+  testWidgets('tocar no aviso chama onTap', (tester) async {
     stubState(const ScheduleAlertState(alert: ScheduleRiskAlert(1)));
     var tapped = false;
     await pumpBanner(tester, onTap: () => tapped = true);
@@ -116,7 +116,7 @@ void main() {
   });
 
   testWidgets(
-    'AGD-19: alvo de toque tem ao menos 48 de altura e semântica de botão '
+    'alvo de toque tem ao menos 48 de altura e semântica de botão '
     'com o texto do aviso',
     (tester) async {
       stubState(const ScheduleAlertState(alert: ScheduleTodayReminder()));

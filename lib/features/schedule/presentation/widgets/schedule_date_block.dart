@@ -44,11 +44,10 @@ import 'package:intl/intl.dart';
 }
 
 /// Bloco de data à esquerda do card da agenda: dia do mês em destaque e mês
-/// abreviado, coloridos pelo status do agendamento (SCHEDUI-05, SCHEDUI-06).
+/// abreviado, coloridos pelo status do agendamento.
 ///
 /// Com `pulse: true` e sem redução de movimento, o bloco respira (escala e
-/// brilho) em loop para chamar atenção para um agendamento em risco
-/// (SCHEDUI-20).
+/// brilho) em loop para chamar atenção para um agendamento em risco.
 class ScheduleDateBlock extends StatefulWidget {
   const ScheduleDateBlock({
     required this.date,

@@ -165,7 +165,7 @@ void main() {
     expect(cubit.state, const ScheduleState.loading());
   });
 
-  group('seções e ordem (AGD-08, AGD-28, AGD-29)', () {
+  group('seções e ordem', () {
     final pastDue = schedule('past', yesterday);
     final forToday = schedule('today', today);
     final later = schedule('later', inThreeDays);
@@ -255,7 +255,7 @@ void main() {
     );
   });
 
-  group('risco e data passada (AGD-09, AGD-10, AGD-24)', () {
+  group('risco e data passada', () {
     final pastDue = schedule('past', yesterday);
     final forToday = schedule('today', today);
     final later = schedule('later', inThreeDays);
@@ -584,7 +584,7 @@ void main() {
     );
   });
 
-  group('ações (AGD-01, AGD-12, AGD-24, AGD-28, AGD-29, AGD-30)', () {
+  group('ações', () {
     final forToday = schedule('today', today);
     final loaded = ScheduleState.loaded(
       upcoming: [item(forToday)],
@@ -778,7 +778,7 @@ void main() {
     );
   });
 
-  group('chuva prevista (SCHEDUI-07)', () {
+  group('chuva prevista', () {
     final forToday = schedule('today', today);
     final later = schedule('later', inThreeDays);
 
@@ -865,7 +865,7 @@ void main() {
     );
   });
 
-  group('remoção otimista (SCHEDUI-10, SCHEDUI-13)', () {
+  group('remoção otimista', () {
     final forToday = schedule('today', today);
     final later = schedule('later', inThreeDays);
     final both = ScheduleState.loaded(
@@ -1095,7 +1095,7 @@ void main() {
     );
   });
 
-  group('restauração (SCHEDUI-12, SCHEDUI-14)', () {
+  group('restauração', () {
     final later = schedule('later', inThreeDays);
     final loaded = ScheduleState.loaded(
       upcoming: [item(later)],

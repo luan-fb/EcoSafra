@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Aviso do painel sobre a agenda: risco de chuva forte num agendamento ou
-/// lembrete de aplicação para hoje/amanhã (AGD-15..19).
+/// lembrete de aplicação para hoje/amanhã.
 ///
 /// Sem `alert`, o card some por completo (`SizedBox.shrink`) em vez de só
 /// ficar invisível — senão o painel manteria um buraco vazio no lugar.
