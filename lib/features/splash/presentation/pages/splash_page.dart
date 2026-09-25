@@ -108,82 +108,87 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.primaryDark, AppColors.primary],
+      // O `body` do Scaffold recebe restrições soltas: sem o `expand`, o
+      // gradiente encolhia até a largura do texto mais largo e deixava uma
+      // faixa sem fundo à direita, com o conteúdo fora do centro.
+      body: SizedBox.expand(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.primaryDark, AppColors.primary],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
+          child: SafeArea(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Spacer(),
 
-              // AnimatedBuilder reconstrói só esta subárvore a cada frame.
-              // O `child` é passado de fora e não é reconstruído — detalhe de
-              // performance que vale para toda animação em Flutter.
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) => Transform.rotate(
-                  angle: _logoRotation.value,
-                  child: Transform.scale(scale: _logoScale.value, child: child),
-                ),
-                child: const _SplashLogo(),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              FadeTransition(
-                opacity: _titleFade,
-                child: SlideTransition(
-                  position: _titleSlide,
-                  child: Text(
-                    context.l10n.appTitle,
-                    style: context.texts.displaySmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
+                // AnimatedBuilder reconstrói só esta subárvore a cada frame.
+                // O `child` é passado de fora e não é reconstruído — detalhe de
+                // performance que vale para toda animação em Flutter.
+                AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) => Transform.rotate(
+                    angle: _logoRotation.value,
+                    child: Transform.scale(scale: _logoScale.value, child: child),
                   ),
+                  child: const _SplashLogo(),
                 ),
-              ),
 
-              const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.xl),
 
-              FadeTransition(
-                opacity: _taglineFade,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xxl,
-                  ),
-                  child: Text(
-                    context.l10n.splashTagline,
-                    textAlign: TextAlign.center,
-                    style: context.texts.bodyLarge?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                ),
-              ),
-
-              const Spacer(),
-
-              FadeTransition(
-                opacity: _taglineFade,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-                  child: TextButton(
-                    onPressed: () => unawaited(_goNext()),
+                FadeTransition(
+                  opacity: _titleFade,
+                  child: SlideTransition(
+                    position: _titleSlide,
                     child: Text(
-                      context.l10n.splashStartButton,
-                      style: const TextStyle(color: Colors.white),
+                      context.l10n.appTitle,
+                      style: context.texts.displaySmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: AppSpacing.sm),
+
+                FadeTransition(
+                  opacity: _taglineFade,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xxl,
+                    ),
+                    child: Text(
+                      context.l10n.splashTagline,
+                      textAlign: TextAlign.center,
+                      style: context.texts.bodyLarge?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const Spacer(),
+
+                FadeTransition(
+                  opacity: _taglineFade,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+                    child: TextButton(
+                      onPressed: () => unawaited(_goNext()),
+                      child: Text(
+                        context.l10n.splashStartButton,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
