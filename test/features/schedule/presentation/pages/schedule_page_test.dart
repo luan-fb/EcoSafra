@@ -691,13 +691,43 @@ void main() {
     );
 
     testWidgets(
+      'com a conclusão pendente, o card não aceita o swipe',
+      (tester) async {
+        stubRemovable();
+        await pumpPage(tester, disableAnimations: false);
+        await tester.pumpAndSettle();
+
+        await tester.tap(
+          find.descendant(
+            of: cardOf(upcomingTarget),
+            matching: find.byType(AnimatedCheck),
+          ),
+        );
+        await tester.pump();
+        // Pela chave: com a conclusão exibida, o item do tile já difere do
+        // agendamento original.
+        await tester.drag(
+          find.byKey(const ValueKey('s1')).first,
+          const Offset(-600, 0),
+        );
+        await tester.pumpAndSettle();
+
+        verifyNever(() => cubit.removeSchedule(any()));
+        verify(() => cubit.setCompleted('s1', completed: true)).called(1);
+      },
+    );
+
+    testWidgets(
       'o fundo do swipe é AppColors.danger com a lixeira',
       (tester) async {
         stubRemovable();
         await pumpPage(tester);
 
         final dismissible = tester.widget<Dismissible>(
-          find.byKey(const ValueKey('s1')),
+          find.ancestor(
+            of: cardOf(upcomingTarget),
+            matching: find.byType(Dismissible),
+          ),
         );
         expect(dismissible.direction, DismissDirection.endToStart);
 

@@ -206,21 +206,11 @@ class _ScheduleSections extends StatelessWidget {
           final item = items[index];
           // Itens saem (excluir) e trocam de seção (concluir): a chave pelo
           // id impede que o estado de um item vá parar no vizinho.
-          return Dismissible(
+          return _ScheduleCard(
             key: ValueKey(item.schedule.id),
-            direction: DismissDirection.endToStart,
-            background: const _DeleteBackground(),
-            onDismissed: (_) => onDelete(item),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: FadeSlideIn.staggered(
-                index: index,
-                child: _ScheduleCard(
-                  item: item,
-                  onDelete: () => onDelete(item),
-                ),
-              ),
-            ),
+            item: item,
+            index: index,
+            onDelete: () => onDelete(item),
           );
         },
       ),
@@ -287,9 +277,17 @@ class _CreateScheduleButton extends StatelessWidget {
 /// primeiro, deixa o check se desenhar em `AppMotion.medium` e só então
 /// grava; a lista nova, vinda do banco, é que o leva à outra seção.
 class _ScheduleCard extends StatefulWidget {
-  const _ScheduleCard({required this.item, required this.onDelete});
+  const _ScheduleCard({
+    required this.item,
+    required this.index,
+    required this.onDelete,
+    super.key,
+  });
 
   final ScheduleItem item;
+
+  /// Posição na seção, para o atraso da animação de entrada.
+  final int index;
   final VoidCallback onDelete;
 
   @override
@@ -309,6 +307,8 @@ class _ScheduleCardState extends State<_ScheduleCard> {
   /// toque no check desfaria a tela sem desfazer o banco. Só volta a
   /// `false` se a gravação falhar.
   bool _saving = false;
+
+  bool get _changePending => _pendingCompleted != null || _saving;
 
   @override
   void initState() {
@@ -359,7 +359,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
   Future<void> _edit() async {
     // Desmarcar um concluído o mostra editável antes de gravar; editar nesse
     // meio-tempo abriria o formulário para um card prestes a mudar de seção.
-    if (_pendingCompleted != null || _saving) return;
+    if (_changePending) return;
     final result = await ScheduleFormSheet.show(
       context,
       window: _cubit.currentWindow(),
@@ -380,13 +380,31 @@ class _ScheduleCardState extends State<_ScheduleCard> {
 
   @override
   Widget build(BuildContext context) {
-    // A mesma árvore nos dois estados: mudar o tipo do widget recriaria o
-    // check e as animações implícitas do card.
-    return ScheduleTile(
-      item: _displayedItem(),
-      onEdit: _edit,
-      onToggleCompleted: _toggleCompleted,
-      onDelete: widget.onDelete,
+    final schedule = widget.item.schedule;
+
+    return Dismissible(
+      key: ValueKey(schedule.id),
+      // Com a conclusão pendente, a lista nova tiraria o card daqui antes
+      // do fim do arrasto, e a exclusão se perderia sem aviso.
+      direction: _changePending
+          ? DismissDirection.none
+          : DismissDirection.endToStart,
+      background: const _DeleteBackground(),
+      onDismissed: (_) => widget.onDelete(),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: FadeSlideIn.staggered(
+          index: widget.index,
+          // A mesma árvore nos dois estados: mudar o tipo do widget
+          // recriaria o check e as animações implícitas do card.
+          child: ScheduleTile(
+            item: _displayedItem(),
+            onEdit: _edit,
+            onToggleCompleted: _toggleCompleted,
+            onDelete: widget.onDelete,
+          ),
+        ),
+      ),
     );
   }
 
