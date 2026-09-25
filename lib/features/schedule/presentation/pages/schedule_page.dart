@@ -305,6 +305,11 @@ class _ScheduleCardState extends State<_ScheduleCard> {
   bool? _pendingCompleted;
   Timer? _saveTimer;
 
+  /// Gravação enviada: até a lista nova levar o card à outra seção, um
+  /// toque no check desfaria a tela sem desfazer o banco. Só volta a
+  /// `false` se a gravação falhar.
+  bool _saving = false;
+
   @override
   void initState() {
     super.initState();
@@ -323,6 +328,7 @@ class _ScheduleCardState extends State<_ScheduleCard> {
   }
 
   void _toggleCompleted(bool completed) {
+    if (_saving) return;
     _saveTimer?.cancel();
     if (completed == widget.item.schedule.isCompleted) {
       // Segundo toque durante a animação: volta atrás sem gravar nada.
@@ -338,17 +344,22 @@ class _ScheduleCardState extends State<_ScheduleCard> {
   }
 
   Future<void> _save(bool completed) async {
+    _saving = true;
     final saved = await _cubit.setCompleted(
       widget.item.schedule.id,
       completed: completed,
     );
-    if (!saved && mounted) setState(() => _pendingCompleted = null);
+    if (saved || !mounted) return;
+    setState(() {
+      _saving = false;
+      _pendingCompleted = null;
+    });
   }
 
   Future<void> _edit() async {
     // Desmarcar um concluído o mostra editável antes de gravar; editar nesse
     // meio-tempo abriria o formulário para um card prestes a mudar de seção.
-    if (_pendingCompleted != null) return;
+    if (_pendingCompleted != null || _saving) return;
     final result = await ScheduleFormSheet.show(
       context,
       window: _cubit.currentWindow(),

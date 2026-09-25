@@ -567,6 +567,31 @@ void main() {
     );
 
     testWidgets(
+      'com a gravação já enviada, um novo toque é ignorado',
+      (tester) async {
+        final saving = Completer<bool>();
+        when(
+          () => cubit.setCompleted(any(), completed: any(named: 'completed')),
+        ).thenAnswer((_) => saving.future);
+        await pumpWithUpcoming(tester);
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pump();
+        await tester.pump(AppMotion.medium);
+        verify(() => cubit.setCompleted('s1', completed: true)).called(1);
+
+        await tester.tap(find.byType(AnimatedCheck));
+        await tester.pumpAndSettle();
+
+        expect(check(tester).value, isTrue);
+        verifyNever(
+          () => cubit.setCompleted(any(), completed: any(named: 'completed')),
+        );
+        saving.complete(true);
+      },
+    );
+
+    testWidgets(
       'se a gravação falha, o check volta a desmarcado',
       (tester) async {
         when(
