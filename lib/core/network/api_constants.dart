@@ -13,7 +13,7 @@ abstract final class ApiConstants {
       'https://geocoding-api.open-meteo.com/v1';
 
   static const String forecast = '/forecast';
-  static const String reverseGeocoding = '/search';
+  static const String geocodingSearch = '/search';
 
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 20);

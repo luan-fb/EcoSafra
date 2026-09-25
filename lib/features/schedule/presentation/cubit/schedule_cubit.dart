@@ -103,6 +103,14 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   ///
   /// Sai do estado de erro antes de esperar o cancelamento: uma segunda
   /// chamada nesse intervalo já não passa da checagem.
+  /// Recalcula "data passada" e o risco com a data de agora, sem ir ao
+  /// banco: chamado quando o app volta ao primeiro plano, para uma virada
+  /// de meia-noite com a tela aberta não deixar a lista desatualizada.
+  void refresh() {
+    if (isClosed) return;
+    _emitLoaded();
+  }
+
   Future<void> retry() async {
     if (_closing || state.status != ScheduleStatus.error) return;
     emit(const ScheduleState.loading());

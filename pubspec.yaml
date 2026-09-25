@@ -75,6 +75,7 @@ dependencies:
   # Renderiza animações exportadas do After Effects (JSON) direto no canvas
   # do Flutter — sem vídeo/GIF, então escala sem perder nitidez.
   lottie: ^3.6.1
+  geocoding: ^5.0.0
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +94,8 @@ dev_dependencies:
   # --- Testes ---
   bloc_test: ^10.0.0
   mocktail: ^1.0.5
+  # Controla o tempo do debounce da busca de lugares nos testes do cubit.
+  fake_async: ^1.3.3
   # Só para montar um GoRouter real nos testes de navegação: o
   # go_router_modular reexporta o go_router, mas esconde a classe GoRouter.
   go_router: ^17.5.0

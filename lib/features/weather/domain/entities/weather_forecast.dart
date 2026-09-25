@@ -136,6 +136,12 @@ final class WeatherForecast extends Equatable {
     return null;
   }
 
+  /// Pontos de `hourly` da hora cheia de [now] em diante, inclusive.
+  List<HourlyForecastPoint> hourlyFrom(DateTime now) {
+    final currentHour = DateTime(now.year, now.month, now.day, now.hour);
+    return hourly.where((point) => !point.time.isBefore(currentHour)).toList();
+  }
+
   @override
   List<Object?> get props => [coordinates, hourly, daily, fetchedAt, isStale];
 }

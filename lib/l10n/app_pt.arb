@@ -275,5 +275,29 @@
   "@scheduleTileDeleteAction": {"description": "Ação de acessibilidade no card da agenda para excluir o agendamento direto, sem menu"},
 
   "scheduleStatusCompleted": "Concluído",
-  "@scheduleStatusCompleted": {"description": "Status lido pelo leitor de tela para um agendamento já concluído"}
+  "@scheduleStatusCompleted": {"description": "Status lido pelo leitor de tela para um agendamento já concluído"},
+
+  "dashboardForecastAttribution": "Dados meteorológicos: Open-Meteo.com (CC BY 4.0)",
+  "@dashboardForecastAttribution": {"description": "Atribuição da fonte de dados meteorológicos conforme exigência da licença CC BY 4.0"},
+
+  "dashboardForecastDisclaimer": "A recomendação é informativa e não substitui a orientação de um profissional de agronomia.",
+  "@dashboardForecastDisclaimer": {"description": "Aviso de que a recomendação é apenas informativa"},
+
+  "locationPickerTitle": "Localização do talhão",
+  "@locationPickerTitle": {"description": "Título da tela de escolha da localização"},
+
+  "locationPickerSearchHint": "Buscar cidade",
+  "@locationPickerSearchHint": {"description": "Dica do campo de busca de cidade na tela de escolha da localização"},
+
+  "locationPickerUseDevice": "Usar a localização do aparelho",
+  "@locationPickerUseDevice": {"description": "Opção que apaga a localização escolhida e volta ao GPS"},
+
+  "locationPickerEmpty": "Nenhum lugar encontrado.",
+  "@locationPickerEmpty": {"description": "Mensagem quando a busca de cidade não encontra nenhum lugar"},
+
+  "locationPickerNetworkError": "Sem internet para buscar lugares. Tente de novo quando tiver sinal.",
+  "@locationPickerNetworkError": {"description": "Mensagem quando a busca de cidade falha por falta de rede"},
+
+  "dashboardChooseLocationButton": "Escolher localização",
+  "@dashboardChooseLocationButton": {"description": "Botão e ação do snackbar que abrem a escolha da localização quando a localização falha"}
 }

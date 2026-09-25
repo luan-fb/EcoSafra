@@ -6,6 +6,9 @@ enum AppRoute {
   splash(path: '/', name: 'splash'),
   signIn(path: '/entrar', name: 'sign-in'),
   dashboard(path: '/painel', name: 'dashboard'),
+
+  /// Filha do painel: o caminho é relativo a [dashboard].
+  location(path: '/localizacao', name: 'location'),
   schedule(path: '/agenda', name: 'schedule');
 
   const AppRoute({required this.path, required this.name});

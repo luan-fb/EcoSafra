@@ -1,6 +1,6 @@
 # Imagens do README
 
-Capturas em PNG, retrato, tiradas no aparelho (~1080 px de altura). Os nomes abaixo são os
+Capturas em PNG, retrato, tiradas no aparelho no tema escuro (~1080 px de altura). Os nomes abaixo são os
 que o [README](../../README.md) já referencia.
 
 | Arquivo | O que mostrar |
@@ -8,12 +8,12 @@ que o [README](../../README.md) já referencia.
 | `logo.png` | Ícone do app, fundo transparente, 512x512 |
 | `hero.png` | Painel com o card de decisão verde e a animação do clima |
 | `login.png` | Tela de login com Google |
-| `painel.png` | Painel completo: cabeçalho, card de decisão, card "Agora" e próximos dias |
+| `painel.png` | Painel rolado: próximos dias e o rodapé com o crédito da Open-Meteo e o aviso informativo |
 | `painel-offline.png` | Painel em modo avião, com o aviso "Sem internet. Mostrando a última previsão salva" |
 | `agenda.png` | Agenda com itens em "Próximos" e "Concluídos" |
-| `agendamento.png` | Formulário de novo agendamento com o seletor de data aberto |
+| `agendamento.png` | Formulário de novo agendamento |
 | `aviso-risco.png` | Painel com o alerta vermelho de agendamento em dia de chuva forte |
-| `tema-escuro.png` | Painel no tema escuro |
+| `localizacao.png` | Escolha da localização do talhão pelo nome da cidade |
 | `menu.png` | Menu lateral aberto |
 | `demo.gif` (opcional) | Fluxo curto: abrir sem internet, agendar, ver o aviso no painel. Descomente a linha no README |
 

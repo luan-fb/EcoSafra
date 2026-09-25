@@ -465,6 +465,33 @@ void main() {
         ),
       ],
     );
+
+    // ROB-03: o app volta ao primeiro plano com a Agenda aberta e a
+    // `SchedulePage` chama `refresh()` — sem nova emissão do stream, a
+    // única forma de "hoje" virar "ontem" na tela.
+    blocTest<ScheduleCubit, ScheduleState>(
+      'refresh recalcula a data passada com a data de agora, sem nova '
+      'emissão do stream',
+      setUp: () => current = now,
+      build: () => buildCubit(clock: Clock(() => current)),
+      act: (cubit) async {
+        schedulesController.add([schedule('today', today)]);
+        await flush();
+        current = DateTime(2026, 9, 24, 8);
+        cubit.refresh();
+      },
+      expect: () => [
+        ScheduleState.loaded(
+          upcoming: [item(schedule('today', today))],
+          completed: const [],
+        ),
+        ScheduleState.loaded(
+          upcoming: [item(schedule('today', today), isPastDue: true)],
+          completed: const [],
+        ),
+      ],
+      verify: (_) => verify(() => watchSchedules(const NoParams())).called(1),
+    );
   });
 
   test(
@@ -1217,6 +1244,15 @@ void main() {
         verifyNever(() => getForecast(any()));
       },
     );
+
+    test('refresh depois do close não emite nem lança', () async {
+      final cubit = buildCubit();
+      schedulesController.add([schedule('today', today)]);
+      await flush();
+      await cubit.close();
+
+      expect(cubit.refresh, returnsNormally);
+    });
 
     test('falha de ação que termina depois do close não emite', () async {
       final result = Completer<Either<Failure, void>>();

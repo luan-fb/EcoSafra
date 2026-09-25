@@ -15,7 +15,7 @@ vai coincidir com chuva forte, evitando o escoamento do insumo para rios e córr
 ![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
-![Testes](https://img.shields.io/badge/testes-400%2B-2E7D32)
+![Testes](https://img.shields.io/badge/testes-500%2B-2E7D32)
 ![Lint](https://img.shields.io/badge/lint-very__good__analysis-7B1FA2)
 
 <!-- Captura principal: o painel com o card de decisão (ex.: 280px de largura) -->
@@ -52,8 +52,11 @@ dia planejado vira dia de chuva forte, o painel avisa antes.
 
 ## Funcionalidades
 
-- **Decisão de adubação:** chuva acumulada nas próximas 24 h classificada em *pode aplicar*,
-  *aplique com cautela* ou *não aplique*, com a estimativa de perda de insumo no pior caso.
+- **Decisão de adubação:** chuva acumulada nas próximas 24 h, contadas a partir da hora atual,
+  classificada em *pode aplicar*, *aplique com cautela* ou *não aplique*, com a estimativa de
+  perda de insumo no pior caso.
+- **Localização do talhão:** o painel mostra de onde é a previsão. Pelo GPS, com o nome da
+  cidade; ou escolhida pelo nome, para quando o GPS falha ou o produtor planeja longe do talhão.
 - **Offline-first:** a última previsão abre instantaneamente do banco local; o app só tenta a
   rede depois de confirmar que há conexão, sem deixar ninguém esperando um timeout.
 - **Agenda de aplicações:** criar, editar, concluir e excluir, com datas limitadas ao período
@@ -64,6 +67,8 @@ dia planejado vira dia de chuva forte, o painel avisa antes.
   ligado no sistema.
 - **Login com Google** e dados separados por conta no mesmo aparelho.
 - **Tema claro e escuro** derivados do Material 3, sem nenhum `if (isDarkMode)` no código.
+- **Transparência:** crédito dos dados da Open-Meteo e aviso de que a recomendação é
+  informativa, dentro do próprio app.
 
 ## Telas
 
@@ -80,9 +85,9 @@ dia planejado vira dia de chuva forte, o painel avisa antes.
 | :---: | :---: | :---: |
 | <img src="docs/images/agenda.png" width="220" /> | <img src="docs/images/agendamento.png" width="220" /> | <img src="docs/images/aviso-risco.png" width="220" /> |
 
-| Tema escuro | Menu |
+| Localização | Menu |
 | :---: | :---: |
-| <img src="docs/images/tema-escuro.png" width="220" /> | <img src="docs/images/menu.png" width="220" /> |
+| <img src="docs/images/localizacao.png" width="220" /> | <img src="docs/images/menu.png" width="220" /> |
 
 <!-- Opcional: um GIF curto do fluxo (abrir o app sem internet → agendar → aviso no painel) -->
 <!-- <p align="center"><img src="docs/images/demo.gif" width="280" /></p> -->
@@ -153,6 +158,7 @@ carregamento se já existe algo salvo para exibir.
 | **Id do agendamento gerado no aparelho** (UUID v4) | O registro existe antes de chegar ao banco e não colide com outro aparelho caso haja sincronização no futuro. |
 | **Cada escrita filtra por id e por dono** | Um usuário nunca altera o agendamento de outro no mesmo aparelho. |
 | **Um cubit próprio para o aviso do painel** | O cubit do clima continua com uma responsabilidade só; o aviso recebe a previsão já carregada, sem buscar de novo. |
+| **Localização escolhida vale sobre o GPS**, por conta | O talhão é fixo: a previsão não muda conforme o lugar do aparelho, e dá para planejar de casa. O cabeçalho sempre mostra qual localização está em uso. |
 
 ## Stack
 
@@ -164,7 +170,7 @@ carregamento se já existe algo salvo para exibir.
 | Banco local | `drift` (SQLite) + `drift_dev` |
 | Rede | `dio`, `connectivity_plus` |
 | Autenticação | `firebase_auth` + `google_sign_in` |
-| Localização | `geolocator` |
+| Localização | `geolocator`, `geocoding` e a geocodificação da Open-Meteo |
 | Erros funcionais | `fpdart` (`Either`) |
 | Modelos | `freezed`, `json_serializable`, `equatable` |
 | Animações | `lottie` e animações implícitas do Flutter |
@@ -173,7 +179,7 @@ carregamento se já existe algo salvo para exibir.
 
 ## Qualidade
 
-- **Mais de 400 testes** automatizados, entre unidade, widget, banco em memória e migração de schema.
+- **Mais de 500 testes** automatizados, entre unidade, widget, banco em memória e migração de schema.
 - **Histórico legível:** Conventional Commits, um commit por tarefa, cada um compilando e passando
   nos testes sozinho.
 
@@ -222,15 +228,14 @@ flutter test
 
 ## Roadmap
 
-- [ ] Calcular a janela de 24 h a partir da hora atual (hoje ela começa na primeira hora do dia
-      retornada pela API)
-- [ ] Aviso visível de que a recomendação tem caráter informativo e não substitui orientação
+- [x] Calcular a janela de 24 h a partir da hora atual
+- [x] Aviso visível de que a recomendação tem caráter informativo e não substitui orientação
       agronômica
-- [ ] Informar a localização manualmente quando o GPS não estiver disponível
+- [x] Informar a localização manualmente quando o GPS não estiver disponível
+- [x] Exibir no app a atribuição da Open-Meteo, exigida pela licença CC BY 4.0
 - [ ] Histórico das análises
 - [ ] Notificações no aparelho para os avisos da agenda
 - [ ] Usar a umidade do solo, que o app já recebe, no motor de decisão
-- [ ] Exibir no app a atribuição "Weather data by Open-Meteo.com", exigida pela licença CC BY 4.0
 - [ ] Suporte a iOS
 
 ## Créditos

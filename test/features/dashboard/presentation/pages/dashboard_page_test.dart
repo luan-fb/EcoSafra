@@ -1,21 +1,27 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:clock/clock.dart';
 import 'package:ecosafra/app/router/app_routes.dart';
+import 'package:ecosafra/core/error/failure.dart';
+import 'package:ecosafra/core/theme/app_theme.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:ecosafra/features/auth/presentation/cubit/auth_state.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:ecosafra/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:ecosafra/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:ecosafra/features/dashboard/presentation/widgets/forecast_section.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_alert.dart';
 import 'package:ecosafra/features/schedule/presentation/alert/schedule_alert_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/alert/schedule_alert_state.dart';
 import 'package:ecosafra/features/weather/domain/entities/coordinates.dart';
 import 'package:ecosafra/features/weather/domain/entities/fertilizer_advice.dart';
+import 'package:ecosafra/features/weather/domain/entities/location_description.dart';
 import 'package:ecosafra/features/weather/domain/entities/weather_forecast.dart';
 import 'package:ecosafra/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockDashboardCubit extends MockCubit<DashboardState>
@@ -38,16 +44,17 @@ void main() {
         fetchedAt: DateTime(2000),
       ),
     );
+    GoogleFonts.config.allowRuntimeFetching = false;
   });
 
   late MockDashboardCubit dashboardCubit;
   late MockScheduleAlertCubit scheduleAlertCubit;
   late MockAuthCubit authCubit;
 
-  // `ForecastSection` lê `hourly.first`/`daily.first` (pré-existente, sem
-  // guarda de lista vazia — fora do escopo desta task): a previsão de teste
-  // precisa de ao menos um ponto em cada lista para não quebrar quando o
-  // painel chega a `loaded`.
+  // `ForecastSection` lê `hourlyFrom(now).first`/`dayOf(now) ?? daily.first`
+  // (sem guarda de lista vazia — fora do escopo desta task): o único teste
+  // que chega a `loaded` fixa o relógio na hora deste ponto horário, para o
+  // painel não quebrar.
   final forecast = WeatherForecast(
     coordinates: const Coordinates(latitude: -23.5, longitude: -46.6),
     hourly: [
@@ -131,14 +138,19 @@ void main() {
         initialState: loading,
       );
 
-      await pumpDashboard(tester);
-      // Um `pump` primeiro entrega a emissão `loaded` do stream e monta
-      // `ForecastSection` (é aí que os timers do `FadeSlideIn` nascem);
-      // só depois um `pump` com duração deixa esses timers escalonados
-      // dispararem — na ordem inversa, o `elapse` aconteceria antes dos
-      // timers existirem, e o teste terminaria com timer pendente.
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 2));
+      // Relógio fixo na hora do único ponto horário de `forecast`: sem
+      // isto, `ForecastSection` buscaria a hora real, fora da cobertura da
+      // previsão de teste.
+      await withClock(Clock.fixed(DateTime(2026, 9, 24, 10)), () async {
+        await pumpDashboard(tester);
+        // Um `pump` primeiro entrega a emissão `loaded` do stream e monta
+        // `ForecastSection` (é aí que os timers do `FadeSlideIn` nascem);
+        // só depois um `pump` com duração deixa esses timers escalonados
+        // dispararem — na ordem inversa, o `elapse` aconteceria antes dos
+        // timers existirem, e o teste terminaria com timer pendente.
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 2));
+      });
 
       verify(() => scheduleAlertCubit.updateForecast(forecast)).called(1);
     },
@@ -242,5 +254,262 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('agenda-aberta'), findsOneWidget);
+  });
+
+  group('localização no painel', () {
+    const device = LocationDescription(
+      label: 'Cuiabá, Mato Grosso',
+      source: LocationSource.device,
+    );
+    const chosen = LocationDescription(
+      label: 'Campinas, São Paulo',
+      source: LocationSource.chosen,
+    );
+
+    /// Hora do único ponto horário de `forecast`: a `ForecastSection`
+    /// precisa dela para montar o card "Agora".
+    final forecastHour = Clock.fixed(DateTime(2026, 9, 24, 10));
+
+    /// Painel num `GoRouter` real, com a escolha de localização como rota
+    /// filha pelo mesmo nome do app. A escolha falsa volta com [pickerResult].
+    Future<void> pumpWithRouter(
+      WidgetTester tester, {
+      bool? pickerResult,
+    }) async {
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (_, _) => MultiBlocProvider(
+              providers: [
+                BlocProvider<AuthCubit>.value(value: authCubit),
+                BlocProvider<DashboardCubit>.value(value: dashboardCubit),
+                BlocProvider<ScheduleAlertCubit>.value(
+                  value: scheduleAlertCubit,
+                ),
+              ],
+              child: const DashboardView(),
+            ),
+            routes: [
+              GoRoute(
+                path: AppRoute.location.path.substring(1),
+                name: AppRoute.location.name,
+                builder: (context, _) => Scaffold(
+                  body: TextButton(
+                    onPressed: () => context.pop(pickerResult),
+                    child: const Text('escolha-aberta'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        MaterialApp.router(
+          theme: AppTheme.light,
+          locale: const Locale('pt'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      );
+      await tester.pump();
+      // Deixa terminar as entradas escalonadas da `ForecastSection`.
+      await tester.pump(const Duration(seconds: 2));
+    }
+
+    /// O painel com previsão tem animação de clima em laço: `pumpAndSettle`
+    /// nunca terminaria. Um segundo cobre a transição de rota.
+    Future<void> settleRoute(WidgetTester tester) async {
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+    }
+
+    setUp(() {
+      stubScheduleAlert(const ScheduleAlertState());
+      when(() => dashboardCubit.loadForecast()).thenAnswer((_) async {});
+    });
+
+    testWidgets(
+      'LOCV-01/02: localização do GPS mostra o nome com o ícone do aparelho',
+      (tester) async {
+        stubDashboard(
+          DashboardState.loaded(forecast, advice, location: device),
+        );
+
+        await withClock(forecastHour, () => pumpWithRouter(tester));
+
+        expect(find.text('Cuiabá, Mato Grosso'), findsOneWidget);
+        expect(find.byIcon(Icons.my_location_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.place_rounded), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'LOCV-04: localização escolhida mostra o nome com o alfinete',
+      (tester) async {
+        stubDashboard(
+          DashboardState.loaded(forecast, advice, location: chosen),
+        );
+
+        await withClock(forecastHour, () => pumpWithRouter(tester));
+
+        expect(find.text('Campinas, São Paulo'), findsOneWidget);
+        expect(find.byIcon(Icons.place_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.my_location_rounded), findsNothing);
+      },
+    );
+
+    testWidgets('sem o nome do lugar ainda, o cabeçalho não mostra nada', (
+      tester,
+    ) async {
+      stubDashboard(DashboardState.loaded(forecast, advice));
+
+      await withClock(forecastHour, () => pumpWithRouter(tester));
+
+      expect(find.byIcon(Icons.place_rounded), findsNothing);
+      expect(find.byIcon(Icons.my_location_rounded), findsNothing);
+    });
+
+    testWidgets(
+      'LOCV-05/LOCM-02: tocar abre a escolha, e voltar com true recarrega',
+      (tester) async {
+        stubDashboard(
+          DashboardState.loaded(forecast, advice, location: device),
+        );
+
+        await withClock(forecastHour, () async {
+          await pumpWithRouter(tester, pickerResult: true);
+
+          await tester.tap(find.text('Cuiabá, Mato Grosso'));
+          await settleRoute(tester);
+          expect(find.text('escolha-aberta'), findsOneWidget);
+          verifyNever(() => dashboardCubit.loadForecast());
+
+          await tester.tap(find.text('escolha-aberta'));
+          await settleRoute(tester);
+        });
+
+        expect(find.text('escolha-aberta'), findsNothing);
+        verify(() => dashboardCubit.loadForecast()).called(1);
+      },
+    );
+
+    testWidgets('voltar da escolha sem gravar não recarrega', (tester) async {
+      stubDashboard(DashboardState.loaded(forecast, advice, location: device));
+
+      await withClock(forecastHour, () async {
+        await pumpWithRouter(tester);
+
+        await tester.tap(find.text('Cuiabá, Mato Grosso'));
+        await settleRoute(tester);
+        await tester.tap(find.text('escolha-aberta'));
+        await settleRoute(tester);
+      });
+
+      verifyNever(() => dashboardCubit.loadForecast());
+    });
+
+    group('LOCM-07: erro de localização', () {
+      testWidgets('oferece "Escolher localização" junto de "Tentar de novo"', (
+        tester,
+      ) async {
+        stubDashboard(
+          const DashboardState.error(LocationFailure('GPS desligado.')),
+        );
+
+        await pumpWithRouter(tester);
+
+        expect(find.text('GPS desligado.'), findsOneWidget);
+        expect(find.text('Tentar de novo'), findsOneWidget);
+        expect(find.text('Escolher localização'), findsOneWidget);
+      });
+
+      testWidgets('outra falha não oferece a escolha de localização', (
+        tester,
+      ) async {
+        stubDashboard(const DashboardState.error(NetworkFailure()));
+
+        await pumpWithRouter(tester);
+
+        expect(find.text('Tentar de novo'), findsOneWidget);
+        expect(find.text('Escolher localização'), findsNothing);
+      });
+
+      testWidgets('o botão abre a escolha, e voltar com true recarrega', (
+        tester,
+      ) async {
+        stubDashboard(
+          const DashboardState.error(LocationFailure('GPS desligado.')),
+        );
+        await pumpWithRouter(tester, pickerResult: true);
+
+        await tester.tap(find.text('Escolher localização'));
+        await settleRoute(tester);
+        expect(find.text('escolha-aberta'), findsOneWidget);
+
+        await tester.tap(find.text('escolha-aberta'));
+        await settleRoute(tester);
+        verify(() => dashboardCubit.loadForecast()).called(1);
+      });
+    });
+
+    group('ROB-04: falha de localização ao atualizar', () {
+      const gpsOff = LocationFailure('Ative a localização do aparelho.');
+
+      void stubRefreshFailure() {
+        final loaded = DashboardState.loaded(forecast, advice);
+        final failed = loaded.withRefreshFailure(gpsOff);
+        when(() => dashboardCubit.state).thenReturn(failed);
+        whenListen(
+          dashboardCubit,
+          Stream.fromIterable([loaded, failed]),
+          initialState: loaded,
+        );
+      }
+
+      testWidgets(
+        'mantém a previsão e mostra o snackbar com a mensagem e a ação',
+        (tester) async {
+          stubRefreshFailure();
+
+          await withClock(forecastHour, () => pumpWithRouter(tester));
+
+          expect(find.byType(ForecastSection), findsOneWidget);
+          expect(
+            find.widgetWithText(SnackBar, 'Ative a localização do aparelho.'),
+            findsOneWidget,
+          );
+          expect(
+            find.widgetWithText(SnackBarAction, 'Escolher localização'),
+            findsOneWidget,
+          );
+        },
+      );
+
+      testWidgets('a ação do snackbar abre a escolha de localização', (
+        tester,
+      ) async {
+        stubRefreshFailure();
+
+        await withClock(forecastHour, () async {
+          await pumpWithRouter(tester, pickerResult: true);
+
+          await tester.tap(
+            find.widgetWithText(SnackBarAction, 'Escolher localização'),
+          );
+          await settleRoute(tester);
+          expect(find.text('escolha-aberta'), findsOneWidget);
+
+          await tester.tap(find.text('escolha-aberta'));
+          await settleRoute(tester);
+        });
+
+        verify(() => dashboardCubit.loadForecast()).called(1);
+      });
+    });
   });
 }
