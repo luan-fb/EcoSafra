@@ -130,6 +130,25 @@ void main() {
     );
   }
 
+  // ROB-03: mesmo padrão do `_RefreshAlertOnResume` do painel — voltar ao
+  // primeiro plano recalcula a Agenda sem esperar uma ação do produtor.
+  testWidgets('voltar ao app chama refresh no cubit', (tester) async {
+    stubState(const ScheduleState.loaded(upcoming: [], completed: []));
+    await pumpPage(tester);
+
+    tester.binding
+      ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    verifyNever(() => cubit.refresh());
+
+    tester.binding
+      ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+      ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    verify(() => cubit.refresh()).called(1);
+  });
+
   group('seções', () {
     testWidgets(
       'mostra "Próximos" e "Concluídos" quando há dos dois',

@@ -53,6 +53,11 @@ class _ScheduleViewState extends State<ScheduleView> {
   // procurar ancestrais pelo `context`.
   late ScaffoldMessengerState _messenger;
 
+  // Recalcula "data passada" e o risco ao voltar ao app: mesmo limite do
+  // painel (`_RefreshAlertOnResume`), uma virada de meia-noite com a Agenda
+  // aberta em segundo plano.
+  late final AppLifecycleListener _lifecycle;
+
   // Com `goNamed`, a Agenda é a única rota da pilha: sem isto, o voltar do
   // Android fecharia o app em vez de levar ao Painel. `_isDrawerOpen`
   // libera o `canPop` enquanto o drawer está aberto — do contrário o
@@ -62,6 +67,14 @@ class _ScheduleViewState extends State<ScheduleView> {
   bool _isDrawerOpen = false;
 
   @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () => context.read<ScheduleCubit>().refresh(),
+    );
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _messenger = ScaffoldMessenger.of(context);
@@ -69,6 +82,7 @@ class _ScheduleViewState extends State<ScheduleView> {
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     // O messenger é do app e sobrevive à tela: um "Desfazer" ainda visível
     // (ou na fila) chamaria um cubit já fechado. A remoção é
     // imediata, sem a animação de saída em que o botão ainda aceitaria
