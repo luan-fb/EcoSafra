@@ -2,6 +2,7 @@ import 'package:ecosafra/core/extensions/context_extensions.dart';
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
+import 'package:ecosafra/core/theme/color_contrast.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/animated_check.dart';
@@ -124,6 +125,14 @@ class ScheduleTile extends StatelessWidget {
     // "apagado" quando não há status a destacar.
     final blockPalette = scheduleDateBlockPalette(context, item);
     final neutralForeground = context.colors.onSurfaceVariant;
+    // Âmbar, verde e vermelho puros ficam abaixo de 4,5:1 como texto
+    // pequeno sobre o card em algum dos temas.
+    Color statusText(Color color) => readableOn(
+      color,
+      background:
+          context.theme.cardTheme.color ?? context.colors.surfaceContainerLow,
+      ink: context.colors.onSurface,
+    );
 
     if (item.schedule.isCompleted) {
       return _TilePalette(
@@ -138,7 +147,7 @@ class ScheduleTile extends StatelessWidget {
       return _TilePalette(
         blockBackground: blockPalette.background,
         blockForeground: blockPalette.foreground,
-        accentColor: AppColors.caution,
+        accentColor: statusText(AppColors.caution),
         statusIcon: Icons.event_busy_rounded,
         statusLabel: context.l10n.scheduleStatusPastDue,
       );
@@ -147,14 +156,14 @@ class ScheduleTile extends StatelessWidget {
       ScheduleRiskLevel.ok => _TilePalette(
         blockBackground: blockPalette.background,
         blockForeground: blockPalette.foreground,
-        accentColor: AppColors.safe,
+        accentColor: statusText(AppColors.safe),
         statusIcon: Icons.check_circle_rounded,
         statusLabel: context.l10n.scheduleRiskOk,
       ),
       ScheduleRiskLevel.atRisk => _TilePalette(
         blockBackground: blockPalette.background,
         blockForeground: blockPalette.foreground,
-        accentColor: AppColors.danger,
+        accentColor: statusText(AppColors.danger),
         statusIcon: Icons.warning_rounded,
         statusLabel: context.l10n.scheduleRiskAtRisk,
       ),

@@ -24,7 +24,8 @@ import 'package:intl/intl.dart';
     return (background: neutralBackground, foreground: neutralForeground);
   }
   if (item.isPastDue) {
-    return (background: AppColors.caution, foreground: Colors.white);
+    // Âmbar é claro: texto branco teria contraste de 2,2:1.
+    return (background: AppColors.caution, foreground: AppColors.ink);
   }
   return switch (item.risk) {
     ScheduleRiskLevel.ok => (

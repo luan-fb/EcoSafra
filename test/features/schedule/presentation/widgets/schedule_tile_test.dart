@@ -1,6 +1,7 @@
 import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_theme.dart';
+import 'package:ecosafra/core/theme/color_contrast.dart';
 import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/domain/entities/schedule_risk_level.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
@@ -41,10 +42,11 @@ void main() {
     VoidCallback? onEdit,
     ValueChanged<bool>? onToggleCompleted,
     VoidCallback? onDelete,
+    ThemeData? theme,
   }) {
     return tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.light,
+        theme: theme ?? AppTheme.light,
         locale: const Locale('pt'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -233,6 +235,66 @@ void main() {
       );
       expect(find.text('Quarta-feira'), findsOneWidget);
     });
+  });
+
+  group('contraste (WCAG AA)', () {
+    final pastDue = ScheduleItem(
+      schedule: schedule(
+        scheduledDate: today.subtract(const Duration(days: 1)),
+      ),
+      risk: ScheduleRiskLevel.unknown,
+      isPastDue: true,
+    );
+
+    testWidgets(
+      'o bloco de data passada usa texto escuro sobre o âmbar',
+      (tester) async {
+        await pumpTile(tester, pastDue);
+
+        final block = dateBlockOf(tester);
+        expect(block.foreground, AppColors.ink);
+        expect(
+          contrastRatio(block.foreground, block.background),
+          greaterThanOrEqualTo(minTextContrast),
+        );
+      },
+    );
+
+    final statuses = {
+      'Data passada': pastDue,
+      'Previsão favorável': ScheduleItem(
+        schedule: schedule(),
+        risk: ScheduleRiskLevel.ok,
+        isPastDue: false,
+      ),
+      'Risco de chuva forte no dia': ScheduleItem(
+        schedule: schedule(),
+        risk: ScheduleRiskLevel.atRisk,
+        isPastDue: false,
+      ),
+    };
+    for (final (themeName, theme) in [
+      ('claro', AppTheme.light),
+      ('escuro', AppTheme.dark),
+    ]) {
+      for (final MapEntry(key: label, value: item) in statuses.entries) {
+        testWidgets(
+          'rótulo "$label" legível sobre o card no tema $themeName',
+          (tester) async {
+            await pumpTile(tester, item, theme: theme);
+
+            final text = tester.widget<Text>(find.text(label));
+            expect(
+              contrastRatio(
+                text.style!.color!,
+                theme.cardTheme.color ?? theme.colorScheme.surfaceContainerLow,
+              ),
+              greaterThanOrEqualTo(minTextContrast),
+            );
+          },
+        );
+      }
+    }
   });
 
   group('concluído', () {
