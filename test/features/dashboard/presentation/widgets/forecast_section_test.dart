@@ -88,4 +88,22 @@ void main() {
     expect(card.weatherCode, forecast.daily.first.weatherCode);
     expect(card.currentHour, forecast.hourly.first);
   });
+
+  testWidgets('exibe a atribuição da Open-Meteo', (tester) async {
+    await pumpSection(tester);
+    expect(
+      find.text('Dados meteorológicos: Open-Meteo.com (CC BY 4.0)'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('exibe o aviso de caráter informativo', (tester) async {
+    await pumpSection(tester);
+    expect(
+      find.text(
+        'A recomendação é informativa e não substitui a orientação de um profissional de agronomia.',
+      ),
+      findsOneWidget,
+    );
+  });
 }

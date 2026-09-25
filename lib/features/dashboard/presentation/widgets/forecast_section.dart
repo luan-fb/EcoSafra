@@ -108,6 +108,20 @@ class ForecastSection extends StatelessWidget {
               ),
             ),
           ),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          context.l10n.dashboardForecastAttribution,
+          style: context.texts.bodySmall?.copyWith(
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          context.l10n.dashboardForecastDisclaimer,
+          style: context.texts.bodySmall?.copyWith(
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
