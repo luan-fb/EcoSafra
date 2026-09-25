@@ -25,6 +25,14 @@ final class ScheduleItem extends Equatable {
   /// passadas e dias fora da previsão (ou antes de ela chegar).
   final double? expectedRainMm;
 
+  /// O mesmo item com outro agendamento, mantendo risco e chuva.
+  ScheduleItem withSchedule(FertilizationSchedule schedule) => ScheduleItem(
+    schedule: schedule,
+    risk: risk,
+    isPastDue: isPastDue,
+    expectedRainMm: expectedRainMm,
+  );
+
   @override
   List<Object?> get props => [schedule, risk, isPastDue, expectedRainMm];
 }

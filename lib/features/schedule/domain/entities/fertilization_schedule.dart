@@ -28,6 +28,16 @@ final class FertilizationSchedule extends Equatable {
   /// `true` quando o agendamento foi marcado como concluído.
   bool get isCompleted => completedAt != null;
 
+  /// O mesmo agendamento com outra conclusão (`null` desfaz).
+  FertilizationSchedule withCompletedAt(DateTime? completedAt) =>
+      FertilizationSchedule(
+        id: id,
+        scheduledDate: scheduledDate,
+        createdAt: createdAt,
+        note: note,
+        completedAt: completedAt,
+      );
+
   @override
   List<Object?> get props => [id, scheduledDate, createdAt, note, completedAt];
 }

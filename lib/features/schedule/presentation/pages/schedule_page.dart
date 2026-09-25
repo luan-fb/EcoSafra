@@ -8,7 +8,6 @@ import 'package:ecosafra/core/theme/app_colors.dart';
 import 'package:ecosafra/core/theme/app_motion.dart';
 import 'package:ecosafra/core/theme/app_spacing.dart';
 import 'package:ecosafra/core/widgets/fade_slide_in.dart';
-import 'package:ecosafra/features/schedule/domain/entities/fertilization_schedule.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:ecosafra/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:ecosafra/features/schedule/presentation/widgets/schedule_empty_animation.dart';
@@ -420,18 +419,9 @@ class _ScheduleCardState extends State<_ScheduleCard> {
     final schedule = item.schedule;
     if (pending == null || pending == schedule.isCompleted) return item;
 
-    return ScheduleItem(
-      schedule: FertilizationSchedule(
-        id: schedule.id,
-        scheduledDate: schedule.scheduledDate,
-        createdAt: schedule.createdAt,
-        note: schedule.note,
-        // Só a presença da data importa para a tela; a gravada vem do banco.
-        completedAt: pending ? clock.now() : null,
-      ),
-      risk: item.risk,
-      isPastDue: item.isPastDue,
-      expectedRainMm: item.expectedRainMm,
+    // Só a presença da data importa para a tela; a gravada vem do banco.
+    return item.withSchedule(
+      schedule.withCompletedAt(pending ? clock.now() : null),
     );
   }
 }

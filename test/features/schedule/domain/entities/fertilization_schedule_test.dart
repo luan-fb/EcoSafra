@@ -25,6 +25,23 @@ void main() {
     });
   });
 
+  group('FertilizationSchedule.withCompletedAt', () {
+    final base = FertilizationSchedule(
+      id: '1',
+      scheduledDate: DateTime(2026, 9, 25),
+      createdAt: DateTime(2026, 9, 23),
+      note: 'talhão 3',
+    );
+
+    test('conclui mantendo os demais campos', () {
+      final completedAt = DateTime(2026, 9, 25, 14);
+      final completed = base.withCompletedAt(completedAt);
+
+      expect(completed.completedAt, completedAt);
+      expect(completed.withCompletedAt(null), base);
+    });
+  });
+
   group('FertilizationSchedule.props', () {
     test('dois agendamentos iguais exceto completedAt NÃO são iguais', () {
       final schedule1 = FertilizationSchedule(
