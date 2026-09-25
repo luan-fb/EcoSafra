@@ -3,8 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:ecosafra/core/database/app_database.dart';
 import 'package:ecosafra/core/network/api_constants.dart';
 import 'package:ecosafra/core/network/network_info.dart';
+import 'package:ecosafra/features/auth/domain/repositories/auth_repository.dart';
 import 'package:ecosafra/features/weather/data/datasources/device_location_data_source.dart';
+import 'package:ecosafra/features/weather/data/datasources/drift_chosen_location_local_data_source.dart';
 import 'package:ecosafra/features/weather/data/datasources/drift_weather_local_data_source.dart';
+import 'package:ecosafra/features/weather/data/datasources/geocoding_place_name_data_source.dart';
 import 'package:ecosafra/features/weather/data/datasources/geolocator_location_data_source.dart';
 import 'package:ecosafra/features/weather/data/datasources/open_meteo_remote_data_source.dart';
 import 'package:ecosafra/features/weather/data/datasources/weather_local_data_source.dart';
@@ -54,7 +57,15 @@ class WeatherModule extends Module {
         (i) => const GeolocatorLocationDataSource(),
       )
       ..addSingleton<LocationRepository>(
-        (i) => LocationRepositoryImpl(i.get<DeviceLocationDataSource>()),
+        (i) => LocationRepositoryImpl(
+          device: i.get<DeviceLocationDataSource>(),
+          chosen: DriftChosenLocationLocalDataSource(
+            i.get<AppDatabase>(),
+            i.get<Clock>(),
+          ),
+          placeName: GeocodingPlaceNameDataSource(),
+          authRepository: i.get<AuthRepository>(),
+        ),
       )
       ..addSingleton<GetCurrentLocation>(
         (i) => GetCurrentLocation(i.get<LocationRepository>()),
