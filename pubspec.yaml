@@ -97,6 +97,11 @@ dev_dependencies:
   # go_router_modular reexporta o go_router, mas esconde a classe GoRouter.
   go_router: ^17.5.0
 
+  # --- Ícone do app ---
+  # Gera os ícones do Android a partir de assets/icon/ (config no fim do
+  # arquivo): `dart run flutter_launcher_icons`.
+  flutter_launcher_icons: ^0.14.4
+
 flutter:
   uses-material-design: true
 
@@ -109,3 +114,12 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/lottie/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: "#2E7D46"
+  adaptive_icon_foreground: assets/icon/app_icon_foreground.png
+  adaptive_icon_monochrome: assets/icon/app_icon_foreground.png
+  min_sdk_android: 26
