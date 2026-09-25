@@ -19,7 +19,6 @@ void main() {
     hourly: const [],
     daily: const [],
     fetchedAt: DateTime(2026, 9, 7, 8),
-    isStale: true,
   );
   final freshForecast = WeatherForecast(
     coordinates: coordinates,
@@ -52,9 +51,9 @@ void main() {
   );
 
   test(
-    'com cache mas sem rede (o cenário do talhão sem sinal): só emite o '
-    'cache — a tela continua mostrando os dados velhos, não vira uma tela '
-    'de erro por causa de uma falha que já era esperada',
+    'com cache mas sem rede (o cenário do talhão sem sinal): emite o cache '
+    'e, quando a rede falha, o mesmo cache marcado como desatualizado — a '
+    'tela continua com os dados, não vira uma tela de erro',
     () async {
       when(() => repository.getCachedForecast(coordinates))
           .thenAnswer((_) async => cachedForecast);
@@ -63,7 +62,25 @@ void main() {
 
       final emissions = await getForecast(coordinates).toList();
 
-      expect(emissions, [Right<Failure, WeatherForecast>(cachedForecast)]);
+      expect(emissions, [
+        Right<Failure, WeatherForecast>(cachedForecast),
+        Right<Failure, WeatherForecast>(cachedForecast.asStale()),
+      ]);
+    },
+  );
+
+  test(
+    'o cache sai sem a marca de desatualizado enquanto a atualização não '
+    'falhou: com rede, o aviso de "sem internet" não pisca na tela',
+    () async {
+      when(() => repository.getCachedForecast(coordinates))
+          .thenAnswer((_) async => cachedForecast);
+      when(() => repository.refreshForecast(coordinates))
+          .thenAnswer((_) async => Right(freshForecast));
+
+      final first = await getForecast(coordinates).first;
+
+      expect(first.getOrElse((_) => throw StateError('')).isStale, isFalse);
     },
   );
 

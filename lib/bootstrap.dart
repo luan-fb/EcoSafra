@@ -21,7 +21,11 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   // `runZonedGuarded` + estes dois handlers capturam 100% dos erros:
   // o primeiro pega erros do framework (build, layout, paint), o segundo
   // pega erros assíncronos que escapam da árvore de widgets.
+  // `presentError` imprime no console (o logcat, no Android) também em
+  // profile e release; o `developer.log` sozinho só aparece no DevTools, e
+  // um erro no primeiro frame virava uma tela cinza sem nenhuma pista.
   FlutterError.onError = (details) {
+    FlutterError.presentError(details);
     developer.log(
       details.exceptionAsString(),
       name: 'FlutterError',
@@ -31,6 +35,9 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
+    FlutterError.presentError(
+      FlutterErrorDetails(exception: error, stack: stack, library: 'ecosafra'),
+    );
     developer.log('Erro fora da árvore', error: error, stackTrace: stack);
     return true;
   };
@@ -61,11 +68,20 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
       // Android, mas ainda não cobre iOS/web/desktop.
       await Firebase.initializeApp();
 
+      // `Modular.configure` registra os binds do AppModule sem esperar, e o
+      // `binds` dele é assíncrono (SharedPreferences). No debug o registro
+      // termina antes do primeiro frame por acaso; em profile e release o
+      // `EcoSafraApp` pedia o `AuthCubit` antes e o app abria numa tela
+      // cinza. Registrar aqui, esperando, faz o `configure` encontrar o
+      // módulo já pronto.
+      final appModule = AppModule();
+      await InjectionManager.instance.registerAppModule(appModule);
+
       // Monta o grafo de rotas + binds do AppModule (e, em cascata, dos
       // módulos de feature). Substitui o antigo `configureDependencies()`:
       // aqui, rotas e injeção de dependência nascem juntas.
       await Modular.configure(
-        appModule: AppModule(),
+        appModule: appModule,
         initialRoute: AppRoute.splash.path,
         debugLogDiagnostics: kDebugMode,
       );
@@ -74,10 +90,15 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
 
       runApp(await builder());
     },
-    (error, stack) => developer.log(
-      'Erro não capturado',
-      error: error,
-      stackTrace: stack,
-    ),
+    (error, stack) {
+      FlutterError.presentError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stack,
+          library: 'ecosafra',
+        ),
+      );
+      developer.log('Erro não capturado', error: error, stackTrace: stack);
+    },
   );
 }

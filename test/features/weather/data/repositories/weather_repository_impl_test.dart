@@ -117,7 +117,7 @@ void main() {
       expect(result, isNull);
     });
 
-    test('com cache salvo, devolve marcado como stale', () async {
+    test('com cache salvo, devolve sem a marca de desatualizado', () async {
       final fetchedAt = DateTime(2026, 9, 7, 8);
       when(() => local.getCached(coordinates.cacheKey)).thenAnswer(
         (_) async => (model: freshModel, fetchedAt: fetchedAt),
@@ -126,7 +126,7 @@ void main() {
       final result = await repository.getCachedForecast(coordinates);
 
       expect(result, isNotNull);
-      expect(result!.isStale, isTrue);
+      expect(result!.isStale, isFalse);
       expect(result.fetchedAt, fetchedAt);
     });
   });

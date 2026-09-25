@@ -34,7 +34,11 @@ class DashboardCubit extends Cubit<DashboardState> {
   final EvaluateApplicationSafety _evaluateApplicationSafety;
 
   Future<void> loadForecast() async {
-    emit(const DashboardState.loading());
+    // Ao puxar para atualizar, a previsão na tela fica até a nova chegar:
+    // o `RefreshIndicator` já mostra que está carregando.
+    if (state.status != DashboardStatus.loaded) {
+      emit(const DashboardState.loading());
+    }
 
     final locationResult = await _getCurrentLocation(const NoParams());
     await locationResult.match(
