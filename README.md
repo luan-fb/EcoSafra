@@ -15,7 +15,7 @@ vai coincidir com chuva forte, evitando o escoamento do insumo para rios e córr
 ![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
-![Testes](https://img.shields.io/badge/testes-416%20passando-2E7D32)
+![Testes](https://img.shields.io/badge/testes-400%2B-2E7D32)
 ![Lint](https://img.shields.io/badge/lint-very__good__analysis-7B1FA2)
 
 <!-- Captura principal: o painel com o card de decisão (ex.: 280px de largura) -->
@@ -173,7 +173,7 @@ carregamento se já existe algo salvo para exibir.
 
 ## Qualidade
 
-- **416 testes** automatizados, entre unidade, widget, banco em memória e migração de schema.
+- **Mais de 400 testes** automatizados, entre unidade, widget, banco em memória e migração de schema.
 - **Histórico legível:** Conventional Commits, um commit por tarefa, cada um compilando e passando
   nos testes sozinho.
 
