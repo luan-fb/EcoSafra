@@ -230,6 +230,11 @@
   "scheduleFormCancel": "Cancelar",
   "@scheduleFormCancel": {"description": "Botão de cancelar o formulário de agendamento"},
 
+  "scheduleCheckSemanticLabel": "Aplicação de {date} feita",
+  "@scheduleCheckSemanticLabel": {
+    "description": "Rótulo do leitor de tela para o controle de conclusão de um agendamento",
+    "placeholders": {"date": {"type": "String", "example": "quinta-feira, 24 de setembro"}}
+  },
   "scheduleRetryButton": "Tentar de novo",
   "@scheduleRetryButton": {"description": "Botão da tela de erro da agenda para carregar a lista de novo"},
   "scheduleStatusPastDue": "Data passada",

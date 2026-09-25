@@ -16,11 +16,16 @@ class AnimatedCheck extends StatefulWidget {
   const AnimatedCheck({
     required this.value,
     required this.onChanged,
+    this.semanticLabel,
     super.key,
   });
 
   final bool value;
   final ValueChanged<bool> onChanged;
+
+  /// O que o leitor de tela anuncia junto do estado: sem ele, só "caixa de
+  /// seleção", sem dizer de qual item.
+  final String? semanticLabel;
 
   static const double targetSize = 48;
 
@@ -64,6 +69,7 @@ class _AnimatedCheckState extends State<AnimatedCheck>
     final colors = context.colors;
 
     return Semantics(
+      label: widget.semanticLabel,
       checked: widget.value,
       onTap: _handleTap,
       child: GestureDetector(

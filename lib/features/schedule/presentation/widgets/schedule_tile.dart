@@ -98,6 +98,9 @@ class ScheduleTile extends StatelessWidget {
             AnimatedCheck(
               value: isCompleted,
               onChanged: onToggleCompleted,
+              semanticLabel: context.l10n.scheduleCheckSemanticLabel(
+                DateFormat.MMMMEEEEd('pt_BR').format(schedule.scheduledDate),
+              ),
             ),
           ],
         ),

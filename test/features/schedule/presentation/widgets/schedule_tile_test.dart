@@ -511,6 +511,26 @@ void main() {
     );
 
     testWidgets(
+      'o check diz ao leitor de tela de qual aplicação ele é',
+      (tester) async {
+        await pumpTile(
+          tester,
+          ScheduleItem(
+            schedule: schedule(),
+            risk: ScheduleRiskLevel.ok,
+            isPastDue: false,
+          ),
+        );
+
+        final semantics = tester.getSemantics(find.byType(AnimatedCheck));
+        expect(
+          semantics.label,
+          'Aplicação de quarta-feira, 23 de setembro feita',
+        );
+      },
+    );
+
+    testWidgets(
       'SCHEDUI-15: ação de acessibilidade "Excluir" chama onDelete',
       (tester) async {
         var deleted = false;
