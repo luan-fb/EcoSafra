@@ -61,11 +61,20 @@ Future<void> bootstrap(FutureOr<Widget> Function() builder) async {
       // Android, mas ainda não cobre iOS/web/desktop.
       await Firebase.initializeApp();
 
+      // `Modular.configure` registra os binds do AppModule sem esperar, e o
+      // `binds` dele é assíncrono (SharedPreferences). No debug o registro
+      // termina antes do primeiro frame por acaso; em profile e release o
+      // `EcoSafraApp` pedia o `AuthCubit` antes e o app abria numa tela
+      // cinza. Registrar aqui, esperando, faz o `configure` encontrar o
+      // módulo já pronto.
+      final appModule = AppModule();
+      await InjectionManager.instance.registerAppModule(appModule);
+
       // Monta o grafo de rotas + binds do AppModule (e, em cascata, dos
       // módulos de feature). Substitui o antigo `configureDependencies()`:
       // aqui, rotas e injeção de dependência nascem juntas.
       await Modular.configure(
-        appModule: AppModule(),
+        appModule: appModule,
         initialRoute: AppRoute.splash.path,
         debugLogDiagnostics: kDebugMode,
       );
